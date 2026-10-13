@@ -1,0 +1,16 @@
+{
+  "short_name": "EML",
+  "name": "ExplainMyLesson AI",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#ffffff",
+  "background_color": "#ffffff",
+  "description": "Platform AI untuk materi dan kuis adaptif D3 TI SV UNS."
+}

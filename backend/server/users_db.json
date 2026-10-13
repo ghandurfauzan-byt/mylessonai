@@ -1,0 +1,743 @@
+[
+  {
+    "id": "usr_1",
+    "name": "Ghandur Fauzan Ngauf Hisam",
+    "email": "ghandur@gmail.com",
+    "passwordHash": "$2b$10$w5jVbZcn8hpV9tr3Z.psXuHbXjuZJllWoMjhPSkN19Uwpa4dWvt6W",
+    "role": "pelajar",
+    "nimNip": "V3925024",
+    "institution": "D3 Teknik Informatika Madiun, Sekolah Vokasi UNS",
+    "points": 220,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 10,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Luar biasa! Seluruh evaluasi belajarmu telah Tuntas Melampaui KKTP (Rata-rata 95%). Guru merekomendasikanmu melanjutkan materi pengayaan Makna Sila Ke-3 untuk mempertahankan prestasimu!"
+    }
+  },
+  {
+    "id": "usr_2",
+    "name": "Ridho Asykuri",
+    "email": "ridho@gmail.com",
+    "passwordHash": "$2b$10$2WD1/9fvGiPLD7jEupnGgOpAw7jZoA9mem15eUv6co8Gn/7Qk2G.m",
+    "role": "pelajar",
+    "nimNip": "V3925015",
+    "institution": "D3 Teknik Informatika Madiun, Sekolah Vokasi UNS",
+    "points": 0,
+    "weakness": {
+      "chapterId": "pkn-bhinneka",
+      "chapterName": "Pelajaran PKn (Bhinneka Tunggal Ika)",
+      "subject": "pkn",
+      "score": 5,
+      "outOf": 10,
+      "status": "remedial",
+      "message": "Nilai evaluasi di Pelajaran PKn (Bhinneka Tunggal Ika) masih di bawah Kriteria Ketuntasan (KKTP). Silakan pelajari kembali keragaman suku dan budaya Nusantara yang telah disiapkan Guru."
+    }
+  },
+  {
+    "id": "usr_4",
+    "name": "Budi Santoso",
+    "email": "budi@gmail.com",
+    "passwordHash": "$2b$10$iZdBjav4Je7bQ.UoGJaX7Osx9.X1CZFYYrt6BMR02hNJXosMM8CIe",
+    "role": "pelajar",
+    "nimNip": "V3925001",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 0,
+    "weakness": {
+      "chapterId": "pkn-gotongroyong",
+      "chapterName": "Pelajaran PKn (Gotong Royong)",
+      "subject": "pkn",
+      "score": 2,
+      "outOf": 10,
+      "status": "remedial",
+      "message": "Nilai evaluasi di Pelajaran PKn (Gotong Royong) masih di bawah Kriteria Ketuntasan (KKTP). Silakan pelajari kembali ringkasan materi dan intisari pengamalan yang telah disiapkan Guru."
+    }
+  },
+  {
+    "id": "usr_5",
+    "name": "Siti Aminah",
+    "email": "siti@gmail.com",
+    "passwordHash": "$2b$10$ljQZ7qw8AFhj2QCQsklRROij52g69Okh/sQqXn4ySYS1n8lAfwifW",
+    "role": "pelajar",
+    "nimNip": "V3925002",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 0,
+    "weakness": {
+      "chapterId": "bjawa-aksara",
+      "chapterName": "Pelajaran Bahasa Jawa (Aksara Jawa)",
+      "subject": "bjawa",
+      "score": 5,
+      "outOf": 10,
+      "status": "remedial",
+      "message": "Nilai evaluasi di Pelajaran Bahasa Jawa (Aksara Jawa & Sandhangan) masih di bawah Kriteria Ketuntasan (KKTP). Silakan pelajari kembali aturan sandhangan swara dan bentuk 20 aksara legena."
+    }
+  },
+  {
+    "id": "usr_6",
+    "name": "Ahmad Fauzi",
+    "email": "ahmad@gmail.com",
+    "passwordHash": "$2b$10$i5RT352L.1h24FJCI9T8l.JwBB9OCMilcW1qRujdICGcbiAOfogCa",
+    "role": "pelajar",
+    "nimNip": "V3925003",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 0,
+    "weakness": {
+      "chapterId": "bjawa-unggahungguh",
+      "chapterName": "Pelajaran Bahasa Jawa (Unggah-Ungguh Basa)",
+      "subject": "bjawa",
+      "score": 4,
+      "outOf": 10,
+      "status": "remedial",
+      "message": "Nilai evaluasi di Pelajaran Bahasa Jawa (Unggah-Ungguh Basa) masih di bawah Kriteria Ketuntasan (KKTP). Silakan pelajari kembali perbedaan ragam Basa Ngoko dan Basa Krama Alus bersama Robot Pintar."
+    }
+  },
+  {
+    "id": "usr_3",
+    "name": "Darmawan Lahru Riatma, S.Kom., M.MT",
+    "email": "darmawan@gmail.com",
+    "passwordHash": "$2b$10$5fzKYqd2RdoXuuP3ojDwBO.wFL9sM2RDMiNnOcaU.fNimTNtZEHqG",
+    "role": "pengajar",
+    "nimNip": "1991091420200801",
+    "institution": "D3 Teknik Informatika Madiun, Sekolah Vokasi UNS"
+  },
+  {
+    "id": "usr_teacher_1",
+    "name": "Ibu Guru Retno, S.Pd.",
+    "email": "guru@gmail.com",
+    "passwordHash": "$2b$10$cf6SVCNqpm/zZBrl1v07A.Zq9r0Ob6oUX.4x4TDh06KxfdiRWwq22",
+    "role": "pengajar",
+    "nimNip": "198705122011012004",
+    "institution": "SD Negeri 1 Madiun"
+  },
+  {
+    "id": "usr_teacher_2",
+    "name": "Bpk. Joko Susilo, S.Pd.",
+    "email": "pak.guru@gmail.com",
+    "passwordHash": "$2b$10$cf6SVCNqpm/zZBrl1v07A.Zq9r0Ob6oUX.4x4TDh06KxfdiRWwq22",
+    "role": "pengajar",
+    "nimNip": "198302152009021003",
+    "institution": "SD Negeri 1 Madiun"
+  },
+  {
+    "id": "usr_1791812890878",
+    "name": "Siswa Baru 1791812890878",
+    "email": "siswa_1791812890878@gmail.com",
+    "passwordHash": "$2b$10$BfWlt/P7Zf/uBBX7IXHBj.eovIiL3dC9uAuzHZEUIcar9ssclPmli",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 0,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791813666732",
+    "name": "Siswa Baru 1791813666732",
+    "email": "siswa_1791813666732@gmail.com",
+    "passwordHash": "$2b$10$/Tj4GCTVunY/1LHWVPpODubhuqi8T5INjzAZaHrkVBToOyfz4Cx2.",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 0,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791814083504",
+    "name": "Siswa Baru 1791814083504",
+    "email": "siswa_1791814083504@gmail.com",
+    "passwordHash": "$2b$10$btIgrkPrPagEvOn5Npz/neyT3759R6T6n0EBdJfMB1p.MN/INQLJe",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 0,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791815325973",
+    "name": "Siswa Baru 1791815325973",
+    "email": "siswa_1791815325973@gmail.com",
+    "passwordHash": "$2b$10$wbccciVGjgn6WOkFerO2jOp6u8oUr4nIgVN5Xlzzdx2pXmYarHcMy",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 0,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791815665113",
+    "name": "Siswa Baru 1791815665113",
+    "email": "siswa_1791815665113@gmail.com",
+    "passwordHash": "$2b$10$DaKy34aclbvmGgIu5qWa2.9Lg5wqhWmSgPEHf/NVZMTVychLtRDC.",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 0,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791841621878",
+    "name": "Siswa Baru 1791841621877",
+    "email": "siswa_1791841621877@gmail.com",
+    "passwordHash": "$2b$10$FAFbmUnJ.KBYeKfI5psT2eUE59SUEs7KVhSP8POQpVH.pthb3OApG",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 0,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791842179291",
+    "name": "Siswa Baru 1791842179291",
+    "email": "siswa_1791842179291@gmail.com",
+    "passwordHash": "$2b$10$LMkyvA3HLnxUMTxK4I6EtujdzNwRQDFZcRW3XiUw8ogEFV7AASLOS",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 0,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791842676133",
+    "name": "Siswa Baru 1791842676133",
+    "email": "siswa_1791842676133@gmail.com",
+    "passwordHash": "$2b$10$x0BL2moGX9WDeCD6ea1kCuuHyIE7jOY/Smz4r0mIL8dlW4iA335eS",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 0,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791843070429",
+    "name": "Siswa Baru 1791843070429",
+    "email": "siswa_1791843070429@gmail.com",
+    "passwordHash": "$2b$10$l.d3zYm/tnpDlRFOKuRHIuVrev3Uh8y.S78NQUnw7xQYgXs5ZiKB.",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 0,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791843210452",
+    "name": "Siswa Baru 1791843210452",
+    "email": "siswa_1791843210452@gmail.com",
+    "passwordHash": "$2b$10$YE3VweR9KjkmPj9y.bJvr.Q8X51oUFxT/6u8sr1HwYyjTzAE/O1L2",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 0,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791843394785",
+    "name": "Siswa Baru 1791843394785",
+    "email": "siswa_1791843394785@gmail.com",
+    "passwordHash": "$2b$10$Z0QIvS.2torTnDM68v1k5.5IfZR6wuLZSF.QJbjkd0R/WBoplYEeC",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 0,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791844904140",
+    "name": "Guru Uji 1791844904140",
+    "email": "guru_uji_1791844904140@gmail.com",
+    "passwordHash": "$2b$10$PbZRmQPxUbXP95JQtjUJu.BJmN/OXxmVye6lP6FxvwjsymxT6IW8G",
+    "role": "pengajar",
+    "nimNip": "199xxxxxxxxx",
+    "institution": "SD Negeri 1 Madiun"
+  },
+  {
+    "id": "usr_1791845001373",
+    "name": "Siswa Baru 1791845001373",
+    "email": "siswa_1791845001373@gmail.com",
+    "passwordHash": "$2b$10$xIUh26vmHlp1jxz1.quY7OIShT8Iy1By/rA9bsqjfmPhUkxUTKs6i",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 0,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791845007154",
+    "name": "Guru Uji 1791845007154",
+    "email": "guru_uji_1791845007154@gmail.com",
+    "passwordHash": "$2b$10$dkDd5gyTiz5mLvZIImEenO3.fzolDDLFRfdeP9HGyIMcuabaLg7se",
+    "role": "pengajar",
+    "nimNip": "199xxxxxxxxx",
+    "institution": "SD Negeri 1 Madiun"
+  },
+  {
+    "id": "usr_1791855103044",
+    "name": "Siswa Baru 1791855103044",
+    "email": "siswa_1791855103044@gmail.com",
+    "passwordHash": "$2b$10$fOVM8CNx5d0TCP3S4xR6v.UrqrhNFv7YJ5Alnk0SYiltjSlYjsfs6",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 200,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791855108223",
+    "name": "Guru Uji 1791855108223",
+    "email": "guru_uji_1791855108223@gmail.com",
+    "passwordHash": "$2b$10$ETNS4KbyDCE.vDoCt6Yrz.7UFikGsyZ0Js14hS9kGEy1QCpNTJ.6u",
+    "role": "pengajar",
+    "nimNip": "199xxxxxxxxx",
+    "institution": "SD Negeri 1 Madiun"
+  },
+  {
+    "id": "usr_1791855585623",
+    "name": "Siswa Baru 1791855585623",
+    "email": "siswa_1791855585623@gmail.com",
+    "passwordHash": "$2b$10$9Ux6U5Go3tTGO6SIF7tcHunuDzYWOpcs2v8O3YU1dznsiLgZdR07y",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 200,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791855590610",
+    "name": "Guru Uji 1791855590610",
+    "email": "guru_uji_1791855590610@gmail.com",
+    "passwordHash": "$2b$10$jvMx1A/KhSQjASpTYYJ9/eunWHw1imOfcP3Ws/INrd0bacBn44UDC",
+    "role": "pengajar",
+    "nimNip": "199xxxxxxxxx",
+    "institution": "SD Negeri 1 Madiun"
+  },
+  {
+    "id": "usr_1791856092291",
+    "name": "Siswa Baru 1791856092290",
+    "email": "siswa_1791856092290@gmail.com",
+    "passwordHash": "$2b$10$D4NkPSMPI5oA/B4aTc10dunfsU5NAd.Ep9drTjLuOiu0TS/xHS9XG",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 200,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791856097196",
+    "name": "Guru Uji 1791856097196",
+    "email": "guru_uji_1791856097196@gmail.com",
+    "passwordHash": "$2b$10$fiQEmMylsFGw7JhA3zjD1uuQiVDXUe1s6VRo57N1FTU4ukwXq9Iuq",
+    "role": "pengajar",
+    "nimNip": "199xxxxxxxxx",
+    "institution": "SD Negeri 1 Madiun"
+  },
+  {
+    "id": "usr_1791856408617",
+    "name": "Siswa Baru 1791856408617",
+    "email": "siswa_1791856408617@gmail.com",
+    "passwordHash": "$2b$10$mED3SjSis5IlBtrDp6PEyeHBfrRxmDKSMV0CW3FMp2/EmtiHxQmRq",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 200,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791856413234",
+    "name": "Guru Uji 1791856413234",
+    "email": "guru_uji_1791856413234@gmail.com",
+    "passwordHash": "$2b$10$enpnBSfDvtLoeqtD0n0WreO6IK2EBbJnAGkqNEcNfhB1vOdieOkYO",
+    "role": "pengajar",
+    "nimNip": "199xxxxxxxxx",
+    "institution": "SD Negeri 1 Madiun"
+  },
+  {
+    "id": "usr_1791856944848",
+    "name": "Siswa Baru 1791856944848",
+    "email": "siswa_1791856944848@gmail.com",
+    "passwordHash": "$2b$10$MJuVgKSc7QVSyYSed6DsJ.3TrGar7t5phskWSURhd6R66ev3pwYES",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 200,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791856949542",
+    "name": "Guru Uji 1791856949542",
+    "email": "guru_uji_1791856949542@gmail.com",
+    "passwordHash": "$2b$10$oP2vjFgd4outRIxvSxQaHOxvmUstczo4PasXb1URqgKOf1k/UMYRS",
+    "role": "pengajar",
+    "nimNip": "199xxxxxxxxx",
+    "institution": "SD Negeri 1 Madiun"
+  },
+  {
+    "id": "usr_1791858057088",
+    "name": "Siswa Baru 1791858057088",
+    "email": "siswa_1791858057088@gmail.com",
+    "passwordHash": "$2b$10$uo0oZ1UnixGkB3TvWz4.6eOYTVKia1dVEHu5cKP2zGND1LoL7wxFC",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 200,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791858063444",
+    "name": "Guru Uji 1791858063444",
+    "email": "guru_uji_1791858063444@gmail.com",
+    "passwordHash": "$2b$10$6V5tsy3ZC0ZR.lwAaNguFuCBw09DoBtSzJpVFgZpsd6uvRbFq0xV6",
+    "role": "pengajar",
+    "nimNip": "199xxxxxxxxx",
+    "institution": "SD Negeri 1 Madiun"
+  },
+  {
+    "id": "usr_1791860043129",
+    "name": "Guru Uji 1791860043129",
+    "email": "guru_uji_1791860043129@gmail.com",
+    "passwordHash": "$2b$10$kU37aEdIuadrs/VjcIlvPObylafY1rhSLG9bSdswd0GTdZ0yn7N5W",
+    "role": "pengajar",
+    "nimNip": "199xxxxxxxxx",
+    "institution": "SD Negeri 1 Madiun"
+  },
+  {
+    "id": "usr_1791861885084",
+    "name": "Siswa Baru 1791861885084",
+    "email": "siswa_1791861885084@gmail.com",
+    "passwordHash": "$2b$10$TYBhIGNlgS3oIj0Doejc.e/z.sA1xSv6Dn6SUxaA2tdfv4CCKwhRy",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 200,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791861900697",
+    "name": "Guru Uji 1791861900697",
+    "email": "guru_uji_1791861900697@gmail.com",
+    "passwordHash": "$2b$10$qgntFA2WF9VfhCe94o0dBOsWTIlr.XEvYhNhYuNCOR7ROA/ATURru",
+    "role": "pengajar",
+    "nimNip": "199xxxxxxxxx",
+    "institution": "SD Negeri 1 Madiun"
+  },
+  {
+    "id": "usr_1791873077670",
+    "name": "Guru Uji 1791873077670",
+    "email": "guru_uji_1791873077670@gmail.com",
+    "passwordHash": "$2b$10$5Z4/cyOp9pBAVYGs9wa9H.MGkdUT8G.58d9eCJy0BSgcdqv93g.na",
+    "role": "pengajar",
+    "nimNip": "199xxxxxxxxx",
+    "institution": "SD Negeri 1 Madiun"
+  },
+  {
+    "id": "usr_1791873154400",
+    "name": "Siswa Baru 1791873154400",
+    "email": "siswa_1791873154400@gmail.com",
+    "passwordHash": "$2b$10$FpoZiRXJ.n4HS58vDPxZC.0N5XHi9klqPYKeFflkQC.O12WDmwa.q",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 200,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791873176088",
+    "name": "Siswa Baru 1791873176088",
+    "email": "siswa_1791873176088@gmail.com",
+    "passwordHash": "$2b$10$h8PPdw5h1XfYEnrdprFWPeANjvkLNIN62y91EgX/WXO45zYWVWEvW",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 200,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791873182348",
+    "name": "Guru Uji 1791873182347",
+    "email": "guru_uji_1791873182347@gmail.com",
+    "passwordHash": "$2b$10$Tj8y.EcRdAYh4tbhu1pskuUFhUFwMKPiR90x9sKHXS4hgxsZF9hKC",
+    "role": "pengajar",
+    "nimNip": "199xxxxxxxxx",
+    "institution": "SD Negeri 1 Madiun"
+  },
+  {
+    "id": "usr_1791875403707",
+    "name": "Siswa Baru 1791875403707",
+    "email": "siswa_1791875403707@gmail.com",
+    "passwordHash": "$2b$10$Opj.kKn.A/FCQzb8CbTzyOyRyIsTmZ5RpZnZqxynu9AUxcl7WGSfq",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 200,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791875408436",
+    "name": "Guru Uji 1791875408436",
+    "email": "guru_uji_1791875408436@gmail.com",
+    "passwordHash": "$2b$10$qOUc/jgQT1OjN6wnKeJUjOkTGFgXJ/OcoLTWcreuQSwdh.51eAHu6",
+    "role": "pengajar",
+    "nimNip": "199xxxxxxxxx",
+    "institution": "SD Negeri 1 Madiun"
+  },
+  {
+    "id": "usr_1791875990290",
+    "name": "Siswa Baru 1791875990290",
+    "email": "siswa_1791875990290@gmail.com",
+    "passwordHash": "$2b$10$JcUmNj3cIsRXIkWO296yyetw7bib0FNWgf7PSerpjhIfho3C2lZkW",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 200,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791875996878",
+    "name": "Guru Uji 1791875996878",
+    "email": "guru_uji_1791875996878@gmail.com",
+    "passwordHash": "$2b$10$204.CBBiU9RLAx2LG/QiXes2mva6OZcR1kPdR79C7j36dx7XFPVby",
+    "role": "pengajar",
+    "nimNip": "199xxxxxxxxx",
+    "institution": "SD Negeri 1 Madiun"
+  },
+  {
+    "id": "usr_1791876254858",
+    "name": "Siswa Baru 1791876254858",
+    "email": "siswa_1791876254858@gmail.com",
+    "passwordHash": "$2b$10$W.R7AyNUaioTyBU1XE4be.0qS6R9hElZiXiXWrQ8LRlY4fAHnVX86",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 200,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791876259595",
+    "name": "Guru Uji 1791876259595",
+    "email": "guru_uji_1791876259595@gmail.com",
+    "passwordHash": "$2b$10$o1ozNa0btJ.gKfW2DTmCJu9Q2oJjMGwC6aN/ihHkaGxjbaRHUsHda",
+    "role": "pengajar",
+    "nimNip": "199xxxxxxxxx",
+    "institution": "SD Negeri 1 Madiun"
+  },
+  {
+    "id": "usr_1791876921262",
+    "name": "Siswa Baru 1791876921262",
+    "email": "siswa_1791876921262@gmail.com",
+    "passwordHash": "$2b$10$OseJu7C7Wp/MQ/.wuG.y2O3Ltcu.ETB4idzQE6Owd6EUGlgg7tG66",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 200,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1791876929601",
+    "name": "Guru Uji 1791876929601",
+    "email": "guru_uji_1791876929601@gmail.com",
+    "passwordHash": "$2b$10$7yXdKvEDMsf676tbTFmUf.7wbG4UB61o04uFZ2nmpXUcJKXhzSJsi",
+    "role": "pengajar",
+    "nimNip": "199xxxxxxxxx",
+    "institution": "SD Negeri 1 Madiun"
+  }
+]
