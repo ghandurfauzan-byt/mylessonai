@@ -390,10 +390,10 @@ export default function ChapterProgressList({
 
   // State Modal Diagnostik Guru: Mengetahui siswa yang lemah di bab terkait
   const [selectedDiagnosticChapter, setSelectedDiagnosticChapter] = useState<{
-    id: number;
-    name: string;
-    percent: number;
-    tone: string;
+    id?: number;
+    name?: string;
+    percent?: number;
+    tone?: string;
   } | null>(null);
 
   // State daftar materi/bab yang dihapus (tersimpan di localStorage)
@@ -481,9 +481,9 @@ export default function ChapterProgressList({
     }
   }
 
-  function isChapterDeleted(c: { id: number; name: string }): boolean {
-    if (deletedChapterIds.length === 0) return false;
-    const idStr = String(c.id);
+  function isChapterDeleted(c: { id?: number; name?: string }): boolean {
+    if (deletedChapterIds.length === 0 || !c.name) return false;
+    const idStr = String(c.id ?? "");
     const lower = c.name.toLowerCase();
 
     if (deletedChapterIds.includes(idStr) || deletedChapterIds.includes(`ch-${c.id}`)) {
@@ -575,10 +575,11 @@ export default function ChapterProgressList({
   }
 
   function handleDeleteChapter(
-    chapterItem: { id: number; name: string },
+    chapterItem: { id?: number; name?: string },
     e?: React.MouseEvent
   ) {
     if (e) e.stopPropagation();
+    if (!chapterItem.name) return;
     playClickSound();
 
     const cleanName = chapterItem.name.replace(/^PKn:\s*/i, "").replace(/^B\.\s*Jawa:\s*/i, "");
@@ -750,8 +751,8 @@ export default function ChapterProgressList({
     }, 80);
   }
 
-  const diagnosticData = selectedDiagnosticChapter
-    ? getChapterDiagnostic(selectedDiagnosticChapter.name, selectedDiagnosticChapter.percent)
+  const diagnosticData = selectedDiagnosticChapter?.name
+    ? getChapterDiagnostic(selectedDiagnosticChapter.name, selectedDiagnosticChapter.percent ?? 0)
     : null;
 
   return (
