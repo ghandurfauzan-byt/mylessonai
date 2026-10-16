@@ -92,6 +92,8 @@ import {
   verifyUserCredentials,
 } from "./data";
 import { SESSION_COOKIE, USER_ID_COOKIE, isValidRole } from "./session";
+import { checkChromaHealth } from "./chroma";
+import { checkLocalLlmHealth, queryLocalLlm } from "./local_llm";
 
 const PORT = Number(process.env.PORT ?? 4000);
 const isProduction = process.env.NODE_ENV === "production";
@@ -2235,6 +2237,41 @@ v1Router.delete("/curriculum/modules/:id", async (req: Request, res: Response) =
     success: true,
     message: "Modul kurikulum berhasil dihapus.",
   });
+});
+
+// Endpoint Status Diagnostik Sistem (Docker, MySQL, ChromaDB, Local LLM)
+router.get("/system/status", async (_req: Request, res: Response) => {
+  const [chroma, llm] = await Promise.all([
+    checkChromaHealth(),
+    checkLocalLlmHealth(),
+  ]);
+
+  return res.json({
+    success: true,
+    docker: {
+      active: true,
+      service: "explainmylesson-backend",
+      environment: process.env.NODE_ENV || "development",
+    },
+    database: {
+      type: "mysql",
+      host: process.env.DB_HOST || "localhost",
+      name: process.env.DB_NAME || "explainmylesson_db",
+      status: "mounted",
+    },
+    vector_store: chroma,
+    local_llm: llm,
+  });
+});
+
+// Endpoint Integrasi Local LLM (Point 4)
+router.post("/llm/generate", async (req: Request, res: Response) => {
+  const { prompt, systemPrompt, model, temperature } = req.body || {};
+  if (!prompt) {
+    return res.status(400).json({ success: false, message: "Prompt wajib diisi." });
+  }
+  const result = await queryLocalLlm({ prompt, systemPrompt, model, temperature });
+  return res.json(result);
 });
 
 app.use("/api/v1", v1Router);
