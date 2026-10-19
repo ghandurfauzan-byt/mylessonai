@@ -63,7 +63,10 @@ services:
 
   # 4. Service Local LLM Engine via Ollama (Point 4: Integrasi Local LLM ke Backend)
   ollama:
-    image: ollama/ollama:latest
+    build:
+      context: ./backend/ollama-service
+      dockerfile: Dockerfile
+    image: explainmylesson-ollama:latest
     container_name: explainmylesson-ollama
     restart: always
     ports:
