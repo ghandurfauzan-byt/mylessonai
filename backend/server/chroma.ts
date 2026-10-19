@@ -8,7 +8,7 @@ export async function checkChromaHealth(): Promise<{ active: boolean; message: s
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 2000);
 
-    const res = await fetch(`${CHROMA_URL}/api/v1/heartbeat`, {
+    const res = await fetch(`${CHROMA_URL}/api/v2/heartbeat`, {
       signal: controller.signal,
     });
     clearTimeout(timeout);
