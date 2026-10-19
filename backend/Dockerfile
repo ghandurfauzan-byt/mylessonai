@@ -1,17 +1,15 @@
-# ExplainMyLesson AI - Backend Dockerfile
+# ExplainMyLesson AI - Lightweight Backend Dockerfile
 FROM node:20-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Install build dependencies if needed
-RUN apk add --no-cache curl python3 make g++
+# Salin package.json backend
+COPY backend/package.json ./package.json
+COPY tsconfig.json ./tsconfig.json
 
-# Salin package.json dan package-lock.json
-COPY package*.json tsconfig.json ./
-
-# Install dependensi
-RUN npm install
+# Install dependensi backend secara cepat (pure JS, no native build needed)
+RUN npm install --omit=dev && npm install -g tsx typescript
 
 # Salin source code backend dan shared
 COPY backend ./backend
@@ -25,4 +23,4 @@ ENV NODE_ENV=production
 ENV PORT=4000
 
 # Jalankan backend Express menggunakan tsx
-CMD ["npx", "tsx", "backend/server/index.ts"]
+CMD ["tsx", "backend/server/index.ts"]
