@@ -9,7 +9,7 @@ import { login, register } from "@/lib/api/sessionApi";
 import { playClickSound } from "@/lib/soundEffects";
 import { type Role, isInstitutionalEmail } from "@shared/schema";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function LoginForm({ redirectTo }: { redirectTo: string | null }) {
@@ -28,6 +28,13 @@ export default function LoginForm({ redirectTo }: { redirectTo: string | null })
   const [loading, setLoading] = useState<Role | "manual" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Pastikan kolom formulir selalu kosong saat halaman dibuka atau saat beralih peran
+  useEffect(() => {
+    setEmail("");
+    setPassword("");
+    setName("");
+  }, [role, isRegister]);
 
   async function handleDemoAuthenticate(targetRole: Role) {
     setLoading(targetRole);
@@ -192,17 +199,19 @@ export default function LoginForm({ redirectTo }: { redirectTo: string | null })
       )}
 
       {/* FORM INPUT MANUAL (FR-01 & FR-02) */}
-      <form onSubmit={handleFormSubmit} className="space-y-3 pt-1">
+      <form onSubmit={handleFormSubmit} autoComplete="off" className="space-y-3 pt-1">
         {isRegister && (
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">Nama Lengkap</label>
             <input
               type="text"
+              name="user_fullname"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={
-                role === "pelajar" ? "Nama Pelajar / Mahasiswa" : "Nama Pengajar / Dosen"
+                role === "pelajar" ? "Masukkan nama lengkap siswa..." : "Masukkan nama lengkap guru..."
               }
+              autoComplete="off"
               className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-2xs"
             />
           </div>
@@ -221,9 +230,16 @@ export default function LoginForm({ redirectTo }: { redirectTo: string | null })
           </div>
           <input
             type="email"
+            id="login-email"
+            name="user_email_address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder={role === "pelajar" ? "pelajar@gmail.com" : "guru@gmail.com"}
+            placeholder={
+              role === "pelajar"
+                ? "Masukkan email kamu (contoh: siswa@sekolah.id)"
+                : "Masukkan email guru (contoh: guru@sekolah.id)"
+            }
+            autoComplete="off"
             className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-2xs"
           />
         </div>
@@ -232,9 +248,12 @@ export default function LoginForm({ redirectTo }: { redirectTo: string | null })
           <label className="block text-xs font-bold text-slate-700 mb-1">Kata Sandi</label>
           <input
             type="password"
+            id="login-password"
+            name="user_password_field"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
+            placeholder="Masukkan kata sandi..."
+            autoComplete="new-password"
             className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-2xs"
           />
         </div>
@@ -311,18 +330,6 @@ export default function LoginForm({ redirectTo }: { redirectTo: string | null })
                 className="w-full text-left p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-400 text-purple-900 dark:text-purple-300 transition flex items-center justify-between cursor-pointer shadow-2xs"
               >
                 <span>guru@gmail.com (Sandi: guru123)</span>
-                <span className="text-[9px] bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded font-sans font-bold">Auto-Isi</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setEmail("darmawan@gmail.com");
-                  setPassword("dosen123");
-                  setRole("pengajar");
-                }}
-                className="w-full text-left p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-400 text-purple-900 dark:text-purple-300 transition flex items-center justify-between cursor-pointer shadow-2xs"
-              >
-                <span>darmawan@gmail.com (Sandi: dosen123)</span>
                 <span className="text-[9px] bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded font-sans font-bold">Auto-Isi</span>
               </button>
             </div>
