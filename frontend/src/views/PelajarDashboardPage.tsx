@@ -37,6 +37,7 @@ export default function PelajarDashboardPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const totalPoints = useUIStore((s) => s.totalPoints);
+  const addPoints = useUIStore((s) => s.addPoints);
   const setTotalPoints = useUIStore((s) => s.setTotalPoints);
   const resetTotalPoints = useUIStore((s) => s.resetTotalPoints);
   const activeValidatedModule = useUIStore((s) => s.activeValidatedModule);
@@ -536,6 +537,9 @@ export default function PelajarDashboardPage() {
     playBadgeFanfareSound();
     setSelectedBadge(badge);
     setIsSpeaking(true);
+    if (!dailyMissions.listenedAudio) {
+      addPoints(10, "Keren! Kamu mendengarkan audio motivasi lencana (+10 ⭐)");
+    }
     completeDailyMission("listenedAudio");
     const speechText = `Halo Adik Hebat! Selamat, kamu telah meraih ${badge.name}! Pesan motivasi untukmu: ${badge.motivation}. Ayo terus semangat belajar ya!`;
     // Jeda 450ms agar suara efek terdengar merdu terlebih dahulu sebelum robot berbicara
@@ -563,6 +567,9 @@ export default function PelajarDashboardPage() {
     stopBadgeSpeech();
     playRobotAwakeSound();
     setIsSpeaking(true);
+    if (!dailyMissions.listenedAudio) {
+      addPoints(10, "Keren! Kamu mendengarkan audio motivasi lencana (+10 ⭐)");
+    }
     completeDailyMission("listenedAudio");
     const speechText = badge.unlocked
       ? `Halo Adik Hebat! Ini adalah ${badge.name}. Materi bab ini sudah terbuka untukmu! Pesan motivasi untukmu: ${badge.motivation}. Ayo terus semangat belajar ya!`
@@ -933,7 +940,7 @@ export default function PelajarDashboardPage() {
             </div>
 
             <div className="space-y-1.5 text-xs">
-              {/* Misi 1: Baca Rangkuman Bab */}
+              {/* Misi 1: Memahami Materi yang Disampaikan */}
               <div
                 className={`flex items-center justify-between p-2 rounded-xl border transition-all ${
                   dailyMissions.readSummary
@@ -951,7 +958,7 @@ export default function PelajarDashboardPage() {
                   >
                     {dailyMissions.readSummary ? "✅" : "⏳"}
                   </span>
-                  <span>Baca Rangkuman Bab 📖</span>
+                  <span>Memahami Materi yang Disampaikan 📖</span>
                 </div>
                 <span
                   className={`text-[11px] font-black ${
@@ -964,7 +971,7 @@ export default function PelajarDashboardPage() {
                 </span>
               </div>
 
-              {/* Misi 2: Dengar Penjelasan Audio */}
+              {/* Misi 2: Mendengarkan Penjelasan Materi */}
               <div
                 className={`flex items-center justify-between p-2 rounded-xl border transition-all ${
                   dailyMissions.listenedAudio
@@ -982,7 +989,7 @@ export default function PelajarDashboardPage() {
                   >
                     {dailyMissions.listenedAudio ? "✅" : "⏳"}
                   </span>
-                  <span>Dengar Penjelasan Audio 🎧</span>
+                  <span>Mendengarkan Penjelasan Materi 🎧</span>
                 </div>
                 <span
                   className={`text-[11px] font-black ${

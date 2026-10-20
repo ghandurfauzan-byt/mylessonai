@@ -1779,9 +1779,9 @@ const notificationsDb: NotificationRecord[] = [
   },
   {
     id: "notif_misi_harian",
-    title: "Misi Membaca Rangkuman Tuntas 📖",
+    title: "Misi Memahami Materi Tuntas 📖",
     message:
-      "Kamu telah membaca intisari materi hari ini. Poin belajarmu bertambah dan siap mencoba kuis tantangan!",
+      "Kamu telah membaca dan memahami intisari materi hari ini. Poin belajarmu bertambah otomatis dan siap mencoba kuis tantangan!",
     type: "success",
     link: "/dashboard/pelajar",
     isRead: false,

@@ -5,6 +5,7 @@ import ClaimPointsButton from "@/components/ClaimPointsButton";
 import { useAiContentQuery } from "@/hooks/useAiContentQuery";
 import {
   playClickSound,
+  playCoinSound,
   playRobotAwakeSound,
   startSpeaking,
   stopSpeaking,
@@ -68,6 +69,24 @@ export default function AiContentPanel({
   }, [chapterId, mode]);
 
   const completeDailyMission = useUIStore((s) => s.completeDailyMission);
+  const addPoints = useUIStore((s) => s.addPoints);
+  const dailyMissions = useUIStore((s) => s.dailyMissions);
+
+  // Otomatis tandai materi telah dibaca & dipahami, dan berikan poin secara otomatis
+  useEffect(() => {
+    if (!content || !content.body || content.body.length === 0) return;
+
+    const timer = setTimeout(() => {
+      const currentMissions = useUIStore.getState().dailyMissions;
+      if (!currentMissions.readSummary) {
+        completeDailyMission("readSummary");
+        addPoints(10, "Hebat! Kamu telah memahami materi yang disampaikan (+10 ⭐)");
+        playCoinSound();
+      }
+    }, 2500);
+
+    return () => clearTimeout(timer);
+  }, [content, chapterId, completeDailyMission, addPoints]);
 
   function stripEmojis(text: string): string {
     return text
@@ -116,7 +135,14 @@ export default function AiContentPanel({
     }
 
     playRobotAwakeSound();
-    completeDailyMission("listenedAudio");
+    const currentMissions = useUIStore.getState().dailyMissions;
+    if (!currentMissions.listenedAudio) {
+      completeDailyMission("listenedAudio");
+      addPoints(10, "Keren! Kamu mendengarkan penjelasan materi (+10 ⭐)");
+      playCoinSound();
+    } else {
+      completeDailyMission("listenedAudio");
+    }
 
     // Bersihkan judul agar robot langsung to-the-point membahas topik bab
     const cleanTopic = stripEmojis(content.title)
@@ -271,15 +297,19 @@ export default function AiContentPanel({
       {/* Footer & Gamification CTA */}
       <div className="bg-gradient-to-r from-yellow-200 to-amber-300 dark:from-amber-950/60 dark:to-yellow-950/40 border-2 border-yellow-400 dark:border-amber-600 p-4 rounded-2xl shadow-md flex flex-col sm:flex-row items-center justify-between gap-3 mt-1">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-black text-xs">
+          <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-black text-xs shadow-sm">
             POIN
           </div>
           <div>
             <p className="font-black text-amber-900 dark:text-amber-200 text-base">
-              Sudah Selesai Mempelajari Materi?
+              {dailyMissions.readSummary
+                ? "Materi Berhasil Dipahami! 🎉"
+                : "Sedang Mempelajari & Memahami Materi..."}
             </p>
             <p className="text-amber-800 dark:text-amber-300 font-bold text-xs">
-              Klaim poin prestasimu sekarang sebelum melanjutkan ke kuis tantangan.
+              {dailyMissions.readSummary
+                ? "Poin prestasimu otomatis bertambah +10 ⭐ saat membaca atau mendengarkan penjelasan materi."
+                : "Poin prestasimu otomatis bertambah saat kamu membaca atau mendengarkan materi ini!"}
             </p>
           </div>
         </div>
