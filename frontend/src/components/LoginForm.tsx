@@ -34,6 +34,22 @@ export default function LoginForm({ redirectTo }: { redirectTo: string | null })
     setEmail("");
     setPassword("");
     setName("");
+
+    // Paksa bersihkan jika Google Chrome Password Manager mencoba auto-fill paksa ke input
+    const timer = setTimeout(() => {
+      const emailEl = document.getElementById("login-email") as HTMLInputElement | null;
+      const passEl = document.getElementById("login-password") as HTMLInputElement | null;
+      if (emailEl && (emailEl.value === "darmawan@gmail.com" || email === "")) {
+        emailEl.value = "";
+        setEmail("");
+      }
+      if (passEl && password === "") {
+        passEl.value = "";
+        setPassword("");
+      }
+    }, 150);
+
+    return () => clearTimeout(timer);
   }, [role, isRegister]);
 
   async function handleDemoAuthenticate(targetRole: Role) {
@@ -229,9 +245,10 @@ export default function LoginForm({ redirectTo }: { redirectTo: string | null })
             )}
           </div>
           <input
-            type="email"
+            type="text"
+            inputMode="email"
             id="login-email"
-            name="user_email_address"
+            name="app_user_email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder={
@@ -240,6 +257,10 @@ export default function LoginForm({ redirectTo }: { redirectTo: string | null })
                 : "Masukkan email guru (contoh: guru@sekolah.id)"
             }
             autoComplete="off"
+            readOnly
+            onFocus={(e) => {
+              e.currentTarget.readOnly = false;
+            }}
             className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-2xs"
           />
         </div>
@@ -249,11 +270,15 @@ export default function LoginForm({ redirectTo }: { redirectTo: string | null })
           <input
             type="password"
             id="login-password"
-            name="user_password_field"
+            name="app_user_password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Masukkan kata sandi..."
             autoComplete="new-password"
+            readOnly
+            onFocus={(e) => {
+              e.currentTarget.readOnly = false;
+            }}
             className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-slate-50 border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-2xs"
           />
         </div>
