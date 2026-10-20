@@ -8,7 +8,6 @@
 // SAMA PERSIS.
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { type ReactNode, useEffect, useState } from "react";
 import { useUIStore } from "./lib/store/useUIStore";
 
@@ -42,7 +41,6 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <ThemeSync />
       {children}
-      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }

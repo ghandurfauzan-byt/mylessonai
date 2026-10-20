@@ -1,9 +1,32 @@
+name: ghanduraja
+
 services:
+  # 0. Service Frontend Web (Next.js App Router / React)
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    image: explainmylesson-frontend:latest
+    container_name: explainmylesson-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - BACKEND_URL=http://backend:4000
+    volumes:
+      - ./frontend:/app/frontend
+      - ./shared:/app/shared
+    depends_on:
+      - backend
+
   # 1. Service Backend API (Point 2: Docker Image Repo Backend)
   backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
+    image: explainmylesson-backend:latest
     container_name: explainmylesson-backend
     restart: always
     ports:
