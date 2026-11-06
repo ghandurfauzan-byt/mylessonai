@@ -1,6 +1,6 @@
 # ExplainMyLesson AI : Sistem Pembelajaran Adaptif Berbasis RAG dan Analitik Pemahaman Pelajar
 
-**Dokumen Spesifikasi & Repositori Proyek Akhir Praktikum Pemrograman Front-End 2026**  
+**Dokumen Spesifikasi & Repositori Proyek Akhir Praktikum Pemrograman Front-End & Backend 2026**  
 **Program Studi D3 Teknik Informatika Kampus Madiun — Sekolah Vokasi Universitas Sebelas Maret**
 
 ---
@@ -11,6 +11,7 @@
 - **Dosen Pengampu:** Darmawan Lahru Riatma, S.Kom., M.MT (NIP: 1991091420200801)
 - **Mata Kuliah:** Praktikum Pemrograman Front-End / Manajemen Proyek Teknologi Informasi
 - **Versi Dokumen SKPL / SRS:** Version 1.0 Approved (Madiun, 2026)
+- **Orkestrasi Docker:** Stack `ghanduraja` (5 Kontainer Aktif di Docker Desktop)
 
 ---
 
@@ -24,80 +25,124 @@ Platform juga dilengkapi **Kuis Adaptif 3-Level** (Mudah, Sedang, Sulit) dengan 
 
 ---
 
-## 2. Cakupan 14 Bab Standar Industri Front-End Engineering 2026
+## 2. Arsitektur Containerization Docker (Stack: `ghanduraja`)
 
-Proyek ini dibangun dengan mengimplementasikan secara menyeluruh 14 bab kompetensi Front-End modern berstandar industri:
+Seluruh ekosistem ExplainMyLesson AI telah sepenuhnya di-containerize menggunakan Docker & Docker Compose (`docker-compose.yml`) dengan nama stack **`ghanduraja`**. Sistem berjalan secara modular dan terisolasi dalam 5 service utama di Docker Desktop:
 
-1. **Bab 1 — HTML5 Semantik & Aksesibilitas Web (WAI-ARIA & WCAG 2.1 AA):**
-   - Struktur dokumen semantik (`<header>`, `<nav>`, `<main>`, `<section>`, `<article>`, `<aside>`, `<footer>`).
-   - Atribut WAI-ARIA lengkap (`role`, `aria-label`, `aria-expanded`, `aria-controls`, `aria-live`, `aria-current`).
-   - Navigasi keyboard penuh (`Tab`, `Shift+Tab`, `Esc`, `Enter`, `Space`) dengan *focus trap* dan *skip link*.
-   - Kontras warna teks dan latar belakang memenuhi rasio minimum 4.5:1 (WCAG AA).
+| Service / Container | Docker Image | Port Host:Container | Ukuran Image | Peran dalam Sistem |
+| :--- | :--- | :---: | :---: | :--- |
+| **`explainmylesson-frontend`** | `explainmylesson-frontend:latest` | `3000:3000` | 1.54 GB | Web Client UI (Next.js App Router Shell & React SPA) |
+| **`explainmylesson-backend`** | `explainmylesson-backend:latest` | `4000:4000` | 354 MB | Core API Server (Node.js 20 Alpine + Express + TypeScript) |
+| **`explainmylesson-mysql`** | `mysql:8.0` | `3306:3306` | 1.1 GB | Database Relasional Utama + Auto Inisialisasi `init.sql` |
+| **`explainmylesson-chromadb`** | `chromadb/chroma:latest` | `8000:8000` | 826 MB | Vector Store Database untuk Chunking Embedding RAG |
+| **`explainmylesson-ollama`** | `explainmylesson-ollama:latest` | `11434:11434` | 193 MB | Local Large Language Model (LLM) Inference Engine |
 
-2. **Bab 2 — CSS Modern, Responsive Design & Mobile-First:**
-   - Desain responsif mobile-first menggunakan Tailwind CSS.
-   - Tipografi dinamis dan fluid layout berbasis CSS Grid & Flexbox.
-   - Dukungan tema ganda (*Dark Mode* dan *Light Mode*) menggunakan variabel CSS dan kelas Tailwind.
+### 🚀 Cara Menjalankan Ekosistem Docker
+```bash
+# Menjalankan seluruh 5 kontainer sekaligus di latar belakang
+docker compose up -d
 
-3. **Bab 3 — JavaScript Modern (ES2024+), Asinkron, & DOM Manipulation:**
-   - Fitur modern: Optional Chaining, Nullish Coalescing, Structured Cloning, Destructuring.
-   - Pengelolaan asinkron berbasis `async/await`, `Promise.allSettled`, dan abortable `AbortController`.
-   - Event handling efisien dan manipulasi state deklaratif tanpa modifikasi DOM imperatif langsung.
+# Memeriksa status kesehatan dan port seluruh service
+docker compose ps
 
-4. **Bab 4 — TypeScript Tingkat Lanjut (Strict Mode & Type Safety):**
-   - Flag `strict: true` dan `noUncheckedIndexedAccess: true` aktif 100% pada klien dan server.
-   - Penerapan Generics, Mapped Types, Discriminated Unions, dan Return Type inference.
-   - Validasi skema runtime menggunakan Zod (`shared/schema.ts`) dengan sinkronisasi tipe statis (`z.infer`).
-
-5. **Bab 5 — Arsitektur Komponen React & Declarative UI:**
-   - Pemisahan *Container Components* (logika) dan *Presentational Components* (tampilan).
-   - Pola Compound Components dan Custom Hooks reusable (`useUIStore`, query hooks).
-   - Penggunaan React Portals untuk Modal (`ProfileModal`, `ClassManagementModal`).
-
-6. **Bab 6 — Manajemen State Komprehensif:**
-   - **Client UI State:** Zustand (`src/lib/store/useUIStore.ts`) untuk tema, modal, filter, gamifikasi poin, dan state ephemeral.
-   - **Server State & Caching:** TanStack Query v5 (`@tanstack/react-query`) untuk caching otomatis, revalidasi latar belakang, dan mutasi optimistik.
-
-7. **Bab 7 — Routing Modern & Data Fetching:**
-   - Routing deklaratif menggunakan React Router v6.
-   - Proteksi rute (`ProtectedRoute.tsx`) berbasis otentikasi sesi dan role (Pelajar vs Pengajar).
-   - Code-splitting berbasis route menggunakan `React.lazy()` dan `<Suspense fallback={<LoadingSpinner />}>`.
-
-8. **Bab 8 — Build Tools Modern & Toolchain Rust (Vite & Biome):**
-   - Bundler modern Vite dengan Hot Module Replacement (HMR) berkecepatan < 50ms.
-   - Migrasi penuh ke toolchain Rust modern: **Biome** (`biome.json`) untuk linter dan formatter ultra-cepat (< 150ms).
-   - Strategi `manualChunks` di `vite.config.ts` untuk pemisahan bundel vendor dan state library.
-
-9. **Bab 9 — Optimasi Performa Web & Core Web Vitals:**
-   - Largest Contentful Paint (LCP) < 1.2s melalui kompresi aset dan preloading.
-   - Interaction to Next Paint (INP) < 50ms berkat eksekusi non-blocking dan event delegation.
-   - Cumulative Layout Shift (CLS) = 0 dengan penetapan rasio dimensi elemen statis.
-
-10. **Bab 10 — Keamanan Front-End & OWASP Top 10:**
-    - Pencegahan Cross-Site Scripting (XSS) melalui sanitasi input Zod dan JSX auto-escaping.
-    - Autentikasi sesi aman dengan cookie `httpOnly`, `SameSite=Lax`, dan `Secure` flag.
-    - Proteksi CSRF, Content Security Policy (CSP), dan validasi ganda di sisi klien dan server.
-
-11. **Bab 11 — Pengujian Otomatis & Quality Assurance:**
-    - Strategi piramida pengujian: Unit testing skema Zod, integrasi API, dan validasi UI.
-    - Skenario pengujian lengkap TC-01 s/d TC-24 sesuai dokumen SKPL / SRS resmi.
-
-12. **Bab 12 — Progressive Web Apps (PWA) & Offline Readiness:**
-    - Service Worker caching untuk aset statis dan rute aplikasi.
-    - Web App Manifest dengan metadata institusional, tema, dan ikon adaptif.
-
-13. **Bab 13 — CI/CD, Static Analysis & SonarQube Quality Gate:**
-    - Pipeline otomatis GitHub Actions (`.github/workflows/ci.yml`).
-    - Quality gate ketat: `npm run lint` (Biome), `npm run typecheck` (Strict TSC), `npm run build`.
-    - Lulus kriteria SonarQube: 0 Bugs, 0 Vulnerabilities, 0 Security Hotspots, 0 Code Smells fatal.
-
-14. **Bab 14 — Edge Deployment, Serverless & Monitoring:**
-    - Konfigurasi siap rilis untuk platform Edge/Serverless (Vercel, Cloudflare Workers, Node runtime).
-    - Express API bridge yang menyajikan build produksi `dist/` sekaligus melayani endpoint REST `/api/*`.
+# Memantau log backend Express secara langsung
+docker compose logs -f backend
+```
 
 ---
 
-## 3. Matriks Kebutuhan Fungsional (FR-01 s/d FR-22 — 100% Selesai)
+## 3. Agenda Evaluasi Backend Hari Jumat (Presentasi)
+
+### 3.1 Database
+1. **MySQL 8.0 Containerization (`explainmylesson-mysql`):**
+   - **Persistent Volume:** Direktori `/var/lib/mysql` dimount ke volume `mysql_data` agar transaksi dan data akun tidak hilang saat kontainer direstart.
+   - **Auto-Initialization (`init.sql`):** Berkas `./backend/database/init.sql` dimount secara *read-only* ke `/docker-entrypoint-initdb.d/init.sql` untuk otomatis menginisialisasi database `explainmylesson_db` dengan encoding `utf8mb4_unicode_ci`.
+   - **Skema 5 Tabel Inti:**
+     - `users`: Otentikasi, Bcrypt hash password, hak akses role (`pelajar`, `pengajar`), dan identitas (NIM/NIP).
+     - `classes`: Pengelolaan ruang kelas dosen (FR-21), kode unik kelas, dan relasi foreign key `teacher_id`.
+     - `materials`: Modul kuliah publik dan privat (FR-04, FR-05) dengan foreign key `uploader_id`.
+     - `quiz_attempts`: Riwayat kuis adaptif level 1-3, perolehan skor, poin gamifikasi, dan status kelulusan (FR-11 s/d FR-14).
+     - `notifications`: Sistem lonceng notifikasi pengingat remedial dan info kelas (FR-20).
+2. **ChromaDB Vector Store (`explainmylesson-chromadb`):**
+   - Menyimpan representasi embedding numerik dari potongan dokumen (*chunked text* 500 karakter) materi kuliah untuk pencarian semantik berkecepatan tinggi dalam pipeline RAG.
+
+### 3.2 Pemrograman Backend (Express.js & TypeScript)
+- **Runtime:** Node.js 20 LTS dengan execution engine `tsx` pada port 4000.
+- **Type-Safety End-to-End:** Validasi skema runtime menggunakan Zod (`shared/schema.ts`) dengan sinkronisasi tipe statis (`z.infer`) bersama frontend dan mobile.
+- **Keamanan Sesi & RBAC:** Menggunakan cookie sesi `httpOnly` dengan masa berlaku 8 jam, proteksi CSRF, sanitasi input XSS, dan hashing password Bcrypt 10 ronde.
+
+### 3.3 Debugging, Testing & Containerization
+- **Desain `Dockerfile` Backend:** Berbasis `node:20-alpine` (hanya 354 MB) dengan dependensi produksi efisien (`npm install --omit=dev && npm install -g tsx typescript`).
+- **Orkestrasi Dependensi & Healthcheck:** Service `backend` menunggu kondisi `service_healthy` dari MySQL melalui pengecekan `mysqladmin ping` berkala setiap 5 detik.
+- **Testing Suite Otomatis:** Menjalankan 52 skenario pengujian dengan Vitest (`npm run test`) pada direktori `tests/` (auth, quiz, shared, system, ui).
+- **Prosedur Debugging:**
+  - Inspeksi log: `docker compose logs -f backend`
+  - Shell kontainer: `docker exec -it explainmylesson-backend sh`
+  - Verifikasi query database langsung: `docker exec -it explainmylesson-mysql mysql -u user -ppassword123 explainmylesson_db`
+
+### 3.4 Dokumentasi Spesifikasi API Lengkap Per Fitur
+Base URL: `http://localhost:4000/api`
+
+#### A. Otentikasi & Akun Pengguna (FR-01 s/d FR-03, FR-22)
+* **POST `/api/login`**
+  * *Request Body:* `{"email": "ghandur@gmail.com", "password": "secretpassword123", "role": "pelajar"}`
+  * *Response 200 OK:* `{"ok": true, "role": "pelajar", "user": {"id": 2, "name": "Ghandur Fauzan Ngauf Hisam", "email": "ghandur@gmail.com", "nim_nip": "V3925024"}}` (Menyetel cookie sesi `httpOnly`)
+  * *Response 401 Error:* `{"error": "Email atau kata sandi tidak valid."}`
+* **POST `/api/register`**
+  * *Request Body:* `{"name": "Ridho Asykuri", "email": "ridho@gmail.com", "password": "password123", "role": "pelajar", "nim_nip": "V3925015"}`
+  * *Response 200 OK:* `{"ok": true, "message": "Pendaftaran berhasil.", "user": {"id": 3, "name": "Ridho Asykuri", "email": "ridho@gmail.com"}}`
+* **GET `/api/session`**
+  * *Response 200 OK:* `{"authenticated": true, "role": "pelajar"}`
+* **POST `/api/logout`**
+  * *Response 200 OK:* `{"ok": true, "message": "Sesi telah berakhir."}`
+
+#### B. Materi & Modul Kuliah (FR-04, FR-05, FR-06)
+* **GET `/api/materials`**
+  * *Response 200 OK:* `{"success": true, "materials": [{"id": "mat-pkn-01", "title": "Pendidikan Pancasila: Menghargai Keragaman", "variant": "public", "chapter_code": "BAB-1-PKN"}]}`
+* **POST `/api/materials`**
+  * *Request Body:* `{"title": "Bahasa Jawa: Unggah-Ungguh Basa", "fileName": "bahasa_jawa_bab2.pdf", "chapterCode": "BAB-2-JAWA", "variant": "private"}`
+  * *Response 201 Created:* `{"success": true, "message": "Materi berhasil diunggah dan diindeks.", "data": {"id": "mat-jawa-02"}}`
+
+#### C. AI Generator & Local LLM (FR-07 s/d FR-10)
+* **GET `/api/ai-content?chapter=BAB-1-PKN&mode=summary`**
+  * *Response 200 OK:* `{"chapter": "BAB-1-PKN", "summary": "Pancasila mengajarkan toleransi...", "analogy": "Seperti pelangi dengan aneka warna...", "mindMap": [{"title": "Sila 1"}], "sampleQuestions": ["Sebutkan contoh hidup rukun!"]}`
+* **POST `/api/llm/generate`** *(Integrasi Container Ollama)*
+  * *Request Body:* `{"prompt": "Buat analogi gotong royong", "model": "llama3:latest", "temperature": 0.7}`
+  * *Response 200 OK:* `{"success": true, "response": "Gotong royong seperti bermain sepak bola...", "duration_ms": 1340}`
+
+#### D. Kuis Adaptif 3 Level & Gamifikasi Poin (FR-11 s/d FR-14)
+* **GET `/api/quiz?level=1`**
+  * *Response 200 OK:* `{"level": 1, "questions": [{"id": "q1", "text": "Simbol sila ke-1 Pancasila adalah...", "options": ["Bintang", "Rantai", "Pohon", "Padi"], "answerIndex": 0, "points": 10}]}`
+* **POST `/api/students/points`**
+  * *Request Body:* `{"studentId": "2", "pointsDelta": 30, "chapterCode": "BAB-1-PKN", "level": 1}`
+  * *Response 200 OK:* `{"success": true, "totalPoints": 150, "earnedPoints": 30, "status": "passed"}`
+
+#### E. Kelas, Dashboard Analitik, Notifikasi & Diagnostik (FR-15, FR-18, FR-20, FR-21)
+* **GET `/api/classes`** → Mengambil daftar kelas yang diampu pengajar.
+* **GET `/api/class-summary` & `/api/students-needing-help`** → Menampilkan rata-rata kelas dan mendeteksi murid butuh bimbingan remedial (nilai < 60).
+* **GET `/api/notifications`** → Mengambil daftar notifikasi lonceng pengguna.
+* **GET `/api/system/status`** → Diagnostik kesehatan container Docker:
+  ```json
+  {
+    "success": true,
+    "docker": { "active": true, "service": "explainmylesson-backend", "environment": "development" },
+    "database": { "type": "mysql", "host": "mysql", "name": "explainmylesson_db", "status": "mounted" },
+    "vector_store": { "status": "connected", "url": "http://chromadb:8000" },
+    "local_llm": { "status": "connected", "url": "http://ollama:11434" }
+  }
+  ```
+
+### 3.5 Laporan Sementara & Persiapan Mobile (Flutter)
+- **Status Kesiapan:** 5 container Docker aktif, REST API stabil, database relasional dan vector store siap melayani query.
+- **Persiapan Mobile (Rabu/Kamis):**
+  - Mengonfigurasi Java Development Kit (JDK) & Flutter SDK.
+  - Penyesuaian endpoint: Android Virtual Device (AVD) menggunakan `http://10.0.2.2:4000/api`, sedangkan HP fisik menggunakan IP lokal jaringan laptop.
+  - Batasan fitur: Diprioritaskan pada Autentikasi, Akses Materi & Ringkasan AI, Pengerjaan Kuis, dan Notifikasi.
+  - Target akhir: Output file build **`.apk`** mandiri yang siap diinstal dan didemonstrasikan.
+
+---
+
+## 4. Matriks Kebutuhan Fungsional (FR-01 s/d FR-22 — 100% Selesai)
 
 | ID | Fitur | Status | Deskripsi Implementasi |
 | :--- | :--- | :---: | :--- |
@@ -118,7 +163,7 @@ Proyek ini dibangun dengan mengimplementasikan secara menyeluruh 14 bab kompeten
 | **FR-15** | Dashboard Pengajar | **100%** | Visualisasi analitik rata-rata kelas, grafik per bab, dan identifikasi remedial. |
 | **FR-16** | Dashboard Pelajar | **100%** | Pelacakan progres pribadi, skor kuis per bab, dan akumulasi poin. |
 | **FR-17** | Rekomendasi Belajar | **100%** | Deteksi otomatis jika skor bab < 60 dengan link langsung ke remedial. |
-| **FR-18** | Ekspor Laporan Ganda | **100%** | Unduhan laporan berformat **PDF resmi** (kop UNS) dan **Excel/CSV**. |
+| **FR-18** | Ekspor Laporan Ganda | **100%** | Unduhan laporan berformat PDF resmi (kop UNS) dan Excel/CSV. |
 | **FR-19** | Regenerasi Konten AI | **100%** | Tombol Refresh AI untuk menghasilkan sudut pandang analogi/soal baru. |
 | **FR-20** | Pusat Notifikasi Interaktif | **100%** | Notifikasi bel di Navbar dengan riwayat peringatan nilai & remedial. |
 | **FR-21** | Manajemen Kelas Dosen | **100%** | Modal CRUD kelas, jumlah mahasiswa, dan pengelolaan mata kuliah. |
@@ -126,113 +171,53 @@ Proyek ini dibangun dengan mengimplementasikan secara menyeluruh 14 bab kompeten
 
 ---
 
-## 4. Struktur Direktori Proyek
+## 5. Struktur Direktori Proyek
 
 ```
 explainmylesson-ai/
 ├── .github/
 │   └── workflows/
 │       └── ci.yml             # GitHub Actions CI/CD Pipeline (lint → typecheck → build → test)
-├── server/
-│   ├── data.ts                # Database in-memory, CRUD kelas, profil, laporan CSV
-│   ├── index.ts               # Express API server, route handler REST
-│   └── session.ts             # Manajemen sesi otentikasi cookie
+├── backend/
+│   ├── database/
+│   │   └── init.sql           # MySQL Database auto-init schema & seed default
+│   ├── ollama-service/        # Docker service untuk Ollama Local LLM
+│   ├── server/
+│   │   ├── chroma.ts          # Integrasi ChromaDB vector store
+│   │   ├── data.ts            # Logika CRUD kelas, profil, laporan CSV & state
+│   │   ├── index.ts           # Express API server, route handler REST
+│   │   ├── local_llm.ts       # Integrasi local LLM Ollama
+│   │   └── session.ts         # Manajemen sesi otentikasi cookie
+│   └── Dockerfile             # Dockerfile backend Node.js 20 Alpine
+├── frontend/
+│   ├── app/                   # Next.js App Router Shell
+│   ├── src/
+│   │   ├── components/        # React Container & Presentational Components
+│   │   ├── hooks/             # TanStack Query custom hooks
+│   │   ├── lib/store/         # Zustand Client State Management (useUIStore)
+│   │   └── views/             # Pelajar & Pengajar Dashboard Views
+│   └── Dockerfile             # Dockerfile frontend Web Next.js
 ├── shared/
 │   ├── catalog.ts             # Katalog materi perkuliahan & RAG knowledge base
 │   └── schema.ts              # Skema Zod & tipe TypeScript bersama klien-server
-├── src/
-│   ├── components/
-│   │   ├── ClassManagementModal.tsx # Manajemen kelas dosen (FR-21)
-│   │   ├── ExportReportButton.tsx   # Tombol ekspor PDF & CSV (FR-18)
-│   │   ├── LoginForm.tsx            # Form login & registrasi fleksibel (FR-01, FR-02)
-│   │   ├── Navbar.tsx               # Navigasi utama, profil, kelas & notifikasi
-│   │   ├── NotificationCenter.tsx   # Bel notifikasi remedial (FR-20)
-│   │   ├── ProfileModal.tsx         # Modal edit profil pengguna (FR-22)
-│   │   └── ...                      # Komponen materi, AI panel, kuis adaptif
-│   ├── hooks/                       # Custom hooks TanStack Query
-│   ├── lib/
-│   │   ├── api/                     # REST API client layer
-│   │   └── store/useUIStore.ts      # Client state management (Zustand)
-│   ├── views/
-│   │   ├── DashboardLayout.tsx      # Layout pembungkus dengan modal terpasang
-│   │   ├── PelajarDashboardPage.tsx # Dashboard mahasiswa analitik & remedial
-│   │   └── PengajarDashboardPage.tsx# Dashboard dosen visual grafik kelas
-│   ├── router/
-│   │   └── ProtectedRoute.tsx       # Route guard berbasis sesi & role
-│   └── App.tsx
 ├── tests/
-│   ├── system/testcases.test.ts     # TC-01 s/d TC-24 — sesuai SKPL Tabel 8.2
 │   ├── auth/security.test.ts        # Bcrypt hash/compare, duplikasi email
-│   ├── quiz/gamification.test.ts    # Sistem poin, level, remedial
-│   ├── shared/schema.test.ts        # Zod schemas, isInstitutionalEmail
-│   └── ui/design-system.test.ts     # CVA button variants, cn() utility
-├── biome.json                 # Konfigurasi Linter & Formatter Rust
-├── sonar-project.properties   # SonarQube Quality Gate konfigurasi
-├── tsconfig.json              # TypeScript strict configuration
-└── package.json
-```
-
-## 🔥 Arsitektur & Teknologi (Next.js & SPA)
-
-Aplikasi ini dibangun menggunakan **Next.js App Router** sebagai *shell deployment* utama dan **React SPA (Single Page Application)** untuk halaman interaktif. 
-
-Pendekatan hibrida ini dipilih secara sadar (berdasarkan evaluasi *trade-off*):
-- **Next.js & Vercel API:** Digunakan untuk *deployment*, Serverless Functions (`/api`), dan optimasi Web Vitals.
-- **Client-Side Rendering (CSR):** Seluruh fitur utama (Dashboard & Kuis Adaptif) di-render di sisi *client* (`ssr: false`) karena tingginya interaktivitas komponen *stateful* (Timer, Drag & Drop, *Live Validation*). 
-- RSC (React Server Components) tidak digunakan secara penuh (0%) karena spesifikasi proyek ini membutuhkan navigasi *client-side* yang *seamless* antar pertanyaan kuis menggunakan `react-router-dom` dan `zustand`.
-
-### Stack Utama:
-- **Framework & Routing:** Next.js (App Router Shell), React 18, React Router v6
-- **UI & Styling:** Tailwind CSS v3, Shadcn UI (Radix Primitives), Class Variance Authority (CVA)
-- **State Management:** Zustand, TanStack React Query v5
-- **Type-Safety & Validation:** TypeScript (Strict), Zod
-- **Build Tool:** Next.js Turbopack (sebelumnya Vite)
-
-## 📦 Panduan Instalasi & Build
-
-### Menjalankan di Lokal (Development)
-
-```bash
-# 1. Install semua dependensi
-npm install
-
-# 2. Jalankan server Next.js (Otomatis menyalakan Express API di background via concurrently)
-npm run dev
-```
-
-Buka `http://localhost:3000` di browser.
-
-### Build & Produksi (Vercel)
-
-Proyek ini telah dikonfigurasi menggunakan `vercel.json` agar *Express Backend* (`server/index.ts`) dapat berjalan berdampingan dengan Next.js App Router.
-
-Untuk melakukan build secara lokal:
-```bash
-npm run build
-```
-
-### Jalankan Mode Produksi
-```bash
-npm run start        # Menjalankan Express production server
-```
-
-### Jalankan Pengujian Otomatis (52 test — TC-01 s/d TC-24)
-```bash
-npm run test
+│   ├── quiz/gamification.test.ts    # Sistem poin, level adaptif, remedial
+│   ├── shared/schema.test.ts        # Validasi Zod schemas
+│   ├── system/testcases.test.ts     # TC-01 s/d TC-24 sesuai dokumen SKPL
+│   └── ui/design-system.test.ts     # CVA button variants, utilitas desain
+├── docker-compose.yml         # Orkestrasi 5 container stack ghanduraja
+├── package.json
+└── tsconfig.json
 ```
 
 ---
 
-## 6. Kredensial Akun & Pengujian
+## 6. Kredensial Akun Pengujian Demo
 
-### Akun Demo Cepat:
-- **Pelajar / Siswa:** Klik tombol *"Masuk sebagai Pelajar"* pada halaman login (atau gunakan email `ghandur@gmail.com` / kata sandi `secret123`).
-- **Pengajar / Guru:** Klik tombol *"Masuk sebagai Pengajar / Admin"* pada halaman login (atau gunakan email `darmawan@gmail.com` / kata sandi `dosen123`).
-
-### Registrasi Akun Mandiri:
-- Pengguna dapat beralih ke tab **"Daftar Akun Baru"** pada halaman login.
-- Pendaftaran menerima alamat email valid apapun (format umum terbuka, tidak dibatasi domain institusi).
-- Pilihan peran: **Pelajar** atau **Pengajar**.
+- **Pelajar / Siswa:** Klik tombol *"Masuk sebagai Pelajar"* pada halaman login (atau gunakan email: `ghandur@gmail.com` / kata sandi: `secret123`).
+- **Pengajar / Guru:** Klik tombol *"Masuk sebagai Pengajar / Admin"* pada halaman login (atau gunakan email: `darmawan@gmail.com` / kata sandi: `dosen123`).
+- **Registrasi Akun Mandiri:** Pendaftaran akun baru menerima format alamat email valid apapun secara terbuka dengan pilihan peran Pelajar atau Pengajar.
 
 ---
 
@@ -247,6 +232,8 @@ npm run test
 | **Pengujian Otomatis Vitest** | Vitest v2 (Unit + Integration + UI) | 52/52 passed (0 failed) | **PASSED** |
 | **Pemenuhan SKPL / SRS** | 22 Functional Requirements | 22/22 (100%) | **PASSED** |
 | **Pengujian Fungsional** | 24 Test Cases (TC-01 s/d TC-24) | 24/24 (100%) | **PASSED** |
+| **Containerization Kesiapan** | Docker Compose Stack (`ghanduraja`) | 5/5 Container Running | **PASSED** |
 
 ---
+
 *Madiun, 2026 — Tim Pengembang ExplainMyLesson AI (SV UNS Madiun)*
