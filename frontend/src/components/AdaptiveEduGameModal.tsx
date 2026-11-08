@@ -1,6 +1,6 @@
 // frontend/src/components/AdaptiveEduGameModal.tsx
-// Game Edukasi 3D Roblox-Style: Petualangan Menjelajah Rumah Warga & Rintangan Obby 5 Sila Pancasila
-// 100% Gratis, Instan, Tanpa Login Eksternal, Full-Screen + Musik BGM + Sound Effects Lengkap
+// Game Edukasi 3D Real Roblox-Style Engine: Jelajah Desa 5 Sila Pancasila & Misi Aksi Nyata Obby
+// Menggunakan Three.js 3D WebGL, Kamera Third-Person, Karakter Roblox 3D, Safe Zone, dan Musik BGM
 
 "use client";
 
@@ -17,12 +17,12 @@ import {
   playOofSound,
   playRobotAwakeSound,
   playSpringJumpSound,
-  playWrongSound,
   startAdventureBgm,
   stopAdventureBgm,
 } from "@/lib/soundEffects";
 import { useUIStore } from "@/lib/store/useUIStore";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import * as THREE from "three";
 
 interface Props {
   isOpen: boolean;
@@ -31,57 +31,23 @@ interface Props {
   chapterTitle?: string;
 }
 
-// Model Rumah Warga Pancasila
-interface VillageHouse {
+// Model Misi Aksi Nyata Pengamalan Pancasila (Bukan Kuis Ganda)
+interface SilaActionMission {
   id: number;
   silaNumber: number;
-  worldX: number;
-  houseTitle: string;
-  islandName: string;
   symbol: string;
-  residentName: string;
-  residentAvatar: string;
-  roofColor: string;
-  wallColor: string;
-  story: string;
-  question: string;
-  options: {
-    text: string;
-    isRight: boolean;
-    explanation: string;
-    points: number;
-  }[];
-  visited?: boolean;
+  title: string;
+  zoneZ: number;
+  islandName: string;
+  actionTargetName: string;
+  actionIcon: string;
+  actionPrompt: string;
+  instructionText: string;
+  successStory: string;
+  completed: boolean;
 }
 
-// Model Rintangan (Spikes / Lava Obby)
-interface ObbyObstacle {
-  id: number;
-  x: number;
-  width: number;
-  type: "spikes" | "lava";
-  label: string;
-}
-
-// Model Koin Emas Pancasila
-interface GameCoin {
-  id: number;
-  x: number;
-  y: number;
-  collected: boolean;
-}
-
-// Model Floating Text / Partikel Visual
-interface ParticleEffect {
-  id: number;
-  x: number;
-  y: number;
-  text: string;
-  color: string;
-  opacity: number;
-}
-
-// Model Kartu Menjodohkan (Bahasa Jawa)
+// Model Kartu Menjodohkan (Untuk Bahasa Jawa)
 interface MatchingPair {
   id: string;
   left: string;
@@ -99,43 +65,18 @@ export default function AdaptiveEduGameModal({
   const activeValidatedModule = useUIStore((s) => s.activeValidatedModule);
 
   const [resolvedTitle, setResolvedTitle] = useState<string>(chapterTitle || chapter);
-  const [dynamicSummary, setDynamicSummary] = useState<string[]>([]);
   const [bgmEnabled, setBgmEnabled] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
   const [isSprinting, setIsSprinting] = useState(false);
   const [playerLives, setPlayerLives] = useState(3);
-
-  // Ambil intisari materi modul
-  useEffect(() => {
-    let isMounted = true;
-    const fetchContent = async () => {
-      try {
-        const res = await fetch(`/api/content?chapter=${encodeURIComponent(chapter)}&mode=cerita`);
-        const json = await res.json();
-        if (isMounted && json && json.body && Array.isArray(json.body)) {
-          setDynamicSummary(json.body);
-          if (json.title) {
-            setResolvedTitle(json.title.replace("Ringkasan Modul & Pengamalan: ", ""));
-          }
-        }
-      } catch {
-        if (isMounted && activeValidatedModule?.ragSummary) {
-          setDynamicSummary(activeValidatedModule.ragSummary);
-          setResolvedTitle(activeValidatedModule.title);
-        }
-      }
-    };
-    fetchContent();
-    return () => {
-      isMounted = false;
-    };
-  }, [chapter, activeValidatedModule]);
+  const [adventureScore, setAdventureScore] = useState(0);
+  const [adventureFinished, setAdventureFinished] = useState(false);
+  const [activeNotification, setActiveNotification] = useState<string | null>(null);
 
   // Deteksi genre otomatis (Matching vs 3D Roblox Adventure)
   const isMatchingGenre = useMemo(() => {
     const c = (chapter || "").toLowerCase();
     const t = (resolvedTitle || "").toLowerCase();
-    const s = dynamicSummary.join(" ").toLowerCase();
     return (
       c.includes("bjawa") ||
       c.includes("aksara") ||
@@ -146,224 +87,94 @@ export default function AdaptiveEduGameModal({
       t.includes("aksara") ||
       t.includes("unggah") ||
       t.includes("punokawan") ||
-      t.includes("pandhawa") ||
-      t.includes("kosakata") ||
-      s.includes("aksara") ||
-      s.includes("krama")
+      t.includes("pandhawa")
     );
-  }, [chapter, resolvedTitle, dynamicSummary]);
+  }, [chapter, resolvedTitle]);
 
   const gameType: "adventure" | "matching" = isMatchingGenre ? "matching" : "adventure";
 
   // --------------------------------------------------------------------------
-  // SISTEM GAME 3D ROBLOX: PETUALANGAN RUMAH WARGA & RINTANGAN OBBY
+  // 5 MISI AKSI NYATA PENGAMALAN 5 SILA PANCASILA (ROLEPLAY AKSI ROBLOX)
   // --------------------------------------------------------------------------
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  // State Karakter Roblox
-  const [playerState, setPlayerState] = useState<{
-    x: number;
-    y: number;
-    vy: number;
-    isJumping: boolean;
-    facing: "left" | "right";
-    animFrame: number;
-  }>({
-    x: 100,
-    y: 350,
-    vy: 0,
-    isJumping: false,
-    facing: "right",
-    animFrame: 0,
-  });
-
-  const [cameraX, setCameraX] = useState(0);
-  const [activeHouse, setActiveHouse] = useState<VillageHouse | null>(null);
-  const [nearbyHouse, setNearbyHouse] = useState<VillageHouse | null>(null);
-  const [selectedHouseOption, setSelectedHouseOption] = useState<number | null>(null);
-  const [houseFeedback, setHouseFeedback] = useState<string | null>(null);
-  const [adventureScore, setAdventureScore] = useState(0);
-  const [adventureFinished, setAdventureFinished] = useState(false);
-  const [particles, setParticles] = useState<ParticleEffect[]>([]);
-
-  // 5 RUMAH WARGA PANCASILA DI 5 PULAU
-  const initialHouses: VillageHouse[] = useMemo(() => {
+  const initialMissions: SilaActionMission[] = useMemo(() => {
     return [
       {
         id: 1,
         silaNumber: 1,
-        worldX: 340,
-        houseTitle: "Rumah Damai Toleransi",
-        islandName: "Pulau Bintang (Sila 1)",
         symbol: "⭐",
-        residentName: "Keluarga Samuel & Siti",
-        residentAvatar: "👦👧",
-        roofColor: "#facc15",
-        wallColor: "#38bdf8",
-        story: "Tok tok tok! Pintu terbuka ramah. Samuel baru saja selesai beribadah hari Minggu, dan teman-teman mengajaknya bermain bola.",
-        question: "Di samping rumah ibadah teman yang sedang beribadah khusyuk, sikap yang paling mulia adalah?",
-        options: [
-          {
-            text: "Menjaga ketenangan dan tidak berteriak-teriak bising di dekat tempat ibadah.",
-            isRight: true,
-            explanation: "Tepat sekali! Sila 1 mengajarkan rasa saling menghormati dan toleransi beragama.",
-            points: 15,
-          },
-          {
-            text: "Sengaja menyalakan petasan di depan tempat ibadah.",
-            isRight: false,
-            explanation: "Tidak baik. Mengganggu ketenangan orang beribadah melanggar nilai toleransi.",
-            points: 0,
-          },
-        ],
+        title: "Toleransi Tempat Ibadah",
+        zoneZ: -55,
+        islandName: "Pulau Bintang (Sila 1)",
+        actionTargetName: "Radio Speaker Bising",
+        actionIcon: "📻",
+        actionPrompt: "🔇 MATIKAN RADIO & JAGA KETENANGAN",
+        instructionText: "Di dekat rumah ibadah kawan, ada radio speaker yang menyala bising. Matikan volumenya agar kawan bisa beribadah khusyuk!",
+        successStory: "Alhamdulillah / Puji Tuhan! Kamu mematikan suara bising sehingga Samuel & Siti bisa beribadah dengan damai dan khusyuk.",
+        completed: false,
       },
       {
         id: 2,
         silaNumber: 2,
-        worldX: 880,
-        houseTitle: "Rumah Peduli Kemanusiaan",
-        islandName: "Pulau Rantai (Sila 2)",
         symbol: "⛓️",
-        residentName: "Doni & Nenek Sinta",
-        residentAvatar: "👵🚲",
-        roofColor: "#f97316",
-        wallColor: "#fed7aa",
-        story: "Pintu kayu terbuka. Nenek Sinta sedang merawat Doni yang lututnya terluka setelah terjatuh dari sepeda di jembatan bebatuan.",
-        question: "Saat melihat teman atau tetangga jatuh sakit dan membutuhkan pertolongan, tindakanmu?",
-        options: [
-          {
-            text: "Segera menolong, menjenguk, dan membantu membawakan obat atau keperluannya.",
-            isRight: true,
-            explanation: "Hebat! Sila ke-2 mengajarkan cinta kasih dan kepedulian terhadap sesama manusia.",
-            points: 15,
-          },
-          {
-            text: "Mengejek lukanya dan mengunggahnya ke media sosial untuk ditertawakan.",
-            isRight: false,
-            explanation: "Sangat tidak terpuji. Kita harus memperlakukan orang lain dengan adil dan beradab.",
-            points: 0,
-          },
-        ],
+        title: "Kemanusiaan & Pertolongan",
+        zoneZ: -125,
+        islandName: "Pulau Rantai (Sila 2)",
+        actionTargetName: "Doni Terjatuh Sepeda",
+        actionIcon: "🩹",
+        actionPrompt: "🩹 OBATI LUKA & BANTU DONI BERDIRI",
+        instructionText: "Doni terjatuh dari sepedanya di jembatan bebatuan dan lututnya terluka! Ambil kotak P3K dan bantu Doni berdiri.",
+        successStory: "Luar biasa berbudi pekerti! Kamu sigap mengobati luka Doni dan membantunya bangun dengan penuh kasih sayang.",
+        completed: false,
       },
       {
         id: 3,
         silaNumber: 3,
-        worldX: 1420,
-        houseTitle: "Balai Budaya Bhinneka",
-        islandName: "Pulau Beringin (Sila 3)",
         symbol: "🌳",
-        residentName: "Kawan Bhinneka Nusantara",
-        residentAvatar: "🤝🇮🇩",
-        roofColor: "#22c55e",
-        wallColor: "#86efac",
-        story: "Pintu balai terbuka lebar. Warga desa dari berbagai suku (Jawa, Sunda, Batak, Papua) sedang berkumpul menyambut siswa pindahan baru.",
-        question: "Ada kawan baru pindahan yang logat bicaranya berbeda dan belum fasih bahasa setempat. Sikapmu?",
-        options: [
-          {
-            text: "Menyambutnya dengan ramah, mengajaknya bermain bersama, dan membantunya beradaptasi.",
-            isRight: true,
-            explanation: "Bintang lima! Sila ke-3 menyatukan seluruh anak bangsa tanpa membeda-bedakan asal-usul.",
-            points: 15,
-          },
-          {
-            text: "Menjauhinya dan menolak satu kelompok karena beda daerah.",
-            isRight: false,
-            explanation: "Salah. Membeda-bedakan suku bertentangan dengan semboyan Bhinneka Tunggal Ika.",
-            points: 0,
-          },
-        ],
+        title: "Persatuan Bhinneka Tunggal Ika",
+        zoneZ: -195,
+        islandName: "Pulau Beringin (Sila 3)",
+        actionTargetName: "Tiang Balai Bhinneka",
+        actionIcon: "🇮🇩",
+        actionPrompt: "🇮🇩 KIBARKAN BENDERA & AJAK MAIN BERSAMA",
+        instructionText: "Ada teman-teman dari berbagai suku yang belum rukun membentuk tim kasti. Kibarkan bendera Merah Putih di balai untuk menyatukan mereka!",
+        successStory: "Bhinneka Tunggal Ika! Seluruh anak dari Sabang sampai Merauke kini bersatu gembira bermain bersama tanpa membeda-bedakan.",
+        completed: false,
       },
       {
         id: 4,
         silaNumber: 4,
-        worldX: 1960,
-        houseTitle: "Balai Desa Musyawarah",
-        islandName: "Pulau Banteng (Sila 4)",
         symbol: "🐂",
-        residentName: "Pak RT & Ketua Murid",
-        residentAvatar: "🏛️📋",
-        roofColor: "#ef4444",
-        wallColor: "#fecaca",
-        story: "Di balai desa, warga sedang duduk melingkar bermusyawarah mufakat menentukan jadwal kerja bakti.",
-        question: "Jika pendapat pribadimu kalah suara dalam keputusan musyawarah bersama kelas, sikapmu?",
-        options: [
-          {
-            text: "Menerima hasil keputusan musyawarah dengan lapang dada dan ikut melaksanakannya dengan ikhlas.",
-            isRight: true,
-            explanation: "Sangat bijaksana! Sila ke-4 mengutamakan kepentingan bersama di atas kehendak pribadi.",
-            points: 15,
-          },
-          {
-            text: "Marah-marah dan merusak fasilitas balai pertemuan.",
-            isRight: false,
-            explanation: "Tidak baik. Keputusan musyawarah wajib dihormati oleh seluruh peserta.",
-            points: 0,
-          },
-        ],
+        title: "Musyawarah Mufakat",
+        zoneZ: -265,
+        islandName: "Pulau Banteng (Sila 4)",
+        actionTargetName: "Kotak Suara Balai Desa",
+        actionIcon: "🗳️",
+        actionPrompt: "🗳️ MASUKKAN SUARA & DUKUNG KEPUTUSAN KELAS",
+        instructionText: "Di Balai Desa sedang diadakan musyawarah pemilihan tujuan karya wisata. Masukkan surat kesepakatan dan dukung keputusan bersama!",
+        successStory: "Sikap pemimpin bijak! Kamu menerima hasil mufakat dengan lapang dada dan menghormati keputusan musyawarah bersama.",
+        completed: false,
       },
       {
         id: 5,
         silaNumber: 5,
-        worldX: 2500,
-        houseTitle: "Lumbung Keadilan Warga",
-        islandName: "Pulau Padi & Kapas (Sila 5)",
         symbol: "🌾",
-        residentName: "Regu Gotong Royong",
-        residentAvatar: "⚖️📦",
-        roofColor: "#eab308",
-        wallColor: "#fef08a",
-        story: "Tiba di lumbung akhir! Warga sedang membagikan paket sembako dan bantuan secara adil dan merata kepada seluruh warga.",
-        question: "Bagaimana cara membagi giliran tugas piket kebersihan kelas yang paling adil?",
-        options: [
-          {
-            text: "Membagi jadwal merata: semua anak (laki-laki maupun perempuan) mendapat tugas seimbang.",
-            isRight: true,
-            explanation: "Sempurna! Sila ke-5 menegakkan keadilan sosial tanpa pilih kasih.",
-            points: 15,
-          },
-          {
-            text: "Menyerahkan semua beban piket hanya kepada anak yang tidak berani menolak.",
-            isRight: false,
-            explanation: "Sangat tidak adil. Keadilan harus ditegakkan untuk kebaikan bersama.",
-            points: 0,
-          },
-        ],
+        title: "Keadilan Gotong Royong",
+        zoneZ: -335,
+        islandName: "Pulau Padi & Kapas (Sila 5)",
+        actionTargetName: "Kotak Alat Piket Bersama",
+        actionIcon: "🧹",
+        actionPrompt: "🧹 BAGIKAN TUGAS PIKET SECARA ADIL MERATA",
+        instructionText: "Tiba di pos akhir Lumbung Keadilan! Bagikan alat sapu dan tugas piket secara merata kepada seluruh anggota regu piket.",
+        successStory: "Keadilan sosial terwujud sempurna! Semua anak mendapat tugas yang seimbang dan adil tanpa ada yang diberatkan.",
+        completed: false,
       },
     ];
   }, []);
 
-  // DAFTAR RINTANGAN OBBY DI JALANAN ANTAR RUMAH
-  const obstacles: ObbyObstacle[] = useMemo(() => {
-    return [
-      { id: 1, x: 490, width: 34, type: "spikes", label: "Duri 🔺" },
-      { id: 2, x: 730, width: 34, type: "spikes", label: "Duri 🔺" },
-      { id: 3, x: 1040, width: 44, type: "lava", label: "Lava 🔥" },
-      { id: 4, x: 1280, width: 34, type: "spikes", label: "Duri 🔺" },
-      { id: 5, x: 1580, width: 44, type: "lava", label: "Lava 🔥" },
-      { id: 6, x: 1820, width: 34, type: "spikes", label: "Duri 🔺" },
-      { id: 7, x: 2120, width: 44, type: "lava", label: "Lava 🔥" },
-      { id: 8, x: 2360, width: 34, type: "spikes", label: "Duri 🔺" },
-    ];
-  }, []);
+  const [missions, setMissions] = useState<SilaActionMission[]>(initialMissions);
+  const [nearbyMission, setNearbyMission] = useState<SilaActionMission | null>(null);
 
-  // 24 KOIN EMAS PANCASILA
-  const initialCoins: GameCoin[] = useMemo(() => {
-    const list: GameCoin[] = [];
-    const spots = [
-      { x: 180, y: 310 }, { x: 250, y: 310 }, { x: 420, y: 240 }, { x: 490, y: 200 },
-      { x: 620, y: 310 }, { x: 710, y: 240 }, { x: 980, y: 310 }, { x: 1040, y: 200 },
-      { x: 1180, y: 310 }, { x: 1260, y: 250 }, { x: 1520, y: 310 }, { x: 1580, y: 210 },
-      { x: 1720, y: 310 }, { x: 1800, y: 250 }, { x: 2060, y: 310 }, { x: 2120, y: 200 },
-      { x: 2280, y: 310 }, { x: 2360, y: 240 }, { x: 2600, y: 260 }, { x: 2660, y: 210 },
-    ];
-    spots.forEach((s, idx) => list.push({ id: idx + 1, x: s.x, y: s.y, collected: false }));
-    return list;
-  }, []);
-
-  const [houses, setHouses] = useState<VillageHouse[]>(initialHouses);
-  const [coins, setCoins] = useState<GameCoin[]>(initialCoins);
-
-  // Background Music
+  // Kontrol Background Music
   useEffect(() => {
     if (isOpen && gameStarted && bgmEnabled) {
       startAdventureBgm();
@@ -373,640 +184,564 @@ export default function AdaptiveEduGameModal({
     };
   }, [isOpen, gameStarted, bgmEnabled]);
 
-  // Reset State Game
+  // Reset Saat Modal Buka
   useEffect(() => {
     if (isOpen) {
-      setHouses(initialHouses);
-      setCoins(initialCoins);
-      setParticles([]);
+      setMissions(initialMissions);
       setGameStarted(false);
       setPlayerLives(3);
-      setNearbyHouse(null);
-      setPlayerState({
-        x: 100,
-        y: 350,
-        vy: 0,
-        isJumping: false,
-        facing: "right",
-        animFrame: 0,
-      });
-      setCameraX(0);
-      setActiveHouse(null);
-      setSelectedHouseOption(null);
-      setHouseFeedback(null);
       setAdventureScore(0);
       setAdventureFinished(false);
+      setActiveNotification(null);
+      setNearbyMission(null);
     }
-  }, [isOpen, initialHouses, initialCoins, chapter]);
+  }, [isOpen, initialMissions]);
 
-  const spawnParticle = (x: number, y: number, text: string, color = "#fbbf24") => {
-    setParticles((prev) => [
-      ...prev.slice(-10),
-      { id: Date.now() + Math.random(), x, y, text, color, opacity: 1 },
-    ]);
-  };
+  // --------------------------------------------------------------------------
+  // ENGINE 3D ROBLOX THREE.JS
+  // --------------------------------------------------------------------------
+  const mountRef = useRef<HTMLDivElement | null>(null);
 
-  // Gerakan Melompat (Roblox Jump)
-  const jumpPlayer = useCallback(() => {
-    if (activeHouse || !gameStarted) return;
-    setPlayerState((prev) => {
-      if (prev.isJumping) return prev;
-      playJumpSound();
-      return { ...prev, vy: -14.5, isJumping: true };
-    });
-  }, [activeHouse, gameStarted]);
+  // State Kontrol Input
+  const keysRef = useRef<{
+    forward: boolean;
+    backward: boolean;
+    left: boolean;
+    right: boolean;
+    jump: boolean;
+    sprint: boolean;
+  }>({
+    forward: false,
+    backward: false,
+    left: false,
+    right: false,
+    jump: false,
+    sprint: false,
+  });
 
-  // Gerakan Kiri/Kanan
-  const movePlayerH = useCallback(
-    (dx: number, dir: "left" | "right") => {
-      if (activeHouse || !gameStarted) return;
-      const actualDx = isSprinting ? dx * 1.6 : dx;
-
-      setPlayerState((prev) => {
-        const nx = Math.max(40, Math.min(2720, prev.x + actualDx));
-
-        // Cek apakah sedang berada di dekat rumah warga
-        let foundHouse: VillageHouse | null = null;
-        for (const h of houses) {
-          if (Math.abs(nx - h.worldX) < 65) {
-            foundHouse = h;
-            break;
-          }
-        }
-        setNearbyHouse(foundHouse);
-
-        return {
-          ...prev,
-          x: nx,
-          facing: dir,
-          animFrame: prev.animFrame + 1,
-        };
-      });
-    },
-    [activeHouse, gameStarted, isSprinting, houses]
-  );
-
-  // Aksi Mengetuk Pintu Rumah
-  const knockAndEnterHouse = useCallback(() => {
-    if (!nearbyHouse || activeHouse) return;
-    playKnockDoorSound();
+  // Eksekusi Misi Aksi Nyata
+  const triggerMissionAction = useCallback(() => {
+    if (!nearbyMission || nearbyMission.completed) return;
+    playCorrectSound();
+    playCoinSound();
     playRobotAwakeSound();
-    setActiveHouse(nearbyHouse);
-    setSelectedHouseOption(null);
-    setHouseFeedback(null);
-    spawnParticle(nearbyHouse.worldX, 260, "TOK TOK TOK! 🚪", "#fde047");
-  }, [nearbyHouse, activeHouse]);
 
-  // Loop Fisika, Gravitasi, Rintangan Obby & Koin
+    const mId = nearbyMission.id;
+    setMissions((prev) =>
+      prev.map((m) => (m.id === mId ? { ...m, completed: true } : m))
+    );
+
+    setAdventureScore((s) => s + 20);
+    setActiveNotification(`🎉 ${nearbyMission.successStory}`);
+
+    setTimeout(() => {
+      setActiveNotification(null);
+    }, 4500);
+
+    // Cek jika 5 misi selesai
+    const rem = missions.filter((m) => m.id !== mId && !m.completed);
+    if (rem.length === 0) {
+      setTimeout(() => {
+        setAdventureFinished(true);
+        playBadgeFanfareSound();
+        addPoints(25);
+      }, 1200);
+    }
+  }, [nearbyMission, missions, addPoints]);
+
   useEffect(() => {
-    if (gameType !== "adventure" || !isOpen || !gameStarted) return;
+    if (gameType !== "adventure" || !isOpen) return;
 
-    const gravity = 0.8;
-    const groundY = 350;
-    const springs = [540, 1100, 1660, 2220];
+    const mount = mountRef.current;
+    if (!mount) return;
 
-    const interval = setInterval(() => {
-      setPlayerState((prev) => {
-        let nextY = prev.y + prev.vy;
-        let nextVy = prev.vy + gravity;
-        let isJumping = true;
+    // 1. SETUP SCENE, CAMERA, & RENDERER
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color("#60a5fa"); // Roblox Bright Sky
+    scene.fog = new THREE.FogExp2("#93c5fd", 0.008);
 
-        // 1. Cek Spring Bouncer Pelontar
-        for (const sx of springs) {
-          if (Math.abs(prev.x - sx) < 28 && prev.y >= 335) {
-            playSpringJumpSound();
-            spawnParticle(prev.x, prev.y - 20, "BOING! 🌀", "#38bdf8");
-            return { ...prev, vy: -21, isJumping: true };
-          }
+    const camera = new THREE.PerspectiveCamera(
+      58,
+      mount.clientWidth / mount.clientHeight,
+      0.1,
+      1000
+    );
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    renderer.setSize(mount.clientWidth, mount.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    mount.appendChild(renderer.domElement);
+
+    // 2. LIGHTING (Terang, Hangat Khas Roblox Sun)
+    const hemiLight = new THREE.HemisphereLight("#ffffff", "#445566", 0.9);
+    hemiLight.position.set(0, 50, 0);
+    scene.add(hemiLight);
+
+    const dirLight = new THREE.DirectionalLight("#fffbeb", 1.4);
+    dirLight.position.set(30, 60, 20);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 1024;
+    dirLight.shadow.mapSize.height = 1024;
+    scene.add(dirLight);
+
+    // 3. TERRAIN DUNIA ROBLOX (Lantai Rumput Hijau dengan Grid Studs)
+    const groundGeo = new THREE.PlaneGeometry(80, 520);
+    const groundMat = new THREE.MeshLambertMaterial({ color: "#4ade80" }); // Hijau Rumput Roblox
+    const groundMesh = new THREE.Mesh(groundGeo, groundMat);
+    groundMesh.rotation.x = -Math.PI / 2;
+    groundMesh.position.set(0, 0, -200);
+    groundMesh.receiveShadow = true;
+    scene.add(groundMesh);
+
+    // Jalur Jalan Utama (Brown Dirt Path)
+    const pathGeo = new THREE.PlaneGeometry(10, 500);
+    const pathMat = new THREE.MeshLambertMaterial({ color: "#fef08a" });
+    const pathMesh = new THREE.Mesh(pathGeo, pathMat);
+    pathMesh.rotation.x = -Math.PI / 2;
+    pathMesh.position.set(0, 0.02, -200);
+    scene.add(pathMesh);
+
+    // GARIS SAFE ZONE AWAL (Seperti Screenshot Pengguna!)
+    const safeZoneCanvas = document.createElement("canvas");
+    safeZoneCanvas.width = 512;
+    safeZoneCanvas.height = 128;
+    const szCtx = safeZoneCanvas.getContext("2d")!;
+    szCtx.fillStyle = "#ef4444";
+    szCtx.fillRect(0, 0, 512, 128);
+    szCtx.fillStyle = "#ffffff";
+    szCtx.font = "bold 44px sans-serif";
+    szCtx.textAlign = "center";
+    szCtx.fillText("SAFE ZONE", 256, 75);
+
+    const safeZoneTex = new THREE.CanvasTexture(safeZoneCanvas);
+    const safeZoneMat = new THREE.MeshBasicMaterial({ map: safeZoneTex });
+    const safeZoneGeo = new THREE.PlaneGeometry(16, 4);
+    const safeZoneMesh = new THREE.Mesh(safeZoneGeo, safeZoneMat);
+    safeZoneMesh.rotation.x = -Math.PI / 2;
+    safeZoneMesh.position.set(0, 0.04, -12);
+    scene.add(safeZoneMesh);
+
+    // Dinding Pembatas Tebing Kiri & Kanan (Roblox Arena Wall)
+    const wallGeo = new THREE.BoxGeometry(4, 18, 520);
+    const wallMat = new THREE.MeshLambertMaterial({ color: "#b45309" }); // Cokelat Tebing
+    const leftWall = new THREE.Mesh(wallGeo, wallMat);
+    leftWall.position.set(-38, 9, -200);
+    scene.add(leftWall);
+
+    const rightWall = new THREE.Mesh(wallGeo, wallMat);
+    rightWall.position.set(38, 9, -200);
+    scene.add(rightWall);
+
+    // Awan Rendah Mengapung
+    const cloudGroup = new THREE.Group();
+    for (let i = 0; i < 18; i++) {
+      const cGeo = new THREE.BoxGeometry(10 + Math.random() * 8, 3, 8 + Math.random() * 6);
+      const cMat = new THREE.MeshLambertMaterial({ color: "#ffffff", transparent: true, opacity: 0.85 });
+      const cMesh = new THREE.Mesh(cGeo, cMat);
+      cMesh.position.set((Math.random() - 0.5) * 60, 24 + Math.random() * 8, -Math.random() * 420);
+      cloudGroup.add(cMesh);
+    }
+    scene.add(cloudGroup);
+
+    // 4. MEMBUAT 5 RUMAH 3D BESAR DI TIAP ZONA SILA PANCASILA
+    const houseConfigs = [
+      { z: -55, color: "#38bdf8", roof: "#facc15", name: "Rumah Ibadah & Toleransi ⭐" },
+      { z: -125, color: "#fed7aa", roof: "#f97316", name: "Rumah Peduli Kemanusiaan ⛓️" },
+      { z: -195, color: "#86efac", roof: "#15803d", name: "Balai Budaya Bhinneka 🌳" },
+      { z: -265, color: "#fecaca", roof: "#dc2626", name: "Balai Desa Musyawarah 🐂" },
+      { z: -335, color: "#fef08a", roof: "#eab308", name: "Lumbung Keadilan Bersama 🌾" },
+    ];
+
+    houseConfigs.forEach((hc) => {
+      const hGroup = new THREE.Group();
+      // Badan Rumah
+      const bGeo = new THREE.BoxGeometry(12, 9, 10);
+      const bMat = new THREE.MeshLambertMaterial({ color: hc.color });
+      const bMesh = new THREE.Mesh(bGeo, bMat);
+      bMesh.position.y = 4.5;
+      bMesh.castShadow = true;
+      bMesh.receiveShadow = true;
+      hGroup.add(bMesh);
+
+      // Atap Segitiga Limas
+      const rGeo = new THREE.ConeGeometry(9.5, 5, 4);
+      const rMat = new THREE.MeshLambertMaterial({ color: hc.roof });
+      const rMesh = new THREE.Mesh(rGeo, rMat);
+      rMesh.position.y = 11.5;
+      rMesh.rotation.y = Math.PI / 4;
+      rMesh.castShadow = true;
+      hGroup.add(rMesh);
+
+      // Pintu Kayu
+      const dGeo = new THREE.BoxGeometry(2.4, 4.5, 0.4);
+      const dMat = new THREE.MeshLambertMaterial({ color: "#78350f" });
+      const dMesh = new THREE.Mesh(dGeo, dMat);
+      dMesh.position.set(0, 2.25, 5.1);
+      hGroup.add(dMesh);
+
+      // Jendela Kiri & Kanan
+      const wGeo = new THREE.BoxGeometry(2, 2, 0.3);
+      const wMat = new THREE.MeshLambertMaterial({ color: "#bae6fd" });
+      const winL = new THREE.Mesh(wGeo, wMat);
+      winL.position.set(-3.5, 5, 5.1);
+      const winR = winL.clone();
+      winR.position.set(3.5, 5, 5.1);
+      hGroup.add(winL);
+      hGroup.add(winR);
+
+      // Posisi di sisi jalan
+      hGroup.position.set(12, 0, hc.z);
+      scene.add(hGroup);
+    });
+
+    // 5. OBJEK MISI AKSI NYATA INTERAKTIF DI DEKAT TIAP RUMAH
+    const targetMeshes: THREE.Mesh[] = [];
+
+    // Target 1: Radio Speaker (Z = -55)
+    const radioGeo = new THREE.BoxGeometry(1.6, 1.2, 0.8);
+    const radioMat = new THREE.MeshLambertMaterial({ color: "#475569" });
+    const radioMesh = new THREE.Mesh(radioGeo, radioMat);
+    radioMesh.position.set(2, 0.8, -55);
+    radioMesh.castShadow = true;
+    scene.add(radioMesh);
+    targetMeshes.push(radioMesh);
+
+    // Target 2: Sepeda & Doni (Z = -125)
+    const doniGeo = new THREE.BoxGeometry(1.4, 1.4, 1.4);
+    const doniMat = new THREE.MeshLambertMaterial({ color: "#f97316" });
+    const doniMesh = new THREE.Mesh(doniGeo, doniMat);
+    doniMesh.position.set(2, 0.7, -125);
+    scene.add(doniMesh);
+    targetMeshes.push(doniMesh);
+
+    // Target 3: Tiang Bendera Bhinneka (Z = -195)
+    const poleGeo = new THREE.CylinderGeometry(0.15, 0.15, 7, 8);
+    const poleMat = new THREE.MeshLambertMaterial({ color: "#f8fafc" });
+    const poleMesh = new THREE.Mesh(poleGeo, poleMat);
+    poleMesh.position.set(2, 3.5, -195);
+    scene.add(poleMesh);
+    // Bendera Merah Putih
+    const flagGeo = new THREE.BoxGeometry(2.5, 1.4, 0.1);
+    const flagMat = new THREE.MeshLambertMaterial({ color: "#ef4444" });
+    const flagMesh = new THREE.Mesh(flagGeo, flagMat);
+    flagMesh.position.set(3.2, 5.5, -195);
+    scene.add(flagMesh);
+    targetMeshes.push(poleMesh);
+
+    // Target 4: Kotak Suara Balai Desa (Z = -265)
+    const ballotGeo = new THREE.BoxGeometry(1.6, 2, 1.6);
+    const ballotMat = new THREE.MeshLambertMaterial({ color: "#f8fafc" });
+    const ballotMesh = new THREE.Mesh(ballotGeo, ballotMat);
+    ballotMesh.position.set(2, 1, -265);
+    scene.add(ballotMesh);
+    targetMeshes.push(ballotMesh);
+
+    // Target 5: Kotak Alat Piket Bersama (Z = -335)
+    const piketGeo = new THREE.BoxGeometry(2, 1.5, 1.5);
+    const piketMat = new THREE.MeshLambertMaterial({ color: "#ca8a04" });
+    const piketMesh = new THREE.Mesh(piketGeo, piketMat);
+    piketMesh.position.set(2, 0.75, -335);
+    scene.add(piketMesh);
+    targetMeshes.push(piketMesh);
+
+    // 6. RINTANGAN OBBY ROBLOX (Duri Tajam & Lava di Antar Pulau)
+    const obstacleList = [
+      { z: -85, type: "spikes" },
+      { z: -155, type: "lava" },
+      { z: -225, type: "spikes" },
+      { z: -295, type: "lava" },
+    ];
+
+    obstacleList.forEach((obs) => {
+      if (obs.type === "spikes") {
+        for (let x = -4; x <= 4; x += 1.6) {
+          const sGeo = new THREE.ConeGeometry(0.6, 1.8, 4);
+          const sMat = new THREE.MeshLambertMaterial({ color: "#dc2626" });
+          const sMesh = new THREE.Mesh(sGeo, sMat);
+          sMesh.position.set(x, 0.9, obs.z);
+          scene.add(sMesh);
         }
+      } else {
+        const lGeo = new THREE.BoxGeometry(10, 0.2, 5);
+        const lMat = new THREE.MeshBasicMaterial({ color: "#ea580c" });
+        const lMesh = new THREE.Mesh(lGeo, lMat);
+        lMesh.position.set(0, 0.05, obs.z);
+        scene.add(lMesh);
+      }
+    });
 
-        // 2. CEK TABRAKAN DENGAN RINTANGAN (SPIKES / LAVA OBBY)
-        for (const obs of obstacles) {
-          if (Math.abs(prev.x - obs.x) < 22 && prev.y >= 335) {
-            playOofSound();
-            spawnParticle(prev.x, prev.y - 30, "ADUH! 💥 OOF!", "#ef4444");
+    // 7. KARAKTER 3D ROBLOX AVATAR (Mirip Persis Foto Roblox Pengguna!)
+    const playerGroup = new THREE.Group();
 
-            // Respawn ke titik aman sebelum rintangan
-            const safeX = Math.max(80, prev.x - 70);
-            setPlayerLives((lives) => {
-              const nextLives = lives - 1;
-              if (nextLives <= 0) {
-                spawnParticle(safeX, 300, "❤️❤️❤️ HATI PULIH!", "#10b981");
-                return 3;
-              }
-              return nextLives;
-            });
+    // Badan Kotak (Torso)
+    const torsoGeo = new THREE.BoxGeometry(1.3, 1.5, 0.7);
+    const torsoMat = new THREE.MeshLambertMaterial({ color: "#2563eb" }); // Baju Biru
+    const torsoMesh = new THREE.Mesh(torsoGeo, torsoMat);
+    torsoMesh.position.y = 2.15;
+    torsoMesh.castShadow = true;
+    playerGroup.add(torsoMesh);
 
-            return {
-              ...prev,
-              x: safeX,
-              y: groundY,
-              vy: -6,
-              isJumping: false,
-            };
-          }
-        }
+    // Jaket Hitam Luaran (Vest)
+    const vestGeo = new THREE.BoxGeometry(1.36, 1.4, 0.76);
+    const vestMat = new THREE.MeshLambertMaterial({ color: "#0f172a" }); // Jaket Gelap
+    const vestMesh = new THREE.Mesh(vestGeo, vestMat);
+    vestMesh.position.y = 2.15;
+    playerGroup.add(vestMesh);
 
-        if (nextY >= groundY) {
-          nextY = groundY;
-          nextVy = 0;
+    // Kepala Kotak Roblox
+    const headGeo = new THREE.BoxGeometry(0.85, 0.85, 0.85);
+    const headMat = new THREE.MeshLambertMaterial({ color: "#fed7aa" }); // Warna kulit
+    const headMesh = new THREE.Mesh(headGeo, headMat);
+    headMesh.position.y = 3.35;
+    headMesh.castShadow = true;
+    playerGroup.add(headMesh);
+
+    // Rambut Cokelat Khas Roblox (Bacon Hair Style!)
+    const hairGeo = new THREE.BoxGeometry(0.95, 0.45, 0.95);
+    const hairMat = new THREE.MeshLambertMaterial({ color: "#854d0e" });
+    const hairMesh = new THREE.Mesh(hairGeo, hairMat);
+    hairMesh.position.y = 3.85;
+    playerGroup.add(hairMesh);
+
+    // Lengan Kiri & Kanan (Kotak dengan Tangan Putih C-shape)
+    const armGeo = new THREE.BoxGeometry(0.5, 1.3, 0.5);
+    const armMat = new THREE.MeshLambertMaterial({ color: "#0f172a" });
+    const leftArm = new THREE.Mesh(armGeo, armMat);
+    leftArm.position.set(-0.95, 2.15, 0);
+    playerGroup.add(leftArm);
+
+    const rightArm = new THREE.Mesh(armGeo, armMat);
+    rightArm.position.set(0.95, 2.15, 0);
+    playerGroup.add(rightArm);
+
+    // Kaki Kiri & Kanan (Celana Hitam + Sepatu Putih)
+    const legGeo = new THREE.BoxGeometry(0.55, 1.4, 0.55);
+    const legMat = new THREE.MeshLambertMaterial({ color: "#1e293b" }); // Celana Hitam
+    const leftLeg = new THREE.Mesh(legGeo, legMat);
+    leftLeg.position.set(-0.35, 0.7, 0);
+    playerGroup.add(leftLeg);
+
+    const rightLeg = new THREE.Mesh(legGeo, legMat);
+    rightLeg.position.set(0.35, 0.7, 0);
+    playerGroup.add(rightLeg);
+
+    // Sepatu Putih
+    const shoeGeo = new THREE.BoxGeometry(0.56, 0.35, 0.65);
+    const shoeMat = new THREE.MeshLambertMaterial({ color: "#f8fafc" });
+    const leftShoe = new THREE.Mesh(shoeGeo, shoeMat);
+    leftShoe.position.set(-0.35, 0.18, 0.05);
+    playerGroup.add(leftShoe);
+
+    const rightShoe = new THREE.Mesh(shoeGeo, shoeMat);
+    rightShoe.position.set(0.35, 0.18, 0.05);
+    playerGroup.add(rightShoe);
+
+    // Label Nama Di Atas Karakter
+    const nameCanvas = document.createElement("canvas");
+    nameCanvas.width = 256;
+    nameCanvas.height = 64;
+    const nCtx = nameCanvas.getContext("2d")!;
+    nCtx.fillStyle = "#ffffff";
+    nCtx.font = "bold 26px sans-serif";
+    nCtx.textAlign = "center";
+    nCtx.fillText("⭐ Petualang SD", 128, 42);
+
+    const nameTex = new THREE.CanvasTexture(nameCanvas);
+    const nameSpriteMat = new THREE.SpriteMaterial({ map: nameTex });
+    const nameSprite = new THREE.Sprite(nameSpriteMat);
+    nameSprite.position.set(0, 4.4, 0);
+    nameSprite.scale.set(3, 0.75, 1);
+    playerGroup.add(nameSprite);
+
+    playerGroup.position.set(0, 0, 0);
+    scene.add(playerGroup);
+
+    // 8. GAME LOOP, FISIKA & KONTROL ROBLOX 3D
+    let animId: number;
+    let vy = 0;
+    let isJumping = false;
+    let walkAnim = 0;
+
+    const clock = new THREE.Clock();
+
+    const animate = () => {
+      animId = requestAnimationFrame(animate);
+      const delta = Math.min(clock.getDelta(), 0.1);
+
+      const keys = keysRef.current;
+      const speed = keys.sprint ? 14 : 9;
+
+      let moveX = 0;
+      let moveZ = 0;
+
+      if (keys.forward) moveZ -= 1;
+      if (keys.backward) moveZ += 1;
+      if (keys.left) moveX -= 1;
+      if (keys.right) moveX += 1;
+
+      // Normalisasi arah
+      if (moveX !== 0 || moveZ !== 0) {
+        const len = Math.hypot(moveX, moveZ);
+        moveX /= len;
+        moveZ /= len;
+
+        playerGroup.position.x += moveX * speed * delta;
+        playerGroup.position.z += moveZ * speed * delta;
+
+        // Batasi arena
+        playerGroup.position.x = Math.max(-28, Math.min(28, playerGroup.position.x));
+        playerGroup.position.z = Math.max(-380, Math.min(5, playerGroup.position.z));
+
+        // Rotasi karakter menghadap arah jalan
+        const targetRot = Math.atan2(moveX, moveZ);
+        playerGroup.rotation.y = targetRot + Math.PI;
+
+        // Animasi ayunan kaki dan tangan
+        walkAnim += delta * (keys.sprint ? 16 : 10);
+        const swing = Math.sin(walkAnim) * 0.6;
+        leftLeg.rotation.x = swing;
+        rightLeg.rotation.x = -swing;
+        leftArm.rotation.x = -swing;
+        rightArm.rotation.x = swing;
+      } else {
+        // Reset pose diam
+        leftLeg.rotation.x = 0;
+        rightLeg.rotation.x = 0;
+        leftArm.rotation.x = 0;
+        rightArm.rotation.x = 0;
+      }
+
+      // Gravitasi & Lompat
+      if (keys.jump && !isJumping) {
+        vy = 9.5;
+        isJumping = true;
+        playJumpSound();
+      }
+
+      if (isJumping) {
+        vy -= 22 * delta;
+        playerGroup.position.y += vy * delta;
+        if (playerGroup.position.y <= 0) {
+          playerGroup.position.y = 0;
+          vy = 0;
           isJumping = false;
         }
+      }
 
-        return {
-          ...prev,
-          y: nextY,
-          vy: nextVy,
-          isJumping,
-        };
-      });
-
-      // Deteksi Memungut Koin Emas
-      setPlayerState((p) => {
-        setCoins((prevCoins) => {
-          let updated = false;
-          const next = prevCoins.map((coin) => {
-            if (!coin.collected) {
-              const dist = Math.hypot(p.x - coin.x, p.y - 35 - coin.y);
-              if (dist < 32) {
-                updated = true;
-                playCoinPickupSound();
-                setAdventureScore((s) => s + 5);
-                spawnParticle(coin.x, coin.y - 10, "+5 Koin 🪙", "#fde047");
-                return { ...coin, collected: true };
-              }
-            }
-            return coin;
+      // Cek Rintangan Obby (Duri / Lava)
+      for (const obs of obstacleList) {
+        if (
+          Math.abs(playerGroup.position.z - obs.z) < 2.2 &&
+          Math.abs(playerGroup.position.x) < 5 &&
+          playerGroup.position.y < 0.6
+        ) {
+          playOofSound();
+          // Mundur ke zona aman
+          playerGroup.position.z += 8;
+          setPlayerLives((l) => {
+            const nextL = l - 1;
+            if (nextL <= 0) return 3;
+            return nextL;
           });
-          return updated ? next : prevCoins;
-        });
+          break;
+        }
+      }
 
-        // Kamera dinamis mengikuti posisi X karakter
-        setCameraX((cam) => {
-          const targetCam = Math.max(0, p.x - 350);
-          return cam + (targetCam - cam) * 0.16;
-        });
+      // Cek Jarak dengan Misi Aksi Nyata
+      let curNearby: SilaActionMission | null = null;
+      for (const m of missions) {
+        if (Math.abs(playerGroup.position.z - m.zoneZ) < 5 && Math.abs(playerGroup.position.x - 2) < 4) {
+          curNearby = m;
+          break;
+        }
+      }
+      setNearbyMission(curNearby);
 
-        return p;
-      });
+      // KAMERA THIRD-PERSON (Mengikuti Karakter Roblox Seperti Foto Pengguna!)
+      const camTargetX = playerGroup.position.x;
+      const camTargetY = playerGroup.position.y + 4.2;
+      const camTargetZ = playerGroup.position.z + 8.5;
 
-      // Animasi partikel melayang
-      setParticles((prev) =>
-        prev
-          .map((pt) => ({ ...pt, y: pt.y - 1.5, opacity: pt.opacity - 0.04 }))
-          .filter((pt) => pt.opacity > 0)
-      );
-    }, 24);
+      camera.position.x += (camTargetX - camera.position.x) * 0.12;
+      camera.position.y += (camTargetY - camera.position.y) * 0.12;
+      camera.position.z += (camTargetZ - camera.position.z) * 0.12;
+      camera.lookAt(playerGroup.position.x, playerGroup.position.y + 1.6, playerGroup.position.z - 3);
 
-    return () => clearInterval(interval);
-  }, [gameType, isOpen, gameStarted, obstacles]);
+      renderer.render(scene, camera);
+    };
 
-  // Keyboard Event Listener
-  useEffect(() => {
-    if (gameType !== "adventure" || !isOpen || !gameStarted) return;
+    animate();
 
+    // Resize Handler
+    const handleResize = () => {
+      if (!mount) return;
+      camera.aspect = mount.clientWidth / mount.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(mount.clientWidth, mount.clientHeight);
+    };
+    window.addEventListener("resize", handleResize);
+
+    // Keyboard Handler
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") {
+      if (e.key === "w" || e.key === "W" || e.key === "ArrowUp") keysRef.current.forward = true;
+      if (e.key === "s" || e.key === "S" || e.key === "ArrowDown") keysRef.current.backward = true;
+      if (e.key === "a" || e.key === "A" || e.key === "ArrowLeft") keysRef.current.left = true;
+      if (e.key === "d" || e.key === "D" || e.key === "ArrowRight") keysRef.current.right = true;
+      if (e.key === " ") {
         e.preventDefault();
-        movePlayerH(18, "right");
-      } else if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
-        e.preventDefault();
-        movePlayerH(-18, "left");
-      } else if (e.key === "ArrowUp" || e.key === "w" || e.key === " " || e.key === "W") {
-        e.preventDefault();
-        jumpPlayer();
-      } else if (e.key === "e" || e.key === "E") {
-        e.preventDefault();
-        knockAndEnterHouse();
-      } else if (e.key === "Shift") {
+        keysRef.current.jump = true;
+      }
+      if (e.key === "Shift") {
+        keysRef.current.sprint = true;
         setIsSprinting(true);
         playDashSound();
+      }
+      if (e.key === "e" || e.key === "E") {
+        e.preventDefault();
+        triggerMissionAction();
       }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === "w" || e.key === "W" || e.key === "ArrowUp") keysRef.current.forward = false;
+      if (e.key === "s" || e.key === "S" || e.key === "ArrowDown") keysRef.current.backward = false;
+      if (e.key === "a" || e.key === "A" || e.key === "ArrowLeft") keysRef.current.left = false;
+      if (e.key === "d" || e.key === "D" || e.key === "ArrowRight") keysRef.current.right = false;
+      if (e.key === " ") keysRef.current.jump = false;
       if (e.key === "Shift") {
+        keysRef.current.sprint = false;
         setIsSprinting(false);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
+
     return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", handleResize);
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
-    };
-  }, [gameType, isOpen, gameStarted, movePlayerH, jumpPlayer, knockAndEnterHouse]);
-
-  // -------------------------------------------------------------
-  // RENDER CANVAS 3D ROBLOX: DESA PANCASILA, RUMAH WARGA & OBBY
-  // -------------------------------------------------------------
-  useEffect(() => {
-    if (gameType !== "adventure") return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let animId: number;
-
-    const render = () => {
-      const W = canvas.width;
-      const H = canvas.height;
-
-      // 1. Langit 3D Cerah
-      const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
-      skyGrad.addColorStop(0, "#0284c7");
-      skyGrad.addColorStop(0.65, "#7dd3fc");
-      skyGrad.addColorStop(1, "#f0fdf4");
-      ctx.fillStyle = skyGrad;
-      ctx.fillRect(0, 0, W, H);
-
-      // Matahari 3D
-      ctx.fillStyle = "#fef08a";
-      ctx.beginPath();
-      ctx.arc(W - 140, 80, 50, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "rgba(254, 240, 138, 0.45)";
-      ctx.beginPath();
-      ctx.arc(W - 140, 80, 75, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Awan Roblox Mengapung
-      const drawCloud = (cx: number, cy: number, scale = 1) => {
-        const sx = ((cx - cameraX * 0.1) % (W + 300)) - 100;
-        ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
-        ctx.beginPath();
-        ctx.arc(sx, cy, 24 * scale, 0, Math.PI * 2);
-        ctx.arc(sx + 26 * scale, cy - 8 * scale, 30 * scale, 0, Math.PI * 2);
-        ctx.arc(sx + 56 * scale, cy, 24 * scale, 0, Math.PI * 2);
-        ctx.fill();
-      };
-      drawCloud(120, 70, 1.1);
-      drawCloud(540, 95, 0.9);
-      drawCloud(960, 60, 1.2);
-      drawCloud(1400, 85, 1.0);
-      drawCloud(1900, 70, 1.1);
-
-      // Pegunungan Roblox 3D Parallax
-      const drawMountain = (mx: number, my: number, mw: number, mh: number, color: string) => {
-        const screenX = mx - cameraX * 0.25;
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.moveTo(screenX, my);
-        ctx.lineTo(screenX + mw / 2, my - mh);
-        ctx.lineTo(screenX + mw, my);
-        ctx.fill();
-      };
-      drawMountain(100, 350, 480, 210, "#93c5fd");
-      drawMountain(500, 350, 520, 250, "#60a5fa");
-      drawMountain(980, 350, 560, 230, "#93c5fd");
-      drawMountain(1500, 350, 600, 270, "#60a5fa");
-      drawMountain(2050, 350, 520, 240, "#93c5fd");
-
-      // 2. MENGGAMBAR 5 PULAU DESA PANCASILA
-      const draw3DIsland = (
-        islandX: number,
-        width: number,
-        topColor: string,
-        dirtColor: string
-      ) => {
-        const sx = islandX - cameraX;
-        const topY = 350;
-        const depth = 110;
-
-        ctx.fillStyle = topColor;
-        ctx.fillRect(sx, topY, width, 18);
-        ctx.fillStyle = dirtColor;
-        ctx.fillRect(sx, topY + 18, width, depth);
-
-        ctx.strokeStyle = "rgba(0,0,0,0.12)";
-        ctx.lineWidth = 2;
-        for (let bx = 0; bx < width; bx += 32) {
-          ctx.beginPath();
-          ctx.moveTo(sx + bx, topY);
-          ctx.lineTo(sx + bx, topY + 18 + depth);
-          ctx.stroke();
-        }
-      };
-
-      draw3DIsland(60, 480, "#22c55e", "#15803d");
-      draw3DIsland(640, 460, "#eab308", "#854d0e");
-      draw3DIsland(1200, 460, "#16a34a", "#14532d");
-      draw3DIsland(1760, 460, "#ef4444", "#991b1b");
-      draw3DIsland(2320, 460, "#eab308", "#713f12");
-
-      // 3. Jembatan Gantung Kayu & Pegas Bouncer
-      const drawBridgeAndSpring = (bx: number, bw: number, springX: number) => {
-        const sx = bx - cameraX;
-        ctx.fillStyle = "#78350f";
-        ctx.fillRect(sx, 355, bw, 5);
-        ctx.fillStyle = "#b45309";
-        for (let px = 0; px < bw; px += 22) {
-          ctx.fillRect(sx + px, 350, 16, 12);
-        }
-
-        const spx = springX - cameraX;
-        ctx.fillStyle = "#dc2626";
-        ctx.fillRect(spx - 14, 346, 28, 6);
-        ctx.fillStyle = "#facc15";
-        ctx.fillRect(spx - 10, 340, 20, 6);
-        ctx.font = "16px sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText("🌀", spx, 335);
-      };
-
-      drawBridgeAndSpring(540, 100, 540);
-      drawBridgeAndSpring(1100, 100, 1100);
-      drawBridgeAndSpring(1660, 100, 1660);
-      drawBridgeAndSpring(2220, 100, 2220);
-
-      // 4. MENGGAMBAR RINTANGAN OBBY (DURI & LAVA ROBLOX)
-      obstacles.forEach((obs) => {
-        const ox = obs.x - cameraX;
-        if (obs.type === "spikes") {
-          // Duri Segitiga Tajam
-          ctx.fillStyle = "#dc2626";
-          for (let sp = -14; sp <= 14; sp += 10) {
-            ctx.beginPath();
-            ctx.moveTo(ox + sp, 350);
-            ctx.lineTo(ox + sp + 5, 332);
-            ctx.lineTo(ox + sp + 10, 350);
-            ctx.fill();
-          }
-          ctx.fillStyle = "#fef08a";
-          ctx.font = "bold 10px sans-serif";
-          ctx.textAlign = "center";
-          ctx.fillText("AWAS DURI! ⚠️", ox + 5, 324);
-        } else {
-          // Kolam Lava Berpijar Panas
-          ctx.fillStyle = "#f97316";
-          ctx.fillRect(ox - 16, 348, 36, 10);
-          ctx.fillStyle = "#ef4444";
-          ctx.fillRect(ox - 12, 350, 28, 8);
-          ctx.font = "14px sans-serif";
-          ctx.textAlign = "center";
-          ctx.fillText("🔥", ox + 2, 344);
-        }
-      });
-
-      // 5. MENGGAMBAR 5 RUMAH WARGA PANCASILA YANG MEGAH
-      houses.forEach((house) => {
-        const hx = house.worldX - cameraX;
-        const ground = 350;
-
-        // Dinding Rumah 3D
-        ctx.fillStyle = house.wallColor;
-        ctx.fillRect(hx - 45, ground - 90, 90, 90);
-        ctx.strokeStyle = "rgba(0,0,0,0.15)";
-        ctx.lineWidth = 3;
-        ctx.strokeRect(hx - 45, ground - 90, 90, 90);
-
-        // Atap Segitiga 3D
-        ctx.fillStyle = house.roofColor;
-        ctx.beginPath();
-        ctx.moveTo(hx - 58, ground - 90);
-        ctx.lineTo(hx, ground - 145);
-        ctx.lineTo(hx + 58, ground - 90);
-        ctx.closePath();
-        ctx.fill();
-        ctx.strokeStyle = "rgba(0,0,0,0.2)";
-        ctx.stroke();
-
-        // Pintu Rumah Kayu (Terbuka jika dikunjungi)
-        ctx.fillStyle = house.visited ? "#22c55e" : "#78350f";
-        ctx.fillRect(hx - 14, ground - 50, 28, 50);
-        ctx.fillStyle = "#fef08a";
-        ctx.beginPath();
-        ctx.arc(hx + 8, ground - 25, 3, 0, Math.PI * 2); // Kenop pintu
-        ctx.fill();
-
-        // Jendela Kaca Rumah
-        ctx.fillStyle = "#bae6fd";
-        ctx.fillRect(hx - 36, ground - 75, 16, 16);
-        ctx.fillRect(hx + 20, ground - 75, 16, 16);
-        ctx.strokeStyle = "#475569";
-        ctx.lineWidth = 1.5;
-        ctx.strokeRect(hx - 36, ground - 75, 16, 16);
-        ctx.strokeRect(hx + 20, ground - 75, 16, 16);
-
-        // Papan Nama Rumah & Simbol Sila di Puncak Atap
-        ctx.font = "32px sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText(house.symbol, hx, ground - 150);
-
-        ctx.font = "bold 12px sans-serif";
-        ctx.fillStyle = "#0f172a";
-        ctx.fillText(`🏠 ${house.houseTitle}`, hx, ground - 105);
-
-        // Avatar Tuan Rumah Menunggu di Depan Pintu
-        ctx.font = "24px sans-serif";
-        ctx.fillText(house.residentAvatar, hx, ground - 56);
-
-        // Indikator Status Rumah
-        if (house.visited) {
-          ctx.fillStyle = "#16a34a";
-          ctx.font = "bold 13px sans-serif";
-          ctx.fillText("✓ TELAH DIKUNJUNGI", hx, ground - 185);
-        } else if (Math.abs(playerState.x - house.worldX) < 65) {
-          // Efek Berkedip: Tombol Ketuk Pintu Muncul
-          const pulse = Math.sin(Date.now() * 0.008) * 3;
-          ctx.fillStyle = "#facc15";
-          ctx.font = "bold 13px sans-serif";
-          ctx.fillText("👉 TEKAN 'E' / KETUK PINTU 🚪", hx, ground - 185 + pulse);
-        }
-      });
-
-      // Garis Finish Tropi Emas Juara
-      const finishSx = 2690 - cameraX;
-      ctx.fillStyle = "#f59e0b";
-      ctx.fillRect(finishSx, 260, 14, 90);
-      ctx.font = "48px sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText("🏆", finishSx + 7, 235);
-      ctx.font = "bold 13px sans-serif";
-      ctx.fillStyle = "#78350f";
-      ctx.fillText("GARIS FINISH JUARA!", finishSx + 7, 195);
-
-      // 6. MENGGAMBAR KOIN EMAS PANCASILA
-      const coinBob = Math.sin(Date.now() * 0.006) * 4;
-      coins.forEach((coin) => {
-        if (coin.collected) return;
-        const cx = coin.x - cameraX;
-        const cy = coin.y + coinBob;
-        ctx.fillStyle = "rgba(250, 204, 21, 0.4)";
-        ctx.beginPath();
-        ctx.arc(cx, cy, 14, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.font = "20px sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText("🪙", cx, cy + 6);
-      });
-
-      // 7. MENGGAMBAR KARAKTER UTAMA 3D ROBLOX
-      const px = playerState.x - cameraX;
-      const py = playerState.y;
-
-      // Efek Asap Sprint
-      if (isSprinting && !playerState.isJumping) {
-        ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-        ctx.beginPath();
-        ctx.arc(px - (playerState.facing === "right" ? 22 : -22), 350, 8, 0, Math.PI * 2);
-        ctx.arc(px - (playerState.facing === "right" ? 34 : -34), 348, 6, 0, Math.PI * 2);
-        ctx.fill();
+      if (mount.contains(renderer.domElement)) {
+        mount.removeChild(renderer.domElement);
       }
-
-      // Bayangan 3D
-      ctx.fillStyle = "rgba(0,0,0,0.25)";
-      ctx.beginPath();
-      const shadowSize = Math.max(8, 22 - (350 - py) * 0.15);
-      ctx.ellipse(px, 352, shadowSize, 6, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Kaki Kotak Merah SD
-      const legSwing = Math.sin(playerState.animFrame * (isSprinting ? 0.6 : 0.4)) * 6;
-      ctx.fillStyle = "#ef4444";
-      ctx.fillRect(px - 10, py - 20 + (playerState.isJumping ? -4 : legSwing), 8, 20);
-      ctx.fillRect(px + 2, py - 20 + (playerState.isJumping ? -4 : -legSwing), 8, 20);
-      ctx.fillStyle = "#0f172a";
-      ctx.fillRect(px - 11, py - 3, 9, 5);
-      ctx.fillRect(px + 1, py - 3, 9, 5);
-
-      // Kemeja Putih Kotak SD
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(px - 14, py - 46, 28, 26);
-      ctx.fillStyle = "#dc2626";
-      ctx.fillRect(px - 2, py - 44, 4, 16); // Dasi
-
-      // Lengan
-      ctx.fillStyle = "#fed7aa";
-      ctx.fillRect(px - 20, py - 44 - legSwing, 6, 18);
-      ctx.fillRect(px + 14, py - 44 + legSwing, 6, 18);
-
-      // Kepala Kotak Roblox
-      ctx.fillStyle = "#fed7aa";
-      ctx.fillRect(px - 11, py - 68, 22, 22);
-
-      // Topi Merah Petualang SD
-      ctx.fillStyle = "#dc2626";
-      ctx.fillRect(px - 13, py - 73, 26, 7);
-      ctx.fillRect(px - 10, py - 81, 20, 9);
-
-      // Wajah Senyum Roblox
-      ctx.fillStyle = "#0f172a";
-      const eyeDir = playerState.facing === "right" ? 2 : -2;
-      ctx.fillRect(px - 5 + eyeDir, py - 60, 3, 4);
-      ctx.fillRect(px + 3 + eyeDir, py - 60, 3, 4);
-      ctx.beginPath();
-      ctx.arc(px + eyeDir, py - 54, 4, 0, Math.PI, false);
-      ctx.stroke();
-
-      // Label Nama Pemain
-      ctx.fillStyle = "#15803d";
-      ctx.font = "bold 12px sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText(isSprinting ? "⚡ Petualang (Sprint)" : "⭐ Petualang", px, py - 88);
-
-      // 8. PARTIKEL VISUAL
-      particles.forEach((pt) => {
-        const sx = pt.x - cameraX;
-        ctx.save();
-        ctx.globalAlpha = Math.max(0, pt.opacity);
-        ctx.fillStyle = pt.color;
-        ctx.font = "bold 14px sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText(pt.text, sx, pt.y);
-        ctx.restore();
-      });
-
-      animId = requestAnimationFrame(render);
+      renderer.dispose();
     };
-
-    render();
-    return () => cancelAnimationFrame(animId);
-  }, [playerState, cameraX, houses, obstacles, coins, particles, isSprinting, gameType]);
-
-  // Handler Pilihan Dialog Rumah
-  const handleSelectHouseOption = (optIdx: number) => {
-    if (!activeHouse || selectedHouseOption !== null) return;
-    setSelectedHouseOption(optIdx);
-
-    const opt = activeHouse.options[optIdx];
-    if (!opt) return;
-
-    if (opt.isRight) {
-      playCorrectSound();
-      playCoinSound();
-      setAdventureScore((prev) => prev + opt.points);
-      setHouseFeedback(`🎉 TEPAT SEKALI! ${opt.explanation}`);
-
-      setHouses((prev) =>
-        prev.map((h) => (h.id === activeHouse.id ? { ...h, visited: true } : h))
-      );
-    } else {
-      playWrongSound();
-      setHouseFeedback(`💡 CATATAN BELAJAR: ${opt.explanation}`);
-    }
-  };
-
-  const handleCloseHouseDialogue = () => {
-    playClickSound();
-    setActiveHouse(null);
-    setSelectedHouseOption(null);
-    setHouseFeedback(null);
-
-    // Cek apakah 5 rumah telah dikunjungi
-    const remaining = houses.filter((h) => !h.visited);
-    if (remaining.length === 0) {
-      setAdventureFinished(true);
-      playBadgeFanfareSound();
-      addPoints(25);
-    }
-  };
+  }, [gameType, isOpen, missions, triggerMissionAction]);
 
   // --------------------------------------------------------------------------
-  // BAGIAN 2: GAME MENJODOHKAN (BASA JAWA) DENGAN SOUND & MUSIK CERIA
+  // GAME MENJODOHKAN (UNTUK BAHASA JAWA)
   // --------------------------------------------------------------------------
   const matchingPairs: MatchingPair[] = useMemo(() => {
-    const c = (chapter || "").toLowerCase();
-    const t = (resolvedTitle || "").toLowerCase();
-
-    if (c.includes("punokawan") || t.includes("punokawan")) {
-      return [
-        { id: "1", left: "Semar", right: "Kuncung Putih & Bapak Bijaksana", hint: "Tokoh paling sepuh" },
-        { id: "2", left: "Gareng", right: "Sikil Jinjit & Tangan Ceko", hint: "Waspada lan ngati-ati" },
-        { id: "3", left: "Petruk", right: "Irung Dawa & Seneng Guyon", hint: "Awak dhuwur langsing" },
-        { id: "4", left: "Bagong", right: "Awak Bunder Lemu & Jujur", hint: "Anak bungsu Semar" },
-      ];
-    }
-
-    if (c.includes("pandhawa") || t.includes("pandhawa")) {
-      return [
-        { id: "1", left: "Puntadewa", right: "Pambarep Pandhawa, Jujur & Getih Putih", hint: "Ratu ing Amarta" },
-        { id: "2", left: "Werkudara", right: "Gagah Gedhe, Kuku Pancanaka, Jujur", hint: "Satria ing Jodhipati" },
-        { id: "3", left: "Janaka (Arjuna)", right: "Pinter Manah & Bagus Rupane", hint: "Satria ing Madukara" },
-        { id: "4", left: "Nakula & Sadewa", right: "Satria Kembar, Setya & Pinter Ngrumat Jaran", hint: "Satria kembar" },
-      ];
-    }
-
-    if (c.includes("unggah") || t.includes("unggah")) {
-      return [
-        { id: "1", left: "Mangan (Ngoko)", right: "Dahar (Krama Inggil)", hint: "Kanggo Bapak / Ibu Guru" },
-        { id: "2", left: "Turu (Ngoko)", right: "Sare (Krama Inggil)", hint: "Kanggo Istirahat wengi" },
-        { id: "3", left: "Lunga (Ngoko)", right: "Tindak (Krama Inggil)", hint: "Menyang kantor / sekolah" },
-        { id: "4", left: "Tuku (Ngoko)", right: "Mundhut (Krama Inggil)", hint: "Tuku barang ing toko" },
-        { id: "5", left: "Kowe (Ngoko)", right: "Panjenengan (Krama Inggil)", hint: "Sebutan kurmat" },
-      ];
-    }
-
     return [
-      { id: "1", left: "ꦲ (Ha)", right: "Hana / Caraka (Bunyi H / A)", hint: "Aksara kapisan" },
-      { id: "2", left: "ꦤ (Na)", right: "Nata / Nampa (Bunyi N)", hint: "Aksara kapindho" },
-      { id: "3", left: "ꦕ (Ca)", right: "Catur / Cara (Bunyi C)", hint: "Aksara katelu" },
-      { id: "4", left: "ꦫ (Ra)", right: "Rasa / Ratu (Bunyi R)", hint: "Aksara kapapat" },
-      { id: "5", left: "ꦏ (Ka)", right: "Karya / Kayu (Bunyi K)", hint: "Aksara kalima" },
+      { id: "1", left: "Semar", right: "Kuncung Putih & Bapak Bijaksana", hint: "Tokoh paling sepuh" },
+      { id: "2", left: "Gareng", right: "Sikil Jinjit & Tangan Ceko", hint: "Waspada lan ngati-ati" },
+      { id: "3", left: "Petruk", right: "Irung Dawa & Seneng Guyon", hint: "Awak dhuwur langsing" },
+      { id: "4", left: "Bagong", right: "Awak Bunder Lemu & Jujur", hint: "Anak bungsu Semar" },
     ];
-  }, [chapter, resolvedTitle]);
+  }, []);
 
   const [selectedLeft, setSelectedLeft] = useState<string | null>(null);
   const [matchedIds, setMatchedIds] = useState<string[]>([]);
@@ -1025,59 +760,27 @@ export default function AdaptiveEduGameModal({
     }
   }, [gameType, matchingPairs]);
 
-  const handleLeftCardClick = (id: string) => {
-    if (matchedIds.includes(id)) return;
-    playClickSound();
-    setSelectedLeft(id);
-  };
-
-  const handleRightCardClick = (id: string) => {
-    if (!selectedLeft) {
-      playWrongSound();
-      return;
-    }
-    if (matchedIds.includes(id)) return;
-
-    if (selectedLeft === id) {
-      playCorrectSound();
-      playCoinSound();
-      const updated = [...matchedIds, id];
-      setMatchedIds(updated);
-      setSelectedLeft(null);
-      setMatchingScore((prev) => prev + 10);
-
-      if (updated.length === matchingPairs.length) {
-        setMatchingFinished(true);
-        playBadgeFanfareSound();
-        addPoints(25);
-      }
-    } else {
-      playWrongSound();
-      setSelectedLeft(null);
-    }
-  };
-
   if (!isOpen) return null;
 
   return (
     <ModalPortal>
-      {/* FULLSCREEN TOTAL: LAYAR PENUH 100vw x 100vh */}
+      {/* CONTAINER FULLSCREEN 100vw x 100vh */}
       <div
         className="fixed inset-0 z-50 w-screen h-screen bg-slate-950 flex flex-col overflow-hidden select-none animate-in fade-in duration-200"
         role="dialog"
         aria-modal="true"
         aria-labelledby="roblox-game-title"
       >
-        {/* HUD TOP BAR ROBLOX EDITION */}
+        {/* HUD TOP BAR ROBLOX 3D */}
         <header className="h-14 bg-slate-900/95 border-b-2 border-yellow-400 text-white px-4 sm:px-6 flex items-center justify-between shrink-0 shadow-lg z-20">
           <div className="flex items-center gap-3 min-w-0">
             <span className="w-9 h-9 rounded-xl bg-gradient-to-tr from-yellow-400 to-orange-500 flex items-center justify-center text-xl shadow-md shrink-0">
-              {gameType === "adventure" ? "🏘️" : "🧩"}
+              {gameType === "adventure" ? "🕹️" : "🧩"}
             </span>
             <div className="min-w-0">
               <h2 id="roblox-game-title" className="font-black text-sm sm:text-base text-yellow-300 truncate tracking-wide">
                 {gameType === "adventure"
-                  ? "PETUALANGAN ROBLOX: JELAJAH RUMAH WARGA PANCASILA & OBBY"
+                  ? "DUNIA 3D ROBLOX: JELAJAH DESA 5 SILA & OBBY AKSI NYATA"
                   : "TEKA-TEKI MENJODOHKAN KARTU CERIA"}
               </h2>
               <p className="text-[11px] text-slate-300 truncate">
@@ -1097,14 +800,10 @@ export default function AdaptiveEduGameModal({
               </div>
             )}
 
-            {/* Skor Koin & Poin */}
+            {/* Skor Prestasi */}
             <div className="hidden sm:flex items-center gap-2 bg-slate-800/90 px-3.5 py-1.5 rounded-full border border-yellow-400/50">
               <span className="text-xs font-black text-yellow-300">
-                🪙 {gameType === "adventure" ? adventureScore : matchingScore} Koin
-              </span>
-              <span className="text-slate-500">•</span>
-              <span className="text-xs font-black text-emerald-400">
-                ⭐ +25 Poin
+                🪙 {gameType === "adventure" ? adventureScore : matchingScore} Poin Sila
               </span>
             </div>
 
@@ -1150,7 +849,7 @@ export default function AdaptiveEduGameModal({
         <div className="flex-1 w-full h-full relative overflow-hidden flex flex-col items-center justify-center bg-slate-900">
           {gameType === "adventure" ? (
             // =========================================================
-            // GAME 3D ROBLOX ADVENTURE: RUMAH WARGA & RINTANGAN OBBY
+            // DUNIA 3D ROBLOX THREE.JS (REAL 3D PERSPECTIVE)
             // =========================================================
             adventureFinished ? (
               <div className="text-center py-8 px-6 bg-slate-900/95 border-4 border-yellow-400 rounded-3xl shadow-2xl max-w-lg space-y-4 animate-in zoom-in-95 z-30 text-white">
@@ -1159,37 +858,23 @@ export default function AdaptiveEduGameModal({
                 </div>
                 <div className="space-y-1">
                   <h3 className="font-black text-2xl text-yellow-300">
-                    SELAMAT! KAMU JUARA DESA PANCASILA!
+                    SELAMAT! KAMU JUARA 5 AKSI PANCASILA!
                   </h3>
                   <p className="text-sm font-medium text-slate-300">
-                    Kamu berhasil melewati seluruh rintangan obby dan mengunjungi 5 Rumah Warga Pancasila!
+                    Kamu berhasil melakukan 5 aksi pengamalan nyata dan menuntaskan rintangan obby di Dunia 3D Roblox!
                   </p>
                 </div>
                 <div className="inline-flex items-center gap-3 bg-yellow-400/20 text-yellow-300 font-black px-5 py-2.5 rounded-2xl border border-yellow-400 text-sm">
                   <span>⭐ Poin Prestasi: +25 Poin</span>
                   <span>•</span>
-                  <span>Skor Koin: {adventureScore} Koin 🪙</span>
+                  <span>Skor Aksi: {adventureScore} Poin 🪙</span>
                 </div>
                 <div className="pt-2">
                   <button
                     type="button"
                     onClick={() => {
                       playClickSound();
-                      setHouses(initialHouses);
-                      setCoins(initialCoins);
-                      setPlayerLives(3);
-                      setPlayerState({
-                        x: 100,
-                        y: 350,
-                        vy: 0,
-                        isJumping: false,
-                        facing: "right",
-                        animFrame: 0,
-                      });
-                      setCameraX(0);
-                      setActiveHouse(null);
-                      setSelectedHouseOption(null);
-                      setHouseFeedback(null);
+                      setMissions(initialMissions);
                       setAdventureScore(0);
                       setAdventureFinished(false);
                       setGameStarted(true);
@@ -1197,24 +882,24 @@ export default function AdaptiveEduGameModal({
                     }}
                     className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black py-3 px-8 rounded-full shadow-lg transition text-sm cursor-pointer"
                   >
-                    🔄 Main Petualangan dari Awal
+                    🔄 Main Petualangan 3D dari Awal
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="w-full h-full relative flex items-center justify-center">
+              <div className="w-full h-full relative">
                 {/* OVERLAY AWAL MULAI MAIN (UN-MUTE AUDIO) */}
                 {!gameStarted && (
                   <div className="absolute inset-0 z-40 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-5 animate-in fade-in">
                     <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-yellow-400 via-amber-500 to-orange-500 flex items-center justify-center text-5xl shadow-2xl border-4 border-white animate-bounce">
-                      🏘️
+                      🕹️
                     </div>
                     <div className="space-y-2 max-w-md">
                       <h3 className="font-black text-2xl text-yellow-300 tracking-wide">
-                        JELAJAH RUMAH WARGA & RINTANGAN OBBY
+                        DUNIA 3D ROBLOX: AKSI PANCASILA
                       </h3>
                       <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-                        Berjalan-jalan mengunjungi 5 Rumah Warga Pancasila 🏠, ketuk pintu mereka 🚪, lompati rintangan duri & lava obby ⚠️, dan kumpulkan semua koin emas 🪙!
+                        Jelajahi desa 3D dengan karakter Roblox! Bukan sekadar menjawab kuis, kamu akan langsung mempraktikkan <b>5 Aksi Nyata Pengamalan Pancasila</b> di rumah-rumah warga dan melompati rintangan obby!
                       </p>
                     </div>
                     <button
@@ -1226,186 +911,148 @@ export default function AdaptiveEduGameModal({
                       }}
                       className="bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-base sm:text-lg py-4 px-10 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition border-4 border-white flex items-center gap-3 cursor-pointer"
                     >
-                      <span>▶️ MULAI JELAJAH (DENGAN MUSIK 🎵)</span>
+                      <span>▶️ MULAI MAIN 3D (DENGAN MUSIK 🎵)</span>
                     </button>
                   </div>
                 )}
 
-                {/* CANVAS UTAMA LAYAR PENUH */}
-                <canvas
-                  ref={canvasRef}
-                  width={1100}
-                  height={560}
-                  className="w-full h-full object-cover block cursor-crosshair"
-                />
+                {/* THREE.JS 3D CANVAS MOUNT */}
+                <div ref={mountRef} className="w-full h-full block" />
 
-                {/* PROGRESS BAR 5 RUMAH DI ATAS CANVAS */}
+                {/* HUD PROGRESS 5 SILA DI ATAS */}
                 <div className="absolute top-3 inset-x-4 sm:inset-x-12 z-20 flex items-center justify-between gap-1.5 sm:gap-3 bg-slate-900/85 backdrop-blur-md p-2.5 rounded-2xl border border-yellow-400/40">
-                  {houses.map((h) => (
+                  {missions.map((m) => (
                     <div
-                      key={h.id}
+                      key={m.id}
                       className={`flex-1 py-1.5 px-2 rounded-xl text-center text-xs font-black transition flex items-center justify-center gap-1.5 ${
-                        h.visited
+                        m.completed
                           ? "bg-emerald-600 text-white shadow-sm"
-                          : Math.abs(playerState.x - h.worldX) < 160
+                          : nearbyMission?.id === m.id
                           ? "bg-yellow-400 text-slate-950 ring-2 ring-yellow-300 animate-pulse"
                           : "bg-slate-800 text-slate-400"
                       }`}
                     >
-                      <span>{h.symbol}</span>
-                      <span className="hidden md:inline">Rumah {h.silaNumber}</span>
-                      {h.visited && <span>✓</span>}
+                      <span>{m.symbol}</span>
+                      <span className="hidden md:inline">Sila {m.silaNumber}</span>
+                      {m.completed && <span>✓</span>}
                     </div>
                   ))}
                 </div>
 
-                {/* TOMBOL POPUP INTERAKSI KETUK PINTU KETIKA MENDEKATI RUMAH */}
-                {nearbyHouse && !activeHouse && (
-                  <div className="absolute bottom-24 z-30 animate-bounce">
+                {/* NOTIFIKASI AKSI BERHASIL DI LAYAR */}
+                {activeNotification && (
+                  <div className="absolute top-20 inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-30 max-w-lg bg-emerald-950/90 border-2 border-emerald-400 p-4 rounded-2xl shadow-2xl text-center animate-in fade-in zoom-in text-white text-xs sm:text-sm font-bold backdrop-blur-md">
+                    {activeNotification}
+                  </div>
+                )}
+
+                {/* TOMBOL POPUP AKSI NYATA SAAT DI DEKAT OBJEK MISI */}
+                {nearbyMission && !nearbyMission.completed && (
+                  <div className="absolute bottom-28 inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-30 max-w-md w-full bg-slate-900/95 border-3 border-yellow-400 p-4 rounded-3xl shadow-2xl animate-bounce text-white space-y-2.5 text-center">
+                    <div className="text-xs font-black text-yellow-300 uppercase tracking-wider">
+                      🎯 Misi Aksi Nyata Sila {nearbyMission.silaNumber} ({nearbyMission.symbol})
+                    </div>
+                    <p className="text-xs sm:text-sm font-medium text-slate-200">
+                      {nearbyMission.instructionText}
+                    </p>
                     <button
                       type="button"
-                      onClick={knockAndEnterHouse}
-                      className="bg-gradient-to-r from-yellow-400 via-amber-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-slate-950 font-black px-6 py-3 rounded-full text-sm sm:text-base shadow-2xl border-2 border-white flex items-center gap-2 cursor-pointer transition hover:scale-105 active:scale-95"
+                      onClick={triggerMissionAction}
+                      className="w-full bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-slate-950 font-black py-3 px-6 rounded-2xl text-sm shadow-xl transition cursor-pointer border-2 border-white"
                     >
-                      <span>🚪</span>
-                      <span>KETUK PINTU &amp; KUNJUNGI RUMAH (E)</span>
+                      {nearbyMission.actionPrompt} (TEKAN 'E')
                     </button>
                   </div>
                 )}
 
-                {/* MODAL DIALOG DIDALAM RUMAH WARGA */}
-                {activeHouse && (
-                  <div className="absolute inset-x-4 sm:inset-x-auto sm:w-[560px] bottom-20 z-30 bg-slate-900/95 backdrop-blur-xl p-5 sm:p-6 rounded-3xl border-3 border-yellow-400 shadow-2xl animate-in slide-in-from-bottom-6 text-white space-y-3.5">
-                    <div className="flex items-center justify-between border-b border-slate-700 pb-2.5">
-                      <div className="flex items-center gap-3">
-                        <span className="text-3xl">{activeHouse.residentAvatar}</span>
-                        <div>
-                          <div className="text-xs font-black text-yellow-400 uppercase tracking-wide">
-                            {activeHouse.houseTitle} • {activeHouse.islandName}
-                          </div>
-                          <div className="font-black text-base text-white">
-                            Tuan Rumah: {activeHouse.residentName}
-                          </div>
-                        </div>
-                      </div>
-                      <span className="text-xs bg-yellow-400 text-slate-950 font-black px-3 py-1 rounded-full">
-                        Sila {activeHouse.silaNumber} {activeHouse.symbol}
-                      </span>
-                    </div>
-
-                    <p className="text-xs sm:text-sm font-semibold text-slate-200 leading-relaxed">
-                      📖 {activeHouse.story}
-                    </p>
-
-                    <div className="p-3 bg-yellow-400/10 rounded-2xl border border-yellow-400/30">
-                      <p className="text-xs sm:text-sm font-bold text-yellow-300">
-                        ❓ {activeHouse.question}
-                      </p>
-                    </div>
-
-                    {/* PILIHAN JAWABAN */}
-                    <div className="space-y-2 pt-1">
-                      {activeHouse.options.map((opt, idx) => {
-                        const isSelected = selectedHouseOption === idx;
-                        return (
-                          <button
-                            key={idx}
-                            type="button"
-                            disabled={selectedHouseOption !== null}
-                            onClick={() => handleSelectHouseOption(idx)}
-                            className={`w-full text-left p-3.5 rounded-2xl border-2 text-xs sm:text-sm font-bold transition flex items-start gap-2.5 cursor-pointer ${
-                              isSelected
-                                ? opt.isRight
-                                  ? "bg-emerald-600 border-white text-white"
-                                  : "bg-rose-600 border-white text-white"
-                                : "bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200"
-                            }`}
-                          >
-                            <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs shrink-0 font-black">
-                              {String.fromCharCode(65 + idx)}
-                            </span>
-                            <span className="flex-1">{opt.text}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* FEEDBACK & TOMBOL LANJUT BERJALAN */}
-                    {houseFeedback && (
-                      <div className="pt-2 space-y-3">
-                        <div className="p-3 bg-slate-800/90 rounded-2xl text-xs sm:text-sm font-medium border border-slate-700 text-slate-200">
-                          {houseFeedback}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={handleCloseHouseDialogue}
-                          className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-slate-950 font-black py-2.5 px-5 rounded-2xl shadow-lg transition text-xs sm:text-sm cursor-pointer"
-                        >
-                          Pamit &amp; Lanjut Berjalan ke Rumah Berikutnya ➡️
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* KONTROL ON-SCREEN TOUCH & MOUSE (ROBLOX CONTROLLER DI SUDUT BAWAH) */}
+                {/* KONTROL ON-SCREEN VIRTUAL CONTROLLER ROBLOX DI BAWAH */}
                 <div className="absolute bottom-4 inset-x-4 sm:inset-x-8 z-20 flex items-center justify-between pointer-events-none">
-                  {/* D-Pad Navigasi Kiri / Kanan & Sprint Dash */}
-                  <div className="flex items-center gap-2 pointer-events-auto">
+                  {/* D-Pad Navigasi 3D (Maju, Mundur, Kiri, Kanan, Sprint) */}
+                  <div className="grid grid-cols-3 gap-1.5 pointer-events-auto">
+                    <div />
                     <button
                       type="button"
-                      onClick={() => movePlayerH(-28, "left")}
-                      className="w-14 sm:w-16 h-14 rounded-2xl bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-950 text-white border-2 border-yellow-400/60 font-black text-xl shadow-xl transition active:scale-90 flex items-center justify-center cursor-pointer backdrop-blur-md"
-                      aria-label="Jalan Kiri"
+                      onMouseDown={() => (keysRef.current.forward = true)}
+                      onMouseUp={() => (keysRef.current.forward = false)}
+                      onTouchStart={() => (keysRef.current.forward = true)}
+                      onTouchEnd={() => (keysRef.current.forward = false)}
+                      className="w-12 h-12 rounded-xl bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-950 text-white border border-yellow-400/60 font-black text-lg shadow-lg flex items-center justify-center cursor-pointer active:scale-90"
+                    >
+                      ▲
+                    </button>
+                    <div />
+                    <button
+                      type="button"
+                      onMouseDown={() => (keysRef.current.left = true)}
+                      onMouseUp={() => (keysRef.current.left = false)}
+                      onTouchStart={() => (keysRef.current.left = true)}
+                      onTouchEnd={() => (keysRef.current.left = false)}
+                      className="w-12 h-12 rounded-xl bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-950 text-white border border-yellow-400/60 font-black text-lg shadow-lg flex items-center justify-center cursor-pointer active:scale-90"
                     >
                       ◀
                     </button>
-
                     <button
                       type="button"
-                      onClick={() => {
-                        setIsSprinting((prev) => !prev);
-                        playDashSound();
-                      }}
-                      className={`h-14 px-3 sm:px-4 rounded-2xl border-2 font-black text-xs sm:text-sm shadow-xl transition active:scale-90 flex items-center gap-1.5 cursor-pointer backdrop-blur-md ${
-                        isSprinting
-                          ? "bg-amber-400 text-slate-950 border-white ring-2 ring-yellow-300"
-                          : "bg-slate-900/80 text-yellow-300 border-yellow-400/60 hover:bg-slate-800"
-                      }`}
-                      aria-label="Sprint Dash"
+                      onMouseDown={() => (keysRef.current.backward = true)}
+                      onMouseUp={() => (keysRef.current.backward = false)}
+                      onTouchStart={() => (keysRef.current.backward = true)}
+                      onTouchEnd={() => (keysRef.current.backward = false)}
+                      className="w-12 h-12 rounded-xl bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-950 text-white border border-yellow-400/60 font-black text-lg shadow-lg flex items-center justify-center cursor-pointer active:scale-90"
                     >
-                      <span>⚡</span>
-                      <span className="hidden sm:inline">{isSprinting ? "LARI CEPAT ON" : "LARI CEPAT"}</span>
+                      ▼
                     </button>
-
                     <button
                       type="button"
-                      onClick={() => movePlayerH(28, "right")}
-                      className="w-14 sm:w-16 h-14 rounded-2xl bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-950 text-white border-2 border-yellow-400/60 font-black text-xl shadow-xl transition active:scale-90 flex items-center justify-center cursor-pointer backdrop-blur-md"
-                      aria-label="Jalan Kanan"
+                      onMouseDown={() => (keysRef.current.right = true)}
+                      onMouseUp={() => (keysRef.current.right = false)}
+                      onTouchStart={() => (keysRef.current.right = true)}
+                      onTouchEnd={() => (keysRef.current.right = false)}
+                      className="w-12 h-12 rounded-xl bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-950 text-white border border-yellow-400/60 font-black text-lg shadow-lg flex items-center justify-center cursor-pointer active:scale-90"
                     >
                       ▶
                     </button>
                   </div>
 
-                  {/* Tombol Ketuk Pintu (saat dekat) & Loncat Roblox */}
+                  {/* Tombol Aksi Nyata & Lompat Roblox */}
                   <div className="flex items-center gap-2 pointer-events-auto">
-                    {nearbyHouse && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsSprinting((s) => {
+                          const next = !s;
+                          keysRef.current.sprint = next;
+                          playDashSound();
+                          return next;
+                        });
+                      }}
+                      className={`h-12 px-3 sm:px-4 rounded-xl border font-black text-xs shadow-lg transition active:scale-90 flex items-center gap-1 cursor-pointer ${
+                        isSprinting
+                          ? "bg-amber-400 text-slate-950 border-white ring-2 ring-yellow-300"
+                          : "bg-slate-900/80 text-yellow-300 border-yellow-400/60 hover:bg-slate-800"
+                      }`}
+                    >
+                      <span>⚡</span>
+                      <span className="hidden sm:inline">SPRINT</span>
+                    </button>
+
+                    {nearbyMission && !nearbyMission.completed && (
                       <button
                         type="button"
-                        onClick={knockAndEnterHouse}
-                        className="h-14 px-5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-xs sm:text-sm shadow-2xl transition active:scale-90 flex items-center gap-1.5 cursor-pointer border-2 border-white animate-pulse"
+                        onClick={triggerMissionAction}
+                        className="h-12 px-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-xs shadow-xl transition active:scale-90 flex items-center gap-1 cursor-pointer border-2 border-white animate-pulse"
                       >
-                        <span>🚪</span>
-                        <span>KETUK PINTU</span>
+                        <span>🖐️</span>
+                        <span>AKSI SILA</span>
                       </button>
                     )}
 
                     <button
                       type="button"
-                      onClick={jumpPlayer}
-                      className="h-14 px-6 sm:px-8 rounded-2xl bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-slate-950 font-black text-sm sm:text-base shadow-2xl transition active:scale-90 flex items-center gap-2 cursor-pointer border-2 border-white"
-                      aria-label="Lompat"
+                      onMouseDown={() => (keysRef.current.jump = true)}
+                      onMouseUp={() => (keysRef.current.jump = false)}
+                      onTouchStart={() => (keysRef.current.jump = true)}
+                      onTouchEnd={() => (keysRef.current.jump = false)}
+                      className="h-12 px-6 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-slate-950 font-black text-xs sm:text-sm shadow-xl transition active:scale-90 flex items-center gap-1.5 cursor-pointer border-2 border-white"
                     >
                       <span>🦘</span>
                       <span>LOMPAT (SPASI)</span>
@@ -1416,7 +1063,7 @@ export default function AdaptiveEduGameModal({
             )
           ) : (
             // =========================================================
-            // GAME MENJODOHKAN (BASA JAWA) DENGAN MUSIK & SOUND
+            // GAME MENJODOHKAN (BASA JAWA)
             // =========================================================
             <div className="w-full max-w-4xl p-6 sm:p-10 flex flex-col items-center justify-center text-white space-y-6">
               {matchingFinished ? (
@@ -1475,7 +1122,11 @@ export default function AdaptiveEduGameModal({
                             key={pair.id}
                             type="button"
                             disabled={isDone}
-                            onClick={() => handleLeftCardClick(pair.id)}
+                            onClick={() => {
+                              if (isDone) return;
+                              playClickSound();
+                              setSelectedLeft(pair.id);
+                            }}
                             className={`w-full p-4 rounded-2xl border-2 font-bold text-sm sm:text-base text-left transition cursor-pointer ${
                               isDone
                                 ? "bg-slate-800/40 text-slate-500 border-slate-800 line-through opacity-50"
@@ -1502,7 +1153,26 @@ export default function AdaptiveEduGameModal({
                             key={pair.id}
                             type="button"
                             disabled={isDone}
-                            onClick={() => handleRightCardClick(pair.id)}
+                            onClick={() => {
+                              if (!selectedLeft) return;
+                              if (isDone) return;
+                              if (selectedLeft === pair.id) {
+                                playCorrectSound();
+                                playCoinSound();
+                                const updated = [...matchedIds, pair.id];
+                                setMatchedIds(updated);
+                                setSelectedLeft(null);
+                                setMatchingScore((prev) => prev + 10);
+                                if (updated.length === matchingPairs.length) {
+                                  setMatchingFinished(true);
+                                  playBadgeFanfareSound();
+                                  addPoints(25);
+                                }
+                              } else {
+                                playOofSound();
+                                setSelectedLeft(null);
+                              }
+                            }}
                             className={`w-full p-4 rounded-2xl border-2 font-bold text-xs sm:text-sm text-left transition cursor-pointer ${
                               isDone
                                 ? "bg-emerald-950/30 text-emerald-500 border-emerald-900 line-through opacity-50"
