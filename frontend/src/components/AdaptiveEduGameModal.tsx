@@ -219,6 +219,13 @@ export default function AdaptiveEduGameModal({
     sprint: false,
   });
 
+  const missionsRef = useRef<SilaActionMission[]>(missions);
+  useEffect(() => {
+    missionsRef.current = missions;
+  }, [missions]);
+
+  const triggerMissionActionRef = useRef<() => void>(() => {});
+
   // Eksekusi Misi Aksi Nyata
   const triggerMissionAction = useCallback(() => {
     if (!nearbyMission || nearbyMission.completed) return;
@@ -250,6 +257,10 @@ export default function AdaptiveEduGameModal({
   }, [nearbyMission, missions, addPoints]);
 
   useEffect(() => {
+    triggerMissionActionRef.current = triggerMissionAction;
+  }, [triggerMissionAction]);
+
+  useEffect(() => {
     if (gameType !== "adventure" || !isOpen) return;
 
     const mount = mountRef.current;
@@ -269,6 +280,8 @@ export default function AdaptiveEduGameModal({
     const { w: initW, h: initH } = getViewportSize();
 
     const camera = new THREE.PerspectiveCamera(58, initW / initH, 0.1, 1000);
+    camera.position.set(0, 4.2, 8.5);
+    camera.lookAt(0, 1.6, -3);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     renderer.setSize(initW, initH);
@@ -784,13 +797,13 @@ export default function AdaptiveEduGameModal({
 
       // Cek Jarak dengan Misi Aksi Nyata
       let curNearby: SilaActionMission | null = null;
-      for (const m of missions) {
+      for (const m of missionsRef.current) {
         if (Math.abs(playerGroup.position.z - m.zoneZ) < 5 && Math.abs(playerGroup.position.x - 2) < 4) {
           curNearby = m;
           break;
         }
       }
-      setNearbyMission(curNearby);
+      setNearbyMission((prev) => (prev?.id === curNearby?.id ? prev : curNearby));
 
       // KAMERA THIRD-PERSON (Mengikuti Karakter Roblox Seperti Foto Pengguna!)
       const camTargetX = playerGroup.position.x;
@@ -818,6 +831,7 @@ export default function AdaptiveEduGameModal({
       renderer.render(scene, camera);
     };
 
+    renderer.render(scene, camera);
     animate();
 
     // Resize Handler
@@ -847,7 +861,7 @@ export default function AdaptiveEduGameModal({
       }
       if (e.key === "e" || e.key === "E") {
         e.preventDefault();
-        triggerMissionAction();
+        triggerMissionActionRef.current();
       }
     };
 
@@ -876,7 +890,7 @@ export default function AdaptiveEduGameModal({
       }
       renderer.dispose();
     };
-  }, [gameType, isOpen, missions, triggerMissionAction]);
+  }, [gameType, isOpen]);
 
   // --------------------------------------------------------------------------
   // GAME MENJODOHKAN (UNTUK BAHASA JAWA)
@@ -993,7 +1007,7 @@ export default function AdaptiveEduGameModal({
         </header>
 
         {/* CONTAINER ARENA FULLSCREEN */}
-        <div className="flex-1 w-full h-full relative overflow-hidden flex flex-col items-center justify-center bg-slate-900">
+        <div className="flex-1 w-full relative overflow-hidden flex flex-col items-center justify-center bg-slate-900">
           {gameType === "adventure" ? (
             // =========================================================
             // DUNIA 3D ROBLOX THREE.JS (REAL 3D PERSPECTIVE)
