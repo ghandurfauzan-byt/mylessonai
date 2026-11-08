@@ -200,7 +200,7 @@ export default function AdaptiveEduGameModal({
   // --------------------------------------------------------------------------
   // ENGINE 3D ROBLOX THREE.JS
   // --------------------------------------------------------------------------
-  const mountRef = useRef<HTMLDivElement | null>(null);
+  const [mountEl, setMountEl] = useState<HTMLDivElement | null>(null);
 
   // State Kontrol Input
   const keysRef = useRef<{
@@ -261,10 +261,9 @@ export default function AdaptiveEduGameModal({
   }, [triggerMissionAction]);
 
   useEffect(() => {
-    if (gameType !== "adventure" || !isOpen) return;
+    if (gameType !== "adventure" || !isOpen || !mountEl) return;
 
-    const mount = mountRef.current;
-    if (!mount) return;
+    const mount = mountEl;
 
     // 1. SETUP SCENE, CAMERA, & RENDERER
     const scene = new THREE.Scene();
@@ -272,8 +271,9 @@ export default function AdaptiveEduGameModal({
     scene.fog = new THREE.FogExp2("#93c5fd", 0.008);
 
     const getViewportSize = () => {
-      const w = mount.clientWidth > 50 ? mount.clientWidth : window.innerWidth;
-      const h = mount.clientHeight > 50 ? mount.clientHeight : Math.max(300, window.innerHeight - 56);
+      const rect = mount.getBoundingClientRect();
+      const w = rect.width > 50 ? Math.floor(rect.width) : (mount.clientWidth > 50 ? mount.clientWidth : window.innerWidth);
+      const h = rect.height > 50 ? Math.floor(rect.height) : (mount.clientHeight > 50 ? mount.clientHeight : Math.max(300, window.innerHeight - 56));
       return { w, h };
     };
 
@@ -284,6 +284,7 @@ export default function AdaptiveEduGameModal({
     camera.lookAt(0, 1.6, -3);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    renderer.setClearColor("#60a5fa", 1);
     renderer.setSize(initW, initH);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
@@ -299,6 +300,9 @@ export default function AdaptiveEduGameModal({
     mount.appendChild(renderer.domElement);
 
     // 2. LIGHTING (Terang, Hangat Khas Roblox Sun)
+    const ambientLight = new THREE.AmbientLight("#ffffff", 0.9);
+    scene.add(ambientLight);
+
     const hemiLight = new THREE.HemisphereLight("#ffffff", "#445566", 0.9);
     hemiLight.position.set(0, 50, 0);
     scene.add(hemiLight);
@@ -885,12 +889,12 @@ export default function AdaptiveEduGameModal({
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
-      if (mount.contains(renderer.domElement)) {
+      if (mount && mount.contains(renderer.domElement)) {
         mount.removeChild(renderer.domElement);
       }
       renderer.dispose();
     };
-  }, [gameType, isOpen]);
+  }, [mountEl, gameType, isOpen]);
 
   // --------------------------------------------------------------------------
   // GAME MENJODOHKAN (UNTUK BAHASA JAWA)
@@ -1050,7 +1054,7 @@ export default function AdaptiveEduGameModal({
             ) : (
               <div className="absolute inset-0 w-full h-full overflow-hidden">
                 {/* THREE.JS 3D CANVAS MOUNT */}
-                <div ref={mountRef} className="absolute inset-0 w-full h-full block" />
+                <div ref={setMountEl} className="absolute inset-0 w-full h-full block" />
 
                 {/* OVERLAY AWAL MULAI MAIN (UN-MUTE AUDIO) */}
                 {!gameStarted && (
