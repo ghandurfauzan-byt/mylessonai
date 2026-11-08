@@ -901,8 +901,8 @@ export default function PelajarDashboardPage() {
                 </span>
                 <div className="text-left min-w-0">
                   <div className="text-[10px] font-black uppercase tracking-wider text-yellow-100 flex items-center gap-1">
-                    <span>Game AI Adaptif</span>
-                    <span className="bg-white/20 px-1 rounded text-[9px]">Manus Ready</span>
+                    <span>Game Edukasi 2D</span>
+                    <span className="bg-white/20 px-1 rounded text-[9px]">Instan &amp; Gratis</span>
                   </div>
                   <div className="text-xs sm:text-sm font-black truncate">
                     {isJawaCurrent ? "Teka-Teki Menjodohkan 🧩" : "Petualangan Pengamalan 🗺️"}
