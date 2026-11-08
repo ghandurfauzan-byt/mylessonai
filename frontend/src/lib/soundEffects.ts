@@ -403,5 +403,73 @@ export function stopBadgeSpeech() {
   stopSpeaking();
 }
 
+// -------------------------------------------------------------
+// BGM & EFEK SUARA PETUALANGAN 3D ROBLOX ADVENTURE
+// -------------------------------------------------------------
+let bgmInterval: ReturnType<typeof setInterval> | null = null;
+
+export function playJumpSound() {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  try {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const t = ctx.currentTime;
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(160, t);
+    osc.frequency.exponentialRampToValueAtTime(500, t + 0.12);
+    gain.gain.setValueAtTime(0.2, t);
+    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.18);
+  } catch {}
+}
+
+export function startAdventureBgm() {
+  if (bgmInterval) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const notes = [
+    261.63, 329.63, 392.0, 523.25,
+    392.0, 329.63, 440.0, 392.0,
+    349.23, 440.0, 523.25, 587.33,
+    523.25, 392.0, 329.63, 261.63,
+  ];
+  let noteIndex = 0;
+
+  bgmInterval = setInterval(() => {
+    if (!ctx || ctx.state === "suspended") return;
+    try {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const t = ctx.currentTime;
+      const freq = notes[noteIndex % notes.length] ?? 261.63;
+      noteIndex++;
+
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(freq, t);
+
+      gain.gain.setValueAtTime(0.04, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.22);
+    } catch {}
+  }, 220);
+}
+
+export function stopAdventureBgm() {
+  if (bgmInterval) {
+    clearInterval(bgmInterval);
+    bgmInterval = null;
+  }
+}
+
+
 export { isSpeaking, startSpeaking, stopSpeaking };
 
