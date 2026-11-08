@@ -489,6 +489,48 @@ export function playDashSound() {
   } catch {}
 }
 
+export function playOofSound() {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  try {
+    if (ctx.state === "suspended") void ctx.resume();
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(150, t);
+    osc.frequency.exponentialRampToValueAtTime(65, t + 0.16);
+    gain.gain.setValueAtTime(0.35, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.22);
+  } catch {}
+}
+
+export function playKnockDoorSound() {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  try {
+    if (ctx.state === "suspended") void ctx.resume();
+    const t = ctx.currentTime;
+    [0, 0.08, 0.16].forEach((delay) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(220, t + delay);
+      osc.frequency.exponentialRampToValueAtTime(100, t + delay + 0.04);
+      gain.gain.setValueAtTime(0.3, t + delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.05);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t + delay);
+      osc.stop(t + delay + 0.06);
+    });
+  } catch {}
+}
+
 /**
  * BGM Petualangan Ceria Ala Game Nintendo / Roblox Obby
  * Pola Melodi 16 Baris, Bassline Menyenangkan, dan Beat Ritmis Web Audio API
