@@ -115,82 +115,61 @@ export default function ChapterModeSelector({
         </legend>
 
         <div className="space-y-2.5">
-          {aiModes.map((m) => {
-            const isSelected = mode === m.value;
-            const isQuizMode = m.value === "kuis_tantangan";
+          {aiModes
+            .filter((m) => m.value !== "kuis_tantangan")
+            .map((m) => {
+              const isSelected = mode === m.value;
 
-            return (
-              <div
-                key={m.value}
-                onClick={() => {
-                  playClickSound();
-                  if (isQuizMode) {
-                    navigate("/dashboard/pelajar/kuis");
-                  } else {
+              return (
+                <div
+                  key={m.value}
+                  onClick={() => {
+                    playClickSound();
                     updateQuery({ mode: m.value });
-                  }
-                }}
-                className={`relative flex items-center justify-between p-3.5 sm:p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 shadow-xs hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 ${
-                  isSelected
-                    ? isQuizMode
-                      ? "bg-gradient-to-r from-emerald-50 via-teal-50 to-white dark:from-slate-800 dark:via-emerald-950/40 dark:to-slate-800 border-emerald-500 shadow-md ring-2 ring-emerald-400/30"
-                      : "bg-gradient-to-r from-blue-50 via-sky-50 to-white dark:from-slate-800 dark:via-blue-950/40 dark:to-slate-800 border-blue-500 shadow-md ring-2 ring-blue-400/30"
-                    : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700/60"
-                }`}
-              >
-                <div className="flex items-center gap-3.5 min-w-0">
-                  {/* Ikon Format Bersih & Proporsional */}
-                  <div
-                    className={`w-11 h-11 rounded-2xl flex items-center justify-center text-xl shrink-0 shadow-sm border-2 ${
-                      isQuizMode
-                        ? "bg-gradient-to-br from-emerald-400 to-teal-500 text-white border-white dark:border-emerald-400"
-                        : "bg-gradient-to-br from-blue-400 to-indigo-500 text-white border-white dark:border-blue-400"
-                    }`}
-                  >
-                    {isQuizMode ? "🎮" : "📖"}
-                  </div>
-
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-black text-slate-900 dark:text-white text-xs sm:text-sm">
-                        {m.label}
-                      </span>
-                      <span
-                        className={`text-[10px] font-black px-2 py-0.2 rounded-full border ${
-                          isQuizMode
-                            ? "bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-200 border-amber-300 dark:border-amber-700"
-                            : "bg-blue-100 dark:bg-blue-950/80 text-blue-900 dark:text-blue-200 border-blue-300 dark:border-blue-700"
-                        }`}
-                      >
-                        {isQuizMode ? "🏆 +30 Poin" : "⭐ Materi Pokok"}
-                      </span>
+                  }}
+                  className={`relative flex items-center justify-between p-3.5 sm:p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 shadow-xs hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 ${
+                    isSelected
+                      ? "bg-gradient-to-r from-blue-50 via-sky-50 to-white dark:from-slate-800 dark:via-blue-950/40 dark:to-slate-800 border-blue-500 shadow-md ring-2 ring-blue-400/30"
+                      : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700/60"
+                  }`}
+                >
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    {/* Ikon Format Bersih & Proporsional */}
+                    <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-xl shrink-0 shadow-sm border-2 bg-gradient-to-br from-blue-400 to-indigo-500 text-white border-white dark:border-blue-400">
+                      📖
                     </div>
 
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5 leading-snug">
-                      {isQuizMode
-                        ? "Latihan kuis adaptif berhadiah koin emas"
-                        : "Intisari modul ramah anak & contoh aksi nyata"}
-                    </p>
-                  </div>
-                </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-black text-slate-900 dark:text-white text-xs sm:text-sm">
+                          {m.label}
+                        </span>
+                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full border bg-blue-100 dark:bg-blue-950/80 text-blue-900 dark:text-blue-200 border-blue-300 dark:border-blue-700">
+                          ⭐ Materi Pokok
+                        </span>
+                      </div>
 
-                {/* Indikator Pemilihan Cantik */}
-                <div className="shrink-0 pl-2">
-                  <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                      isSelected
-                        ? isQuizMode
-                          ? "border-emerald-600 bg-emerald-600 text-white"
-                          : "border-blue-600 bg-blue-600 text-white"
-                        : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700"
-                    }`}
-                  >
-                    {isSelected && <span className="w-2 h-2 rounded-full bg-white inline-block" />}
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5 leading-snug">
+                        Intisari modul ramah anak &amp; contoh aksi nyata
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Indikator Pemilihan Cantik */}
+                  <div className="shrink-0 pl-2">
+                    <div
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                        isSelected
+                          ? "border-blue-600 bg-blue-600 text-white"
+                          : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700"
+                      }`}
+                    >
+                      {isSelected && <span className="w-2 h-2 rounded-full bg-white inline-block" />}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
       </fieldset>
     </div>

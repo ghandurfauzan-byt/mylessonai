@@ -1,9 +1,18 @@
 import NotificationCenter from "@/components/NotificationCenter";
 import { SESSION_QUERY_KEY } from "@/hooks/useSession";
-import { logout } from "@/lib/api/sessionApi";
+import { fetchProfile, logout } from "@/lib/api/sessionApi";
 import { useUIStore } from "@/lib/store/useUIStore";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+
+function getInitials(name?: string, fallback = "PL"): string {
+  if (!name || !name.trim()) return fallback;
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 1) {
+    return words[0].substring(0, 2).toUpperCase();
+  }
+  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+}
 
 export default function Navbar({ role }: { role: "pelajar" | "pengajar" }) {
   const location = useLocation();
@@ -11,9 +20,17 @@ export default function Navbar({ role }: { role: "pelajar" | "pengajar" }) {
   const queryClient = useQueryClient();
   const isTeacher = role === "pengajar";
 
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: fetchProfile,
+    staleTime: 1000 * 60 * 5,
+  });
+
   const themeMode = useUIStore((s) => s.themeMode);
   const toggleTheme = useUIStore((s) => s.toggleTheme);
   const openProfileModal = useUIStore((s) => s.openProfileModal);
+
+  const userInitials = getInitials(profile?.name, isTeacher ? "GR" : "PL");
 
   async function handleLogout() {
     await logout();
@@ -141,14 +158,14 @@ export default function Navbar({ role }: { role: "pelajar" | "pengajar" }) {
             type="button"
             onClick={openProfileModal}
             aria-label="Lihat dan edit profil pengguna"
-            title="Klik untuk melihat profil saya"
-            className={`w-8 h-8 rounded-full text-white flex items-center justify-center font-bold text-xs shadow-sm ring-2 hover:scale-105 transition active:scale-95 ${
+            title={profile?.name ? `Profil: ${profile.name}` : "Klik untuk melihat profil saya"}
+            className={`w-9 h-9 rounded-full text-white flex items-center justify-center font-black text-xs shadow-md ring-2 hover:scale-105 transition active:scale-95 tracking-wider ${
               isTeacher
                 ? "bg-purple-600 ring-purple-100 dark:ring-purple-900"
                 : "bg-blue-600 ring-blue-100 dark:ring-blue-900"
             }`}
           >
-            {isTeacher ? "DS" : "PL"}
+            {userInitials}
           </button>
 
           {/* Logout (FR-03) */}

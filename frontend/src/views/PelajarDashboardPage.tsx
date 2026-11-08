@@ -185,7 +185,7 @@ export default function PelajarDashboardPage() {
     fetch("/api/profile")
       .then((r) => r.json())
       .then((res) => {
-        if (res?.name && res.role === "pelajar") {
+        if (res?.name) {
           setCurrentStudent(res);
           setCurrentStudentName(res.name);
           if (typeof res.points === "number") {
@@ -885,7 +885,7 @@ export default function PelajarDashboardPage() {
 
           <ChapterModeSelector chapter={chapter} mode={mode} />
 
-          {/* Tombol Game Edukasi Interaktif (Otomatis Adaptif Sesuai Materi) */}
+          {/* Tombol Game Edukasi Interaktif (Game 3D Seru) */}
           <div>
             <button
               type="button"
@@ -893,23 +893,23 @@ export default function PelajarDashboardPage() {
                 playClickSound();
                 setIsGameModalOpen(true);
               }}
-              className="w-full bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 hover:from-amber-600 hover:to-orange-600 text-white font-black py-3.5 px-4 rounded-2xl transition shadow-lg shadow-orange-500/25 hover:scale-105 active:scale-95 flex items-center justify-between border-4 border-white dark:border-amber-600 group cursor-pointer"
+              className="w-full bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 hover:from-amber-600 hover:to-orange-600 text-white font-black py-3.5 px-4 rounded-2xl transition shadow-lg shadow-orange-500/25 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-between border-4 border-white dark:border-amber-600 group cursor-pointer"
             >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <span className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center font-black text-lg shrink-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center font-black text-xl shrink-0 shadow-inner">
                   {isJawaCurrent ? "🧩" : "🗺️"}
                 </span>
                 <div className="text-left min-w-0">
-                  <div className="text-[10px] font-black uppercase tracking-wider text-yellow-100 flex items-center gap-1">
-                    <span>Game 3D Roblox</span>
-                    <span className="bg-white/20 px-1 rounded text-[9px]">Layar Penuh & Musik 🎵</span>
+                  <div className="text-[10px] font-black uppercase tracking-wider text-yellow-100 flex items-center gap-1.5 flex-wrap">
+                    <span>Game 3D Seru</span>
+                    <span className="bg-white/20 px-1.5 py-0.2 rounded text-[9px] font-bold">Layar Penuh 🎵</span>
                   </div>
-                  <div className="text-xs sm:text-sm font-black truncate">
-                    {isJawaCurrent ? "Teka-Teki Menjodohkan 🧩" : "Petualangan 5 Pulau Pancasila 🗺️"}
+                  <div className="text-xs sm:text-sm font-black truncate text-white">
+                    {isJawaCurrent ? "Teka-Teki Menjodohkan 🧩" : "Petualangan Desa Pancasila 🗺️"}
                   </div>
                 </div>
               </div>
-              <span className="text-[11px] bg-white text-orange-900 font-black px-2 py-0.5 rounded-full shadow-xs shrink-0">
+              <span className="text-[11px] bg-white text-orange-950 font-black px-2.5 py-1 rounded-full shadow-xs shrink-0">
                 +25 Poin ⭐
               </span>
             </button>

@@ -4,13 +4,21 @@ import CurriculumValidationManager from "@/components/CurriculumValidationManage
 import ExportReportButton from "@/components/ExportReportButton";
 import InviteTeacherModal from "@/components/InviteTeacherModal";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { fetchProfile } from "@/lib/api/sessionApi";
 import { playClickSound } from "@/lib/soundEffects";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 export default function PengajarDashboardPage() {
   useDocumentTitle("Dashboard Guru — Validasi Materi & Evaluasi Siswa");
   const [isResetting, setIsResetting] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: fetchProfile,
+    staleTime: 1000 * 60 * 5,
+  });
 
   const handleResetPoints = async () => {
     playClickSound();
@@ -50,8 +58,8 @@ export default function PengajarDashboardPage() {
               <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-teal-900 dark:text-teal-200 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-full shadow-sm border border-transparent dark:border-teal-700">
                 🏫 SD Negeri 1 Madiun
               </span>
-              <span className="text-xs font-black text-white bg-teal-700 dark:bg-teal-900/80 px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-teal-400 dark:border-teal-700">
-                👨‍🏫 Guru Kelas: Bpk. Darmawan
+              <span className="text-xs font-black text-white bg-teal-700 dark:bg-teal-900/80 px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-teal-400 dark:border-teal-700 shadow-xs">
+                👨‍🏫 Guru: {profile?.name || "Bpk. Darmawan"}
               </span>
             </div>
 

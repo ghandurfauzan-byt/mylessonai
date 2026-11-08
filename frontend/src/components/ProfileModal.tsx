@@ -9,6 +9,15 @@ import type { UserProfile } from "@shared/schema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
+function getInitials(name?: string, fallback = "PL"): string {
+  if (!name || !name.trim()) return fallback;
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 1) {
+    return words[0].substring(0, 2).toUpperCase();
+  }
+  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+}
+
 export default function ProfileModal() {
   const isOpen = useUIStore((s) => s.isProfileModalOpen);
   const closeModal = useUIStore((s) => s.closeProfileModal);
@@ -88,8 +97,8 @@ export default function ProfileModal() {
       <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 relative animate-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 flex items-center justify-center font-bold text-sm">
-              {profile?.role === "pengajar" ? "DS" : "PL"}
+            <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 flex items-center justify-center font-black text-sm tracking-wider">
+              {getInitials(profile?.name || name, profile?.role === "pengajar" ? "GR" : "PL")}
             </div>
             <div>
               <h2
