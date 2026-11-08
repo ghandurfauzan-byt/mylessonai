@@ -688,13 +688,6 @@ export default function AdaptiveEduGameModal({
     nameSprite.scale.set(3.5, 0.75, 1);
     playerGroup.add(nameSprite);
 
-    const nameTex = new THREE.CanvasTexture(nameCanvas);
-    const nameSpriteMat = new THREE.SpriteMaterial({ map: nameTex });
-    const nameSprite = new THREE.Sprite(nameSpriteMat);
-    nameSprite.position.set(0, 4.4, 0);
-    nameSprite.scale.set(3, 0.75, 1);
-    playerGroup.add(nameSprite);
-
     playerGroup.position.set(0, 0, 0);
     scene.add(playerGroup);
 
