@@ -7,7 +7,7 @@
     "role": "pelajar",
     "nimNip": "V3925024",
     "institution": "D3 Teknik Informatika Madiun, Sekolah Vokasi UNS",
-    "points": 220,
+    "points": 180,
     "weakness": {
       "chapterId": "pkn-sila3",
       "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
@@ -375,7 +375,7 @@
     "role": "pelajar",
     "nimNip": "V3925xxx",
     "institution": "SD Negeri 1 Madiun",
-    "points": 200,
+    "points": 0,
     "weakness": {
       "chapterId": "pkn-sila3",
       "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
@@ -403,7 +403,7 @@
     "role": "pelajar",
     "nimNip": "V3925xxx",
     "institution": "SD Negeri 1 Madiun",
-    "points": 200,
+    "points": 0,
     "weakness": {
       "chapterId": "pkn-sila3",
       "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
@@ -431,7 +431,7 @@
     "role": "pelajar",
     "nimNip": "V3925xxx",
     "institution": "SD Negeri 1 Madiun",
-    "points": 200,
+    "points": 0,
     "weakness": {
       "chapterId": "pkn-sila3",
       "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
@@ -459,7 +459,7 @@
     "role": "pelajar",
     "nimNip": "V3925xxx",
     "institution": "SD Negeri 1 Madiun",
-    "points": 200,
+    "points": 0,
     "weakness": {
       "chapterId": "pkn-sila3",
       "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
@@ -487,7 +487,7 @@
     "role": "pelajar",
     "nimNip": "V3925xxx",
     "institution": "SD Negeri 1 Madiun",
-    "points": 200,
+    "points": 0,
     "weakness": {
       "chapterId": "pkn-sila3",
       "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
@@ -515,7 +515,7 @@
     "role": "pelajar",
     "nimNip": "V3925xxx",
     "institution": "SD Negeri 1 Madiun",
-    "points": 200,
+    "points": 0,
     "weakness": {
       "chapterId": "pkn-sila3",
       "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
@@ -552,7 +552,7 @@
     "role": "pelajar",
     "nimNip": "V3925xxx",
     "institution": "SD Negeri 1 Madiun",
-    "points": 200,
+    "points": 0,
     "weakness": {
       "chapterId": "pkn-sila3",
       "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
@@ -589,7 +589,7 @@
     "role": "pelajar",
     "nimNip": "V3925xxx",
     "institution": "SD Negeri 1 Madiun",
-    "points": 200,
+    "points": 0,
     "weakness": {
       "chapterId": "pkn-sila3",
       "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
@@ -608,7 +608,7 @@
     "role": "pelajar",
     "nimNip": "V3925xxx",
     "institution": "SD Negeri 1 Madiun",
-    "points": 200,
+    "points": 0,
     "weakness": {
       "chapterId": "pkn-sila3",
       "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
@@ -636,7 +636,7 @@
     "role": "pelajar",
     "nimNip": "V3925xxx",
     "institution": "SD Negeri 1 Madiun",
-    "points": 200,
+    "points": 0,
     "weakness": {
       "chapterId": "pkn-sila3",
       "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
@@ -664,7 +664,7 @@
     "role": "pelajar",
     "nimNip": "V3925xxx",
     "institution": "SD Negeri 1 Madiun",
-    "points": 200,
+    "points": 0,
     "weakness": {
       "chapterId": "pkn-sila3",
       "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
@@ -692,7 +692,7 @@
     "role": "pelajar",
     "nimNip": "V3925xxx",
     "institution": "SD Negeri 1 Madiun",
-    "points": 200,
+    "points": 0,
     "weakness": {
       "chapterId": "pkn-sila3",
       "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
@@ -720,7 +720,7 @@
     "role": "pelajar",
     "nimNip": "V3925xxx",
     "institution": "SD Negeri 1 Madiun",
-    "points": 200,
+    "points": 0,
     "weakness": {
       "chapterId": "pkn-sila3",
       "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
@@ -748,7 +748,7 @@
     "role": "pelajar",
     "nimNip": "V3925xxx",
     "institution": "SD Negeri 1 Madiun",
-    "points": 200,
+    "points": 0,
     "weakness": {
       "chapterId": "pkn-sila3",
       "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
@@ -776,7 +776,7 @@
     "role": "pelajar",
     "nimNip": "V3925xxx",
     "institution": "SD Negeri 1 Madiun",
-    "points": 200,
+    "points": 0,
     "weakness": {
       "chapterId": "pkn-sila3",
       "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
@@ -797,10 +797,10 @@
     "institution": "SD Negeri 1 Madiun"
   },
   {
-    "id": "usr_1792453658962",
-    "name": "Siswa Baru 1792453658961",
-    "email": "siswa_1792453658961@gmail.com",
-    "passwordHash": "$2b$10$jz3VBjOZl.7qjZg9jEuWCeV.5ksZUSTRSEnp0Vnlxj24w8q7NiyEe",
+    "id": "usr_1792458962696",
+    "name": "Siswa Baru 1792458962696",
+    "email": "siswa_1792458962696@gmail.com",
+    "passwordHash": "$2b$10$hGt8m7EBOPtxjvWRNWDz5eAiyUHZM1JVcz1WmqOYTp6N6ApAPx9w6",
     "role": "pelajar",
     "nimNip": "V3925xxx",
     "institution": "SD Negeri 1 Madiun",
@@ -816,10 +816,38 @@
     }
   },
   {
-    "id": "usr_1792453715056",
-    "name": "Guru Uji 1792453715056",
-    "email": "guru_uji_1792453715056@gmail.com",
-    "passwordHash": "$2b$10$Xu62TEVfkEHXfeKlGAj/lOXVOwDhGjY.YmXsD17SYLXrnbpPg5V2W",
+    "id": "usr_1792458967642",
+    "name": "Guru Uji 1792458967642",
+    "email": "guru_uji_1792458967642@gmail.com",
+    "passwordHash": "$2b$10$Sdclhm7cPsGLVctP4n0UPOCAFYU0oqHPGbJucBOxj5ElwvGt0Tv12",
+    "role": "pengajar",
+    "nimNip": "199xxxxxxxxx",
+    "institution": "SD Negeri 1 Madiun"
+  },
+  {
+    "id": "usr_1792459367801",
+    "name": "Siswa Baru 1792459367801",
+    "email": "siswa_1792459367801@gmail.com",
+    "passwordHash": "$2b$10$gvI0fOucubXOG/PIF.iOCeUmbBH1sfuq7n6DT6cMsO3AZ5b0bvgg.",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 200,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    }
+  },
+  {
+    "id": "usr_1792459375202",
+    "name": "Guru Uji 1792459375202",
+    "email": "guru_uji_1792459375202@gmail.com",
+    "passwordHash": "$2b$10$r3wu1Uralv6uucsG.fRxo.tg7yfVwQNFiRckkUjT669TP/5WYlnyS",
     "role": "pengajar",
     "nimNip": "199xxxxxxxxx",
     "institution": "SD Negeri 1 Madiun"
