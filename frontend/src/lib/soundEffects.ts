@@ -407,60 +407,181 @@ export function stopBadgeSpeech() {
 // BGM & EFEK SUARA PETUALANGAN 3D ROBLOX ADVENTURE
 // -------------------------------------------------------------
 let bgmInterval: ReturnType<typeof setInterval> | null = null;
+let bgmStep = 0;
 
 export function playJumpSound() {
   const ctx = getAudioContext();
   if (!ctx) return;
   try {
+    if (ctx.state === "suspended") void ctx.resume();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     const t = ctx.currentTime;
     osc.type = "sine";
-    osc.frequency.setValueAtTime(160, t);
-    osc.frequency.exponentialRampToValueAtTime(500, t + 0.12);
-    gain.gain.setValueAtTime(0.2, t);
-    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+    osc.frequency.setValueAtTime(200, t);
+    osc.frequency.exponentialRampToValueAtTime(620, t + 0.14);
+    gain.gain.setValueAtTime(0.28, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
     osc.connect(gain);
     gain.connect(ctx.destination);
     osc.start(t);
-    osc.stop(t + 0.18);
+    osc.stop(t + 0.17);
   } catch {}
 }
 
+export function playSpringJumpSound() {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  try {
+    if (ctx.state === "suspended") void ctx.resume();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const t = ctx.currentTime;
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(150, t);
+    osc.frequency.exponentialRampToValueAtTime(900, t + 0.25);
+    gain.gain.setValueAtTime(0.35, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.3);
+  } catch {}
+}
+
+export function playCoinPickupSound() {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  try {
+    if (ctx.state === "suspended") void ctx.resume();
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(987.77, t); // B5
+    osc.frequency.setValueAtTime(1318.51, t + 0.08); // E6
+    gain.gain.setValueAtTime(0.25, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.32);
+  } catch {}
+}
+
+export function playDashSound() {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  try {
+    if (ctx.state === "suspended") void ctx.resume();
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(300, t);
+    osc.frequency.exponentialRampToValueAtTime(700, t + 0.1);
+    gain.gain.setValueAtTime(0.12, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.13);
+  } catch {}
+}
+
+/**
+ * BGM Petualangan Ceria Ala Game Nintendo / Roblox Obby
+ * Pola Melodi 16 Baris, Bassline Menyenangkan, dan Beat Ritmis Web Audio API
+ */
 export function startAdventureBgm() {
   if (bgmInterval) return;
   const ctx = getAudioContext();
   if (!ctx) return;
 
-  const notes = [
-    261.63, 329.63, 392.0, 523.25,
-    392.0, 329.63, 440.0, 392.0,
-    349.23, 440.0, 523.25, 587.33,
-    523.25, 392.0, 329.63, 261.63,
+  if (ctx.state === "suspended") {
+    ctx.resume().catch(() => {});
+  }
+
+  // Melodi Ceria (C Mayor Pentatonik + Nada Riang)
+  const melody = [
+    523.25, 659.25, 783.99, 1046.5,
+    783.99, 659.25, 880.0, 783.99,
+    698.46, 880.0, 1046.5, 1174.66,
+    1046.5, 783.99, 659.25, 523.25,
   ];
-  let noteIndex = 0;
+
+  // Bassline Ritmis
+  const bass = [
+    130.81, 130.81, 164.81, 196.0,
+    196.0, 164.81, 220.0, 196.0,
+    174.61, 220.0, 261.63, 293.66,
+    261.63, 196.0, 164.81, 130.81,
+  ];
+
+  bgmStep = 0;
 
   bgmInterval = setInterval(() => {
-    if (!ctx || ctx.state === "suspended") return;
+    if (!ctx) return;
+    if (ctx.state === "suspended") {
+      ctx.resume().catch(() => {});
+      return;
+    }
+
     try {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
       const t = ctx.currentTime;
-      const freq = notes[noteIndex % notes.length] ?? 261.63;
-      noteIndex++;
+      const idx = bgmStep % melody.length;
+      bgmStep++;
 
-      osc.type = "triangle";
-      osc.frequency.setValueAtTime(freq, t);
+      // 1. Lead Melody (Suara Segar Chiptune)
+      const leadFreq = melody[idx] ?? 523.25;
+      const leadOsc = ctx.createOscillator();
+      const leadGain = ctx.createGain();
 
-      gain.gain.setValueAtTime(0.04, t);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+      leadOsc.type = "square";
+      leadOsc.frequency.setValueAtTime(leadFreq, t);
 
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(t);
-      osc.stop(t + 0.22);
+      leadGain.gain.setValueAtTime(0.045, t);
+      leadGain.gain.exponentialRampToValueAtTime(0.002, t + 0.16);
+
+      leadOsc.connect(leadGain);
+      leadGain.connect(ctx.destination);
+      leadOsc.start(t);
+      leadOsc.stop(t + 0.18);
+
+      // 2. Bassline Harmonis (Empuk & Berenergi)
+      const bassFreq = bass[idx] ?? 130.81;
+      const bassOsc = ctx.createOscillator();
+      const bassGain = ctx.createGain();
+
+      bassOsc.type = "triangle";
+      bassOsc.frequency.setValueAtTime(bassFreq, t);
+
+      bassGain.gain.setValueAtTime(0.06, t);
+      bassGain.gain.exponentialRampToValueAtTime(0.003, t + 0.19);
+
+      bassOsc.connect(bassGain);
+      bassGain.connect(ctx.destination);
+      bassOsc.start(t);
+      bassOsc.stop(t + 0.2);
+
+      // 3. Ritme Snare/Hi-Hat (tiap ketukan ganjil)
+      if (idx % 2 === 1) {
+        const snareOsc = ctx.createOscillator();
+        const snareGain = ctx.createGain();
+        snareOsc.type = "sawtooth";
+        snareOsc.frequency.setValueAtTime(240, t);
+        snareOsc.frequency.exponentialRampToValueAtTime(60, t + 0.05);
+
+        snareGain.gain.setValueAtTime(0.025, t);
+        snareGain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+
+        snareOsc.connect(snareGain);
+        snareGain.connect(ctx.destination);
+        snareOsc.start(t);
+        snareOsc.stop(t + 0.07);
+      }
     } catch {}
-  }, 220);
+  }, 190);
 }
 
 export function stopAdventureBgm() {
