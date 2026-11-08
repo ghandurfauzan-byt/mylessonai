@@ -1,14 +1,14 @@
 // frontend/src/components/AdaptiveEduGameModal.tsx
-// Game Edukasi 3D Real Roblox-Style Engine: "Negeri Garuda: Petualangan 5 Sila & Misi Akbar"
-// Sesuai Game Design Document (GDD) Lengkap:
-// - FASE 0: Halaman Utama (Lobby - Lapangan Patung Garuda, Pak Guru Virtual, Papan Skor, 5 Pilar Belajar Bebas)
-// - FASE 1: Zona 1 "Cahaya Ketuhanan" (Sila ke-1: 5 Simbol Kepercayaan & Toleransi Beragama)
-// - FASE 2: Zona 2 "Rantai Kemanusiaan" (Sila ke-2: Tolong 3 Warga - Doni Jatuh, Ibu Siti Belanjaan, Lawan Bullying)
-// - FASE 3: Zona 3 "Pohon Persatuan" (Sila ke-3: Scavenger Hunt 3 Daun Persatuan & Damai 3 Suku)
-// - FASE 4: Zona 4 "Ruang Musyawarah" (Sila ke-4: Balai Desa, Meja Bundar, Musyawarah Mufakat 4 Siswa)
-// - FASE 5: Zona 5 "Timbangan Keadilan" (Sila ke-5: Hakim Cilik Selesaikan 3 Kasus Keadilan Sosial)
-// - FASE 6: Misi Akbar "Selamatkan Negeri Garuda" (Gotong Royong Satukan 5 Kristal Sila, Garuda Emas Menyala)
-// - Adaptif otomatis untuk materi bab pelajaran lainnya (Bahasa Jawa / Mapel lain)
+// Game Edukasi 3D Real Roblox-Style Engine: "Petualangan Pancasila: Jelajah Negeri Garuda"
+// Mengimplementasikan Spesifikasi Lengkap & Blueprint Roblox Studio:
+// - FASE 0: Lobby (Patung Garuda Emas 20 stud, 5 Pilar Mode Belajar, NPC Pak Guru Virtual, Papan Skor, Portal Zona 1)
+// - FASE 1: Zona 1 "Cahaya Ketuhanan" (5 Objek: Lilin Iman, Kitab Suci, Bunga Persembahan, Dupa, Lentera + Gerbang Terkunci)
+// - FASE 2: Zona 2 "Rantai Kemanusiaan" (3 NPC: Adi jatuh sepeda, Bu Sari belanjaan, Rina anti-bullying)
+// - FASE 3: Zona 3 "Pohon Persatuan" (Scavenger Hunt 3 Daun Persatuan: Gua, Bukit, Batu + Cutscene Damai 3 Suku)
+// - FASE 4: Zona 4 "Ruang Musyawarah" (Balai Desa, Meja Bundar, 4 NPC Andi/Budi/Citra/Dina, Mufakat & Mini-Quiz)
+// - FASE 5: Zona 5 "Timbangan Keadilan" (Hakim Cilik: 3 Kasus Keadilan Sosial - Tugas Kelompok, Fasilitas Kelas B, Hak Karya)
+// - FASE 6: Misi Akbar "Selamatkan Negeri Garuda" (5 Kristal Sila Gotong Royong, Garuda Emas Menyala, Gelar Juara)
+// - Sistem Pendukung: 📖 "Buku Catatan", 🎖️ 6 Lencana Badges, Sistem Skor Terhubung dengan Poin Web Pelajar
 
 "use client";
 
@@ -39,7 +39,7 @@ interface Props {
   chapterTitle?: string;
 }
 
-// Tipe Fase Petualangan Sesuai GDD
+// Fase Zona Petualangan Sesuai Blueprint
 type GameZonePhase =
   | "lobby"
   | "zona1"
@@ -58,10 +58,30 @@ interface PilarBelajar {
   contohAksi: string;
 }
 
+// Catatan Riwayat Belajar untuk GUI Buku Catatan
+interface NoteRecord {
+  id: string;
+  zona: string;
+  namaObjek: string;
+  soal: string;
+  jawabanUser: string;
+  isCorrect: boolean;
+  penjelasan: string;
+  waktu: string;
+}
+
+// Badge Prestasi Sesuai Blueprint
+interface GameBadge {
+  id: string;
+  name: string;
+  symbol: string;
+  desc: string;
+  unlocked: boolean;
+}
+
 interface DialogModalState {
   isOpen: boolean;
   title: string;
-  subtitle?: string;
   characterName: string;
   characterAvatar: string;
   question: string;
@@ -83,121 +103,48 @@ export default function AdaptiveEduGameModal({
   const addPoints = useUIStore((s) => s.addPoints);
   const activeValidatedModule = useUIStore((s) => s.activeValidatedModule);
 
-  const [resolvedTitle, setResolvedTitle] = useState<string>(chapterTitle || chapter);
+  const [resolvedTitle, setResolvedTitle] = useState<string>(
+    activeValidatedModule?.title || chapterTitle || chapter
+  );
   const [bgmEnabled, setBgmEnabled] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
   const [currentZone, setCurrentZone] = useState<GameZonePhase>("lobby");
   const [adventureScore, setAdventureScore] = useState(0);
-  const [playerLives, setPlayerLives] = useState(3);
   const [isSprinting, setIsSprinting] = useState(false);
   const [activeNotification, setActiveNotification] = useState<string | null>(null);
 
-  // Progresi Misi Per Zona
-  const [zona1Symbols, setZona1Symbols] = useState<number[]>([1, 2, 3, 4, 5]);
-  const [zona1Found, setZona1Found] = useState<number[]>([]);
-  const [zona2Helped, setZona2Helped] = useState<string[]>([]);
-  const [zona3Leaves, setZona3Leaves] = useState<number[]>([]);
+  // Progresi Game Sesuai Blueprint
+  const [zona1DoneCount, setZona1DoneCount] = useState<string[]>([]);
+  const [zona2DoneCount, setZona2DoneCount] = useState<string[]>([]);
+  const [zona3Leaves, setZona3Leaves] = useState<string[]>([]);
   const [zona4MusyawarahDone, setZona4MusyawarahDone] = useState(false);
-  const [zona5CasesDone, setZona5CasesDone] = useState<number[]>([]);
+  const [zona5CasesDone, setZona5CasesDone] = useState<string[]>([]);
   const [akbarCrystalsDone, setAkbarCrystalsDone] = useState<number[]>([]);
+
+  // Sistem Pendukung: Buku Catatan Pelajar
+  const [notebookNotes, setNotebookNotes] = useState<NoteRecord[]>([]);
+  const [showNotebook, setShowNotebook] = useState(false);
+
+  // Sistem Pendukung: Badges Penghargaan
+  const [badges, setBadges] = useState<GameBadge[]>([
+    { id: "b1", name: "Penjelajah Cahaya", symbol: "🌟", desc: "Menyelesaikan Zona 1: Cahaya Ketuhanan", unlocked: false },
+    { id: "b2", name: "Penjelajah Kemanusiaan", symbol: "🔗", desc: "Menolong 3 warga di Zona 2: Rantai Kemanusiaan", unlocked: false },
+    { id: "b3", name: "Penjelajah Persatuan", symbol: "🌳", desc: "Menemukan 3 Daun Persatuan di Zona 3", unlocked: false },
+    { id: "b4", name: "Penjelajah Musyawarah", symbol: "🗣️", desc: "Memimpin mufakat di Zona 4: Ruang Musyawarah", unlocked: false },
+    { id: "b5", name: "Penjelajah Keadilan", symbol: "⚖️", desc: "Memutuskan 3 kasus di Zona 5: Timbangan Keadilan", unlocked: false },
+    { id: "b6", name: "Penjelajah Pancasila Sejati", symbol: "🦅", desc: "Menyelamatkan Negeri Garuda dalam Misi Akbar", unlocked: false },
+  ]);
+  const [showBadgesModal, setShowBadgesModal] = useState(false);
 
   // Dialog State untuk Interaksi ProximityPrompt
   const [dialogState, setDialogState] = useState<DialogModalState | null>(null);
   const [selectedPilar, setSelectedPilar] = useState<PilarBelajar | null>(null);
   const [showScoreboard, setShowScoreboard] = useState(false);
   const [showGuruPrompt, setShowGuruPrompt] = useState(false);
+  const [cutsceneText, setCutsceneText] = useState<string | null>(null);
 
   // Mount Element Ref Callback untuk Three.js
   const [mountEl, setMountEl] = useState<HTMLDivElement | null>(null);
-
-  // Deteksi genre otomatis (Jika materi Bahasa Jawa menggunakan puzzle kartu ceria)
-  const isMatchingGenre = useMemo(() => {
-    const c = (chapter || "").toLowerCase();
-    const t = (resolvedTitle || "").toLowerCase();
-    return (
-      c.includes("bjawa") ||
-      c.includes("aksara") ||
-      c.includes("unggah") ||
-      c.includes("punokawan") ||
-      c.includes("pandhawa") ||
-      t.includes("jawa") ||
-      t.includes("aksara") ||
-      t.includes("unggah") ||
-      t.includes("punokawan") ||
-      t.includes("pandhawa")
-    );
-  }, [chapter, resolvedTitle]);
-
-  const gameType: "adventure" | "matching" = isMatchingGenre ? "matching" : "adventure";
-
-  // Data 5 Pilar Belajar Bebas di Lobby
-  const pilarMateriList: PilarBelajar[] = useMemo(() => [
-    {
-      sila: 1,
-      simbol: "⭐",
-      judul: "Sila ke-1: Ketuhanan Yang Maha Esa",
-      penjelasan: "Mengakui keberadaan Tuhan Yang Maha Esa serta saling menghormati antarumat beragama tanpa memaksakan kehendak.",
-      contohAksi: "Menjaga ketenangan saat teman berbeda agama sedang beribadah dan selalu berdoa sebelum belajar.",
-    },
-    {
-      sila: 2,
-      simbol: "⛓️",
-      judul: "Sila ke-2: Kemanusiaan Yang Adil dan Beradab",
-      penjelasan: "Menjunjung tinggi persamaan hak, harkat, dan martabat manusia serta gemar melakukan kegiatan kemanusiaan.",
-      contohAksi: "Menolong teman yang terjatuh dari sepeda, menghibur teman yang sedih, dan tidak mengejek fisik kawan (anti-bullying).",
-    },
-    {
-      sila: 3,
-      simbol: "🌳",
-      judul: "Sila ke-3: Persatuan Indonesia",
-      penjelasan: "Mengutamakan persatuan dan kesatuan bangsa di atas kepentingan pribadi atau kelompok dengan semboyan Bhinneka Tunggal Ika.",
-      contohAksi: "Bermain rukun bersama seluruh teman tanpa membedakan suku, bahasa daerah, atau asal pulau.",
-    },
-    {
-      sila: 4,
-      simbol: "🐂",
-      judul: "Sila ke-4: Kerakyatan yang Dipimpin oleh Hikmat Kebijaksanaan dalam Permusyawaratan/Perwakilan",
-      penjelasan: "Mengambil keputusan untuk kepentingan bersama melalui jalan musyawarah mufakat dengan lapang dada.",
-      contohAksi: "Memilih ketua kelas dan jadwal piket bersama-sama dengan mendengarkan pendapat seluruh siswa secara bijak.",
-    },
-    {
-      sila: 5,
-      simbol: "🌾",
-      judul: "Sila ke-5: Keadilan Sosial bagi Seluruh Rakyat Indonesia",
-      penjelasan: "Bersikap adil kepada sesama, menghormati hak orang lain, gemar bergotong royong, dan suka bekerja keras.",
-      contohAksi: "Membagi tugas piket kebersihan kelas secara seimbang dan tidak membeda-bedakan perlakuan kepada teman.",
-    },
-  ], []);
-
-  // Kontrol Musik Petualangan
-  useEffect(() => {
-    if (isOpen && gameStarted && bgmEnabled) {
-      startAdventureBgm();
-    }
-    return () => {
-      stopAdventureBgm();
-    };
-  }, [isOpen, gameStarted, bgmEnabled]);
-
-  // Reset Saat Modal Dibuka
-  useEffect(() => {
-    if (isOpen) {
-      setGameStarted(false);
-      setCurrentZone("lobby");
-      setAdventureScore(0);
-      setPlayerLives(3);
-      setZona1Found([]);
-      setZona2Helped([]);
-      setZona3Leaves([]);
-      setZona4MusyawarahDone(false);
-      setZona5CasesDone([]);
-      setAkbarCrystalsDone([]);
-      setDialogState(null);
-      setSelectedPilar(null);
-      setShowScoreboard(false);
-      setShowGuruPrompt(false);
-    }
-  }, [isOpen]);
 
   // Input Keyboard Ref
   const keysRef = useRef<{
@@ -217,410 +164,656 @@ export default function AdaptiveEduGameModal({
   });
 
   // State Posisi Pemain dalam 3D
-  const playerPosRef = useRef<{ x: number; y: number; z: number }>({ x: 0, y: 0, z: 6 });
+  const playerPosRef = useRef<{ x: number; y: number; z: number }>({ x: 0, y: 0, z: 8 });
 
   // --------------------------------------------------------------------------
-  // AKSI INTERAKSI ZONA & DIALOG SESUAI GDD
+  // DATA 5 PILAR MODE BELAJAR (KEMENDIKBUD KURIKULUM MERDEKA)
+  // --------------------------------------------------------------------------
+  const pilarMateriList: PilarBelajar[] = useMemo(() => [
+    {
+      sila: 1,
+      simbol: "⭐",
+      judul: "Sila ke-1: Ketuhanan Yang Maha Esa",
+      penjelasan: "Percaya dan takwa kepada Tuhan Yang Maha Esa sesuai agama masing-masing, serta menjunjung tinggi toleransi dan kerukunan antarumat beragama.",
+      contohAksi: "Menghormati teman yang sedang beribadah, tidak memaksakan agama kepada orang lain, dan selalu berdoa sebelum belajar.",
+    },
+    {
+      sila: 2,
+      simbol: "🔗",
+      judul: "Sila ke-2: Kemanusiaan Yang Adil dan Beradab",
+      penjelasan: "Mengakui persamaan derajat, hak, dan kewajiban setiap manusia, gemar melakukan kegiatan kemanusiaan, dan membela kebenaran.",
+      contohAksi: "Menolong teman yang tertimpa musibah/terjatuh, membantu orang tua membawa barang, serta berani membela teman dari ejekan (anti-bullying).",
+    },
+    {
+      sila: 3,
+      simbol: "🌳",
+      judul: "Sila ke-3: Persatuan Indonesia",
+      penjelasan: "Menempatkan persatuan, kesatuan, serta kepentingan bangsa dan negara di atas kepentingan pribadi atau golongan dengan semboyan Bhinneka Tunggal Ika.",
+      contohAksi: "Bermain rukun dengan teman dari berbagai suku bangsa, mencintai produk dalam negeri, dan bangga berbangsa Indonesia.",
+    },
+    {
+      sila: 4,
+      simbol: "🐂",
+      judul: "Sila ke-4: Kerakyatan yang Dipimpin oleh Hikmat Kebijaksanaan dalam Permusyawaratan/Perwakilan",
+      penjelasan: "Mengutamakan musyawarah dalam mengambil keputusan untuk kepentingan bersama dengan diliputi oleh semangat kekeluargaan.",
+      contohAksi: "Memilih ketua kelas lewat musyawarah mufakat, menghargai pendapat kawan yang berbeda, dan menerima hasil keputusan bersama dengan lapang dada.",
+    },
+    {
+      sila: 5,
+      simbol: "🌾",
+      judul: "Sila ke-5: Keadilan Sosial bagi Seluruh Rakyat Indonesia",
+      penjelasan: "Mengembangkan sikap adil terhadap sesama, menghormati hak orang lain, suka memberi pertolongan, suka bekerja keras, dan gotong royong.",
+      contohAksi: "Membagi tugas piket kebersihan secara merata, antre dengan tertib di kantin/perpustakaan, dan tidak bergaya hidup boros.",
+    },
+  ], []);
+
+  // Unlock Badge Helper
+  const unlockBadge = useCallback((badgeId: string) => {
+    setBadges((prev) =>
+      prev.map((b) => (b.id === badgeId ? { ...b, unlocked: true } : b))
+    );
+  }, []);
+
+  // Tambah Catatan ke Buku Catatan
+  const addNote = useCallback((note: Omit<NoteRecord, "waktu">) => {
+    const timeStr = new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+    setNotebookNotes((prev) => [{ ...note, waktu: timeStr }, ...prev]);
+  }, []);
+
+  // Kontrol Background Music
+  useEffect(() => {
+    if (isOpen && gameStarted && bgmEnabled) {
+      startAdventureBgm();
+    }
+    return () => {
+      stopAdventureBgm();
+    };
+  }, [isOpen, gameStarted, bgmEnabled]);
+
+  // Reset Saat Modal Dibuka
+  useEffect(() => {
+    if (isOpen) {
+      setGameStarted(false);
+      setCurrentZone("lobby");
+      setAdventureScore(0);
+      setZona1DoneCount([]);
+      setZona2DoneCount([]);
+      setZona3Leaves([]);
+      setZona4MusyawarahDone(false);
+      setZona5CasesDone([]);
+      setAkbarCrystalsDone([]);
+      setDialogState(null);
+      setSelectedPilar(null);
+      setShowScoreboard(false);
+      setShowGuruPrompt(false);
+      setShowNotebook(false);
+      setShowBadgesModal(false);
+      setCutsceneText(null);
+    }
+  }, [isOpen]);
+
+  // --------------------------------------------------------------------------
+  // INTERAKSI ZONA SESUAI BLUEPRINT DETAIL
   // --------------------------------------------------------------------------
 
-  // Buka Dialog Simbol Zona 1 (Sila 1)
-  const triggerZona1Prompt = useCallback((symbolId: number) => {
-    if (zona1Found.includes(symbolId)) {
-      setActiveNotification("✨ Simbol Kepercayaan ini sudah menyala terang!");
+  // ZONA 1: 5 Objek Simbol Kepercayaan
+  const triggerZona1Prompt = useCallback((objId: string) => {
+    if (zona1DoneCount.includes(objId)) {
+      setActiveNotification("✨ Objek ini sudah menyala terang!");
       setTimeout(() => setActiveNotification(null), 2500);
       return;
     }
 
-    const questionMap: Record<number, { title: string; q: string; opt: any[] }> = {
-      1: {
-        title: "Lentera Cahaya Doa (Kuil Nusantara)",
-        q: "Teman sekelasmu yang berbeda agama sedang khusyuk berdoa sebelum makan siang. Sikap terbaikmu adalah:",
+    const objDataMap: Record<string, { title: string; q: string; opt: any[]; desc: string }> = {
+      lilin: {
+        title: "Lilin Iman (Dekat Masjid Mini)",
+        desc: "Sikap toleransi beragama sesuai Sila ke-1.",
+        q: "Temanmu sedang beribadah dengan khusyuk. Apa yang kamu lakukan?",
         opt: [
-          { id: "A", text: "Menghormati dan menjaga ketenangan dengan tidak berisik.", isCorrect: true, explanation: "Tepat sekali! Menghormati ibadah orang lain adalah wujud nyata Sila ke-1." },
-          { id: "B", text: "Mengajaknya bercanda dan menggodanya saat berdoa.", isCorrect: false, explanation: "Kurang tepat. Mengganggu orang yang sedang berdoa melanggar nilai toleransi." },
-          { id: "C", text: "Menjauhinya karena cara berdoanya berbeda.", isCorrect: false, explanation: "Kurang tepat. Perbedaan keyakinan harus dihormati dengan sikap ramah." },
+          { id: "A", text: "Menunggu dengan tenang tanpa membuat keributan.", isCorrect: true, explanation: "Sikap toleransi beragama sesuai Sila ke-1." },
+          { id: "B", text: "Mengajaknya mengobrol dan bercanda.", isCorrect: false, explanation: "Mengganggu teman yang sedang beribadah melanggar nilai toleransi." },
+          { id: "C", text: "Berisik di dekat tempat ibadah.", isCorrect: false, explanation: "Kita wajib menjaga ketenangan di sekitar rumah ibadah." },
         ],
       },
-      2: {
-        title: "Kitab Budi Pekerti (Pos Moderasi)",
-        q: "Ada hari besar keagamaan temanmu yang berbeda keyakinan. Tindakan toleransi yang tepat adalah:",
+      kitab: {
+        title: "Kitab Suci (Dekat Gereja Mini)",
+        desc: "Sila ke-1 menjamin kebebasan memeluk agama.",
+        q: "Agamamu berbeda dengan teman sebangkumu di kelas. Sikapmu?",
         opt: [
-          { id: "A", text: "Mengucapkan selamat dengan ramah dan tulus persaudaraan.", isCorrect: true, explanation: "Luar biasa! Memberi selamat adalah bukti persaudaraan antarumat beragama." },
-          { id: "B", text: "Mengejek tradisi perayaannya di depan teman lain.", isCorrect: false, explanation: "Salah. Kita tidak boleh mencela ajaran dan tradisi agama sahabat kita." },
-          { id: "C", text: "Melarang teman lain untuk berteman dengannya.", isCorrect: false, explanation: "Salah. Sila ke-1 mengajarkan kerukunan hidup antarumat beragama." },
+          { id: "A", text: "Saling menghormati dan tetap berteman akrab.", isCorrect: true, explanation: "Sila ke-1 menjamin kebebasan dan kerukunan beragama." },
+          { id: "B", text: "Menjauhinya dan enggan belajar kelompok bersamanya.", isCorrect: false, explanation: "Perbedaan agama tidak boleh memecah belah pertemanan." },
+          { id: "C", text: "Memaksa temanmu untuk mengikuti agamamu.", isCorrect: false, explanation: "Tidak boleh ada paksaan dalam beragama di Indonesia." },
         ],
       },
-      3: {
-        title: "Bunga Melati Toleransi (Taman Damai)",
-        q: "Di desamu akan dibangun tempat ibadah bagi warga yang berbeda agama. Sikap warga yang sesuai Pancasila adalah:",
+      bunga: {
+        title: "Bunga Persembahan (Dekat Pura Mini)",
+        desc: "Menghormati perayaan hari besar keagamaan.",
+        q: "Hari raya temanmu berbeda denganmu. Sikap terpujimu adalah:",
         opt: [
-          { id: "A", text: "Mendukung dan saling membantu menjaga keamanan bersama.", isCorrect: true, explanation: "Hebat! Setiap warga negara berhak beribadah menurut agamanya masing-masing." },
-          { id: "B", text: "Menolak karena berbeda dengan mayoritas warga.", isCorrect: false, explanation: "Kurang bijak. Negara menjamin kebebasan beribadah seluruh rakyat." },
-          { id: "C", text: "Mengabaikan dan tidak peduli lingkungan sekitar.", isCorrect: false, explanation: "Kurang baik. Kita harus menjaga kerukunan dan saling peduli." },
+          { id: "A", text: "Mengucapkan selamat dengan tulus dan menjaga suasana damai.", isCorrect: true, explanation: "Saling menghormati perayaan keagamaan memperkokoh persaudaraan." },
+          { id: "B", text: "Tidak peduli dan mengabaikannya sama sekali.", isCorrect: false, explanation: "Sebagai sahabat, kita harus menunjukkan empati dan keramahan." },
+          { id: "C", text: "Mengejek tradisi perayaannya.", isCorrect: false, explanation: "Mengejek tradisi agama lain adalah perbuatan yang tercela." },
         ],
       },
-      4: {
-        title: "Lonceng Kedamaian (Pura Suci)",
-        q: "Kamu melihat ada teman yang lupa membawa bekal saat berpuasa keagamaan. Sikapmu adalah:",
+      dupa: {
+        title: "Dupa Kedamaian (Dekat Vihara Mini)",
+        desc: "Pancasila menjamin kebebasan beribadah seluruh warga.",
+        q: "Bagaimana sikap Pancasila terhadap kebebasan beragama?",
         opt: [
-          { id: "A", text: "Menghormatinya dan tidak makan/minum dengan mencolok di depannya.", isCorrect: true, explanation: "Sangat terpuji! Menahan diri untuk menghormati teman yang berpuasa adalah empati luhur." },
-          { id: "B", text: "Pamer makanan lezat di hadapannya agar dia tergoda.", isCorrect: false, explanation: "Tidak baik. Menggoda teman yang berpuasa bertentangan dengan adab toleransi." },
-          { id: "C", text: "Memaksanya untuk membatalkan puasanya.", isCorrect: false, explanation: "Keliru. Kita wajib menghargai ibadah yang sedang dijalankan kawan kita." },
+          { id: "A", text: "Menjamin kemerdekaan tiap warga untuk memeluk agamanya.", isCorrect: true, explanation: "Pasal 29 UUD 1945 & Sila 1 menjamin kebebasan beragama." },
+          { id: "B", text: "Melarang kegiatan ibadah di tempat umum.", isCorrect: false, explanation: "Negara melindungi dan menjamin kebebasan beribadah." },
+          { id: "C", text: "Memaksa semua orang menganut satu agama saja.", isCorrect: false, explanation: "Indonesia adalah negara majemuk yang mengakui keberagaman." },
         ],
       },
-      5: {
-        title: "Kubah Persaudaraan (Puncak Cahaya)",
-        q: "Apa inti utama makna Sila ke-1 'Ketuhanan Yang Maha Esa' bagi anak Indonesia?",
+      lentera: {
+        title: "Lentera Kerukunan (Dekat Kelenteng Mini)",
+        desc: "Percaya dan takwa kepada Tuhan Yang Maha Esa.",
+        q: "Sila ke-1 mengajarkan seluruh anak bangsa untuk...",
         opt: [
-          { id: "A", text: "Bertaqwa kepada Tuhan serta hidup rukun berdampingan antarumat beragama.", isCorrect: true, explanation: "Sempurna! Rukun beragama adalah pondasi kokoh bangsa Indonesia." },
-          { id: "B", text: "Memaksakan agama kita kepada orang lain yang berbeda.", isCorrect: false, explanation: "Salah. Tidak boleh ada paksaan dalam memilih keyakinan beragama." },
-          { id: "C", text: "Hanya berteman dengan orang yang satu agama saja.", isCorrect: false, explanation: "Salah. Kita bersaudara dengan seluruh rakyat Indonesia." },
+          { id: "A", text: "Percaya & takwa kepada Tuhan serta menjaga kerukunan hidup.", isCorrect: true, explanation: "Itulah butir utama pengamalan Sila pertama." },
+          { id: "B", text: "Mengabaikan nilai agama dalam kehidupan sehari-hari.", isCorrect: false, explanation: "Nilai keagamaan menjadi pondasi moral bangsa." },
+          { id: "C", text: "Menghina keyakinan yang berbeda.", isCorrect: false, explanation: "Sila ke-1 tegas menolak segala bentuk penistaan keyakinan." },
         ],
       },
     };
 
-    const qData = questionMap[symbolId] ?? questionMap[1]!;
-    if (!qData) return;
+    const curData = objDataMap[objId] ?? objDataMap["lilin"]!;
+
     setDialogState({
       isOpen: true,
-      title: qData.title,
+      title: curData.title,
       characterName: "Pemuka Agama Nusantara",
       characterAvatar: "👳‍♂️",
-      question: qData.q,
-      options: qData.opt,
+      question: curData.q,
+      options: curData.opt,
       onSuccess: () => {
         playCoinSound();
         playCorrectSound();
-        setZona1Found((prev) => {
-          const next = [...prev, symbolId];
+        addPoints(10, `Menjawab ${curData.title}`);
+        addNote({
+          id: `z1_${objId}`,
+          zona: "Zona 1 - Cahaya Ketuhanan",
+          namaObjek: curData.title,
+          soal: curData.q,
+          jawabanUser: curData.opt[0]?.text ?? "",
+          isCorrect: true,
+          penjelasan: curData.desc,
+        });
+
+        setZona1DoneCount((prev) => {
+          const next = [...prev, objId];
           if (next.length >= 5) {
             playBadgeFanfareSound();
-            setActiveNotification("🎉 5 Simbol Kepercayaan Menyala! Gerbang Zona 2 'Rantai Kemanusiaan' Telah Terbuka!");
+            unlockBadge("b1");
             setCurrentZone("zona2");
+            setActiveNotification("🎉 5 Objek Menyala! Gerbang Zona 2 'Rantai Kemanusiaan' Terbuka! (+50 Poin Bonus!)");
+            addPoints(50, "Menyelesaikan Zona 1");
+            setAdventureScore((s) => s + 60);
           } else {
-            setActiveNotification(`✨ Simbol ${symbolId} Menyala! (${next.length}/5 Simbol Terkumpul)`);
+            setActiveNotification(`✨ Objek ${curData.title} Menyala! (${next.length}/5 Objek Selesai)`);
+            setAdventureScore((s) => s + 10);
           }
           return next;
         });
-        setAdventureScore((s) => s + 10);
       },
     });
-  }, [zona1Found]);
+  }, [zona1DoneCount, addPoints, addNote, unlockBadge]);
 
-  // Buka Dialog Misi Zona 2 (Sila 2: Tolong 3 Warga)
-  const triggerZona2Prompt = useCallback((citizenId: string) => {
-    if (zona2Helped.includes(citizenId)) {
-      setActiveNotification("❤️ Warga ini sudah kamu tolong dengan tulus!");
+  // ZONA 2: 3 NPC Warga yang Butuh Pertolongan
+  const triggerZona2Prompt = useCallback((npcId: string) => {
+    if (zona2DoneCount.includes(npcId)) {
+      setActiveNotification("❤️ Warga ini sudah kamu bantu dengan penuh kasih sayang!");
       setTimeout(() => setActiveNotification(null), 2500);
       return;
     }
 
-    if (citizenId === "doni") {
+    if (npcId === "adi") {
       setDialogState({
         isOpen: true,
-        title: "Tolong Doni Terjatuh dari Sepeda",
-        characterName: "Doni (Siswa Kelas 3 SD)",
+        title: "Tolong Adi (Anak Terjatuh dari Sepeda)",
+        characterName: "Adi",
         characterAvatar: "🚲",
-        question: "Doni tergelincir di jalan desa dan lututnya berdarah. Apa tindakan pertolongan pertamamu?",
+        question: "Aduh, kakiku sakit sekali setelah tergelincir dari sepeda... Bisakah kamu membantuku?",
         options: [
-          { id: "A", text: "Segera mendekat, membantunya berdiri, dan mengambil kotak P3K untuk mengobati lukanya.", isCorrect: true, explanation: "Hebat! Kamu menunjukkan rasa kemanusiaan dan tolong-menolong tanpa pamrih." },
-          { id: "B", text: "Menertawakannya dan mengunggah videonya ke internet.", isCorrect: false, explanation: "Sangat tidak beradab! Sila ke-2 mengajarkan kita untuk beradab dan berempati." },
-          { id: "C", text: "Berjalan melewatinya seolah-olah tidak terjadi apa-apa.", isCorrect: false, explanation: "Kurang peduli. Jika kawan celaka, kita wajib membantunya." },
+          { id: "A", text: "Segera membantunya berdiri dan mengambilkan perban/P3K.", isCorrect: true, explanation: "Sila ke-2 mengajarkan kita gemar tolong-menolong sesama manusia." },
+          { id: "B", text: "Tertawa terbahak-bahak melihatnya jatuh.", isCorrect: false, explanation: "Menertawakan orang yang celaka tidak beradab dan melukai perasaannya." },
+          { id: "C", text: "Pergi meninggalkannya begitu saja.", isCorrect: false, explanation: "Mengabaikan orang yang butuh pertolongan bertentangan dengan kemanusiaan." },
         ],
         onSuccess: () => {
           playCorrectSound();
-          setZona2Helped((prev) => {
-            const next = [...prev, "doni"];
+          addPoints(15, "Menolong Adi berdiri");
+          addNote({
+            id: "z2_adi",
+            zona: "Zona 2 - Rantai Kemanusiaan",
+            namaObjek: "Adi Terjatuh",
+            soal: "Adi terjatuh dari sepeda dan kakinya sakit.",
+            jawabanUser: "Segera membantunya berdiri dan mengambilkan perban/P3K.",
+            isCorrect: true,
+            penjelasan: "Sila ke-2 mengajarkan tolong-menolong sesama manusia dengan penuh empati.",
+          });
+          setZona2DoneCount((prev) => {
+            const next = [...prev, "adi"];
             if (next.length >= 3) {
               playBadgeFanfareSound();
-              setActiveNotification("🎉 3 Warga Tertolong! Gerbang Zona 3 'Pohon Persatuan' Telah Terbuka!");
+              unlockBadge("b2");
               setCurrentZone("zona3");
+              setActiveNotification("🎉 3 Warga Tertolong! Gerbang Zona 3 'Pohon Persatuan' Terbuka! (+50 Poin Bonus!)");
+              addPoints(50, "Menyelesaikan Zona 2");
+              setAdventureScore((s) => s + 65);
             } else {
-              setActiveNotification(`🩹 Kamu berhasil menolong Doni! (${next.length}/3 Warga)`);
+              setActiveNotification(`🩹 Kamu menunjukkan sikap kemanusiaan! (${next.length}/3 Warga)`);
+              setAdventureScore((s) => s + 15);
             }
             return next;
           });
-          setAdventureScore((s) => s + 15);
         },
       });
-    } else if (citizenId === "ibu_siti") {
+    } else if (npcId === "bu_sari") {
       setDialogState({
         isOpen: true,
-        title: "Bantu Ibu Siti Membawa Belanjaan",
-        characterName: "Ibu Siti (Pedagang Sayur Desa)",
+        title: "Bantu Bu Sari (Ibu Belanjaan Berat)",
+        characterName: "Bu Sari",
         characterAvatar: "👵",
-        question: "Ibu Siti kerepotan membawa dua keranjang sayur berat melintasi jembatan. Sikapmu adalah:",
+        question: "Barang belanjaanku dari pasar berat sekali. Maukah kamu membantuku membawanya sampai ke rumah?",
         options: [
-          { id: "A", text: "Menyapa dengan sopan dan membawakan salah satu keranjang sampai ke rumahnya.", isCorrect: true, explanation: "Sikap luhur! Menghormati dan meringankan beban orang yang lebih tua adalah adab mulia." },
-          { id: "B", text: "Meminta uang imbalan terlebih dahulu baru mau menolong.", isCorrect: false, explanation: "Salah. Menolong sesama manusia harus ikhlas tanpa meminta upah." },
-          { id: "C", text: "Menonton saja sambil duduk santai di pagar.", isCorrect: false, explanation: "Salah. Kita harus peka terhadap kesusahan orang di sekitar kita." },
+          { id: "A", text: "Membawakan kantong belanjaan Bu Sari sampai ke rumahnya dengan ikhlas.", isCorrect: true, explanation: "Meringankan beban orang tua tanpa pamrih adalah wujud adab luhur." },
+          { id: "B", text: "Abaikan saja karena sedang asyik bermain.", isCorrect: false, explanation: "Kita harus peka dan peduli terhadap kesusahan orang di sekitar kita." },
+          { id: "C", text: "Minta bayaran uang baru mau membantu.", isCorrect: false, explanation: "Tolong-menolong antarmanusia harus ikhlas tanpa mengharap imbalan." },
         ],
         onSuccess: () => {
           playCorrectSound();
-          setZona2Helped((prev) => {
-            const next = [...prev, "ibu_siti"];
+          addPoints(15, "Membantu Bu Sari membawa belanjaan");
+          addNote({
+            id: "z2_sari",
+            zona: "Zona 2 - Rantai Kemanusiaan",
+            namaObjek: "Bu Sari Belanjaan",
+            soal: "Bu Sari membawa belanjaan berat dari pasar.",
+            jawabanUser: "Membawakan kantong belanjaan sampai ke rumah dengan ikhlas.",
+            isCorrect: true,
+            penjelasan: "Membantu orang lain secara sukarela mempererat rasa kemanusiaan.",
+          });
+          setZona2DoneCount((prev) => {
+            const next = [...prev, "bu_sari"];
             if (next.length >= 3) {
               playBadgeFanfareSound();
-              setActiveNotification("🎉 3 Warga Tertolong! Gerbang Zona 3 'Pohon Persatuan' Telah Terbuka!");
+              unlockBadge("b2");
               setCurrentZone("zona3");
+              setActiveNotification("🎉 3 Warga Tertolong! Gerbang Zona 3 'Pohon Persatuan' Terbuka! (+50 Poin Bonus!)");
+              addPoints(50, "Menyelesaikan Zona 2");
+              setAdventureScore((s) => s + 65);
             } else {
-              setActiveNotification(`🧺 Kamu berhasil membantu Ibu Siti! (${next.length}/3 Warga)`);
+              setActiveNotification(`🧺 Belanjaan Bu Sari sampai di rumah! (${next.length}/3 Warga)`);
+              setAdventureScore((s) => s + 15);
             }
             return next;
           });
-          setAdventureScore((s) => s + 15);
         },
       });
-    } else if (citizenId === "rian_bullying") {
+    } else if (npcId === "rina") {
       setDialogState({
         isOpen: true,
-        title: "Hentikan Ejekan (Anti-Bullying)",
-        characterName: "Rian (Teman yang Bersedih)",
+        title: "Tegur Penindas & Bela Rina (Anti-Bullying)",
+        characterName: "Rina",
         characterAvatar: "😢",
-        question: "Rian menangis karena diejek logat bicara dan bentuk fisiknya oleh anak lain. Apa tindakanmu?",
+        question: "Mereka mengejekku karena aku memakai kacamata tebal... Aku sedih sekali.",
         options: [
-          { id: "A", text: "Menegur pengejek secara tegas namun santun, merangkul Rian, dan mengajaknya bermain bersama.", isCorrect: true, explanation: "Pemberani dan adil! Semua manusia bermartabat sama di mata hukum dan Tuhan." },
-          { id: "B", text: "Ikut menertawakan agar dianggap keren oleh anak-anak lain.", isCorrect: false, explanation: "Sangat keliru. Bullying melukai hati sesama dan merusak nilai kemanusiaan." },
-          { id: "C", text: "Diam saja karena takut ikut dimusuhi.", isCorrect: false, explanation: "Kurang berani. Kita harus berani membela kebenaran dan keadilan." },
+          { id: "A", text: "Menegur pengejek dengan sopan & tegas, lalu mengajak Rina bermain bersama.", isCorrect: true, explanation: "Kamu membela kemanusiaan yang adil dan beradab! Semua anak punya martabat setara." },
+          { id: "B", text: "Ikut mengejek kacamata Rina agar ditertawakan teman.", isCorrect: false, explanation: "Bullying merusak persaudaraan dan melanggar hak asasi manusia." },
+          { id: "C", text: "Diam saja dan pura-pura tidak melihat.", isCorrect: false, explanation: "Membiarkan ketidakadilan terjadi sama dengan mendukungnya." },
         ],
         onSuccess: () => {
           playCorrectSound();
-          setZona2Helped((prev) => {
-            const next = [...prev, "rian_bullying"];
+          addPoints(15, "Membela Rina dari bullying");
+          addNote({
+            id: "z2_rina",
+            zona: "Zona 2 - Rantai Kemanusiaan",
+            namaObjek: "Bela Rina (Anti-Bullying)",
+            soal: "Rina diejek karena memakai kacamata tebal.",
+            jawabanUser: "Menegur pengejek dan mengajak Rina bermain bersama.",
+            isCorrect: true,
+            penjelasan: "Menghormati martabat sesama manusia dan menjauhi perundungan (anti-bullying).",
+          });
+          setZona2DoneCount((prev) => {
+            const next = [...prev, "rina"];
             if (next.length >= 3) {
               playBadgeFanfareSound();
-              setActiveNotification("🎉 3 Warga Tertolong! Gerbang Zona 3 'Pohon Persatuan' Telah Terbuka!");
+              unlockBadge("b2");
               setCurrentZone("zona3");
+              setActiveNotification("🎉 3 Warga Tertolong! Gerbang Zona 3 'Pohon Persatuan' Terbuka! (+50 Poin Bonus!)");
+              addPoints(50, "Menyelesaikan Zona 2");
+              setAdventureScore((s) => s + 65);
             } else {
-              setActiveNotification(`🛡️ Kamu berhasil membela Rian! (${next.length}/3 Warga)`);
+              setActiveNotification(`🛡️ Kamu membela kemanusiaan yang adil dan beradab! (${next.length}/3 Warga)`);
+              setAdventureScore((s) => s + 15);
             }
             return next;
           });
-          setAdventureScore((s) => s + 15);
         },
       });
     }
-  }, [zona2Helped]);
+  }, [zona2DoneCount, addPoints, addNote, unlockBadge]);
 
-  // Buka Dialog Misi Zona 3 (Sila 3: Scavenger Hunt 3 Daun Persatuan)
-  const triggerZona3Prompt = useCallback((leafId: number) => {
+  // ZONA 3: Scavenger Hunt 3 Daun Persatuan
+  const triggerZona3Prompt = useCallback((leafId: string) => {
     if (zona3Leaves.includes(leafId)) {
       setActiveNotification("🍃 Daun Persatuan ini sudah kamu amankan!");
       setTimeout(() => setActiveNotification(null), 2500);
       return;
     }
 
-    const qMap: Record<number, { title: string; q: string; opt: any[] }> = {
-      1: {
-        title: "Daun Persatuan I (Tepi Sungai Desa)",
-        q: "Apa semboyan persatuan bangsa Indonesia yang tertulis di cengkeraman burung Garuda?",
+    const leafMap: Record<string, { title: string; q: string; opt: any[]; desc: string }> = {
+      gua: {
+        title: "Daun Persatuan I (Di Dalam Gua)",
+        desc: "Semboyan persatuan bangsa Indonesia adalah Bhinneka Tunggal Ika.",
+        q: "Apa semboyan persatuan bangsa Indonesia yang dicengkeram Garuda Pancasila?",
         opt: [
-          { id: "A", text: "Bhinneka Tunggal Ika (Berbeda-beda tetapi tetap satu jua).", isCorrect: true, explanation: "Benar sekali! Keberagaman suku dan bahasa adalah kekayaan yang menyatu." },
-          { id: "B", text: "Bersatu Kita Runtuh, Bercerai Kita Teguh.", isCorrect: false, explanation: "Terbalik! Semboyan yang benar adalah bersatu kita teguh." },
-          { id: "C", text: "Satu Nusa, Satu Bangsa, Beda Hak.", isCorrect: false, explanation: "Keliru. Hak seluruh bangsa Indonesia adalah setara." },
+          { id: "A", text: "Bhinneka Tunggal Ika (Berbeda-beda tetapi tetap satu jua).", isCorrect: true, explanation: "Semboyan persatuan Indonesia adalah Bhinneka Tunggal Ika." },
+          { id: "B", text: "Tut Wuri Handayani.", isCorrect: false, explanation: "Itu semboyan pendidikan nasional." },
+          { id: "C", text: "Garuda Pancasila Akulah Pendukungmu.", isCorrect: false, explanation: "Itu lirik lagu nasional, bukan semboyan resmi persatuan." },
         ],
       },
-      2: {
-        title: "Daun Persatuan II (Bukit Suku Nusantara)",
-        q: "Tiga suku desa sedang berselisih memperebutkan sumber air sungai. Solusi terbaik sesuai Sila ke-3 adalah:",
+      bukit: {
+        title: "Daun Persatuan II (Di Atas Bukit)",
+        desc: "Cinta tanah air dan rela berkorban demi persatuan bangsa.",
+        q: "Sikap yang paling mencerminkan pengamalan Sila ke-3 adalah...",
         opt: [
-          { id: "A", text: "Bergotong royong membangun saluran air bersama agar semua suku mendapat aliran yang cukup.", isCorrect: true, explanation: "Bagus sekali! Gotong royong dan persatuan menyelesaikan konflik secara damai." },
-          { id: "B", text: "Membiarkan suku yang paling kuat menguasai seluruh air sungai.", isCorrect: false, explanation: "Salah. Itu perpecahan dan ketidakadilan." },
-          { id: "C", text: "Menyuruh salah satu suku pindah dari desa.", isCorrect: false, explanation: "Salah. Seluruh warga berhak tinggal dengan rukun dan damai." },
+          { id: "A", text: "Cinta tanah air dan rela berkorban demi persatuan bangsa.", isCorrect: true, explanation: "Cinta tanah air adalah esensi luhur dari Sila ke-3." },
+          { id: "B", text: "Mementingkan kepentingan suku sendiri di atas negara.", isCorrect: false, explanation: "Sikap egois kedaerahan merusak persatuan nasional." },
+          { id: "C", text: "Acuh tak acuh terhadap keutuhan NKRI.", isCorrect: false, explanation: "Seluruh warga wajib menjaga keutuhan tanah air." },
         ],
       },
-      3: {
-        title: "Daun Persatuan III (Akar Pohon Beringin)",
-        q: "Simbol Sila ke-3 adalah Pohon Beringin. Apa filosofi luhur dari pohon ini?",
+      batu: {
+        title: "Daun Persatuan III (Di Balik Batu)",
+        desc: "Persatuan sangat penting karena Indonesia beragam suku dan budaya.",
+        q: "Mengapa persatuan sangat penting bagi kelangsungan bangsa Indonesia?",
         opt: [
-          { id: "A", text: "Pohon besar berakar gantung kokoh sebagai tempat berteduh seluruh rakyat Indonesia.", isCorrect: true, explanation: "Tepat sekali! Beringin melambangkan naungan persatuan yang rindang dan kuat." },
-          { id: "B", text: "Pohon liar yang hanya tumbuh di satu daerah tertentu.", isCorrect: false, explanation: "Salah. Beringin melambangkan persatuan seluruh nusantara." },
-          { id: "C", text: "Pohon yang mudah tumbang bila terkena angin.", isCorrect: false, explanation: "Salah. Pohon beringin akarnya sangat kokoh menancap ke bumi." },
+          { id: "A", text: "Karena Indonesia terdiri dari ribuan pulau dan ratusan suku yang majemuk.", isCorrect: true, explanation: "Hanya dengan bersatu bangsa kita bisa kuat dan maju." },
+          { id: "B", text: "Karena terpaksa oleh aturan hukum saja.", isCorrect: false, explanation: "Persatuan lahir dari rasa persaudaraan tulus seluruh rakyat." },
+          { id: "C", text: "Sebenarnya persatuan tidak terlalu penting.", isCorrect: false, explanation: "Tanpa persatuan, bangsa kita akan mudah terpecah belah." },
         ],
       },
     };
 
-    const qData = qMap[leafId] ?? qMap[1]!;
-    if (!qData) return;
+    const lData = leafMap[leafId] ?? leafMap["gua"]!;
+
     setDialogState({
       isOpen: true,
-      title: qData.title,
+      title: lData.title,
       characterName: "Tetua Suku Nusantara",
       characterAvatar: "🌳",
-      question: qData.q,
-      options: qData.opt,
+      question: lData.q,
+      options: lData.opt,
       onSuccess: () => {
         playCoinSound();
         playCorrectSound();
+        addPoints(10, `Mengambil ${lData.title}`);
+        addNote({
+          id: `z3_${leafId}`,
+          zona: "Zona 3 - Pohon Persatuan",
+          namaObjek: lData.title,
+          soal: lData.q,
+          jawabanUser: lData.opt[0]?.text ?? "",
+          isCorrect: true,
+          penjelasan: lData.desc,
+        });
+
         setZona3Leaves((prev) => {
           const next = [...prev, leafId];
           if (next.length >= 3) {
+            // Cutscene Damai 3 Suku
             playBadgeFanfareSound();
-            setActiveNotification("🎉 3 Daun Persatuan Diserahkan! Ketiga Suku Rukun Berdamai! Gerbang Zona 4 Terbuka!");
+            unlockBadge("b3");
             setCurrentZone("zona4");
+            setCutsceneText(
+              "🌳 Suku A, B, dan C saling bersalaman rukun: 'Kita berbeda suku, tapi kita satu Indonesia! Bhinneka Tunggal Ika! Mari bergotong royong bersama!' Pohon Beringin menyala gemilang!"
+            );
+            setTimeout(() => setCutsceneText(null), 6000);
+            setActiveNotification("🎉 3 Daun Diserahkan! 3 Suku Berdamai! Gerbang Zona 4 Terbuka! (+50 Poin Bonus!)");
+            addPoints(50, "Menyelesaikan Zona 3");
+            setAdventureScore((s) => s + 60);
           } else {
-            setActiveNotification(`🍃 Daun Persatuan ${leafId} Ditemukan! (${next.length}/3 Daun)`);
+            setActiveNotification(`🍃 Daun Persatuan ${lData.title} Didapatkan! (${next.length}/3 Daun)`);
+            setAdventureScore((s) => s + 10);
           }
           return next;
         });
-        setAdventureScore((s) => s + 20);
       },
     });
-  }, [zona3Leaves]);
+  }, [zona3Leaves, addPoints, addNote, unlockBadge]);
 
-  // Buka Dialog Misi Zona 4 (Sila 4: Musyawarah Balai Desa)
+  // ZONA 4: Ruang Musyawarah Mufakat Balai Desa
   const triggerZona4Prompt = useCallback(() => {
     if (zona4MusyawarahDone) {
-      setActiveNotification("🗳️ Musyawarah Mufakat telah berhasil disepakati!");
+      setActiveNotification("🗳️ Musyawarah Mufakat telah sukses disepakati!");
       setTimeout(() => setActiveNotification(null), 2500);
       return;
     }
 
     setDialogState({
       isOpen: true,
-      title: "Ruang Musyawarah: Penentuan Kegiatan Class Meeting",
-      characterName: "Edo, Siti, Beni, Dayu (4 Siswa Perwakilan)",
+      title: "Ruang Musyawarah: Pimpin Musyawarah Class Meeting",
+      characterName: "Andi, Budi, Citra, Dina (4 Siswa)",
       characterAvatar: "🗣️",
-      question: "Edo ingin futsal, Siti ingin cerdas cermat, Beni ingin lomba melukis, dan Dayu ingin pentas tari. Bagaimana cara memimpin musyawarah yang bijak?",
+      question: "Andi ingin ke pantai, Budi usul di sekolah hemat biaya, Citra ingin di taman kota, Dina ingin di aula sekolah. Langkah musyawarah yang bijak adalah:",
       options: [
-        { id: "A", text: "Dengarkan semua usulan, rangkum kelebihan masing-masing, dan sepakati 'Pekan Budaya & Olahraga Terpadu' agar semua minat terwadahi.", isCorrect: true, explanation: "Luar biasa! Musyawarah mufakat menghasilkan mufakat yang memuaskan seluruh pihak dengan rasa kebersamaan." },
-        { id: "B", text: "Langsung voting kilat tanpa memberi kesempatan Siti dan Dayu berbicara.", isCorrect: false, explanation: "Kurang demokratis. Semua peserta musyawarah berhak menyampaikan gagasannya." },
-        { id: "C", text: "Ketua menentukan sendiri kegiatan yang dia sukai tanpa peduli yang lain.", isCorrect: false, explanation: "Otoriter! Sila ke-4 melarang pemaksaan kehendak pribadi." },
+        { id: "A", text: "Dengarkan semua usulan, rangkum kelebihan tiap usulan, dan sepakati 'Pekan Ceria di Sekolah & Taman' secara mufakat.", isCorrect: true, explanation: "Musyawarah mufakat menghargai pendapat semua peserta secara adil dan bijaksana." },
+        { id: "B", text: "Putuskan sendiri secara sepihak tanpa mendengarkan siapa pun.", isCorrect: false, explanation: "Keputusan sepihak mencerminkan sikap egois dan otoriter." },
+        { id: "C", text: "Pilih usulan teman terdekat saja dan abaikan usulan siswa lain.", isCorrect: false, explanation: "Pilih kasih dalam musyawarah merusak semangat kekeluargaan." },
       ],
       onSuccess: () => {
         playBadgeFanfareSound();
+        unlockBadge("b4");
         setZona4MusyawarahDone(true);
-        setActiveNotification("🎉 Mufakat Tercapai! Semua Siswa Puas & Bahagia! Gerbang Zona 5 'Timbangan Keadilan' Terbuka!");
         setCurrentZone("zona5");
-        setAdventureScore((s) => s + 25);
+        addPoints(50, "Memimpin Musyawarah Mufakat");
+        addNote({
+          id: "z4_musyawarah",
+          zona: "Zona 4 - Ruang Musyawarah",
+          namaObjek: "Meja Musyawarah Balai Desa",
+          soal: "Andi, Budi, Citra, dan Dina memiliki usulan class meeting yang berbeda.",
+          jawabanUser: "Dengarkan semua usulan, rangkum, dan sepakati mufakat bersama.",
+          isCorrect: true,
+          penjelasan: "Sila ke-4 mengutamakan musyawarah mufakat dan menghargai perbedaan pendapat.",
+        });
+        setActiveNotification("🎉 Musyawarah Berhasil! Semua Siswa Puas! Gerbang Zona 5 'Timbangan Keadilan' Terbuka! (+50 Poin Bonus!)");
+        setAdventureScore((s) => s + 50);
       },
     });
-  }, [zona4MusyawarahDone]);
+  }, [zona4MusyawarahDone, addPoints, addNote, unlockBadge]);
 
-  // Buka Dialog Misi Zona 5 (Sila 5: Hakim Cilik Keadilan Sosial)
-  const triggerZona5Prompt = useCallback((caseId: number) => {
-    if (zona5CasesDone.includes(caseId)) {
-      setActiveNotification("⚖️ Kasus Keadilan ini sudah kamu putuskan secara adil!");
+  // ZONA 5: Timbangan Keadilan (Mini-Game Hakim Cilik 3 Kasus)
+  const triggerZona5Prompt = useCallback((caseKey: string) => {
+    if (zona5CasesDone.includes(caseKey)) {
+      setActiveNotification("⚖️ Kasus Keadilan ini sudah kamu putuskan secara bijak!");
       setTimeout(() => setActiveNotification(null), 2500);
       return;
     }
 
-    const cMap: Record<number, { title: string; q: string; opt: any[] }> = {
-      1: {
-        title: "Kasus I: Pembagian Tugas Kelompok Belajar",
-        q: "Dua anggota kelompok ingin hanya menulis nama saja tanpa mengerjakan materi presentasi. Keputusan Hakim Cilik:",
+    const caseMap: Record<string, { title: string; q: string; opt: any[]; desc: string }> = {
+      tugas: {
+        title: "Kasus 1: Pembagian Tugas Kelompok (Di Sekolah)",
+        desc: "Setiap orang dapat tugas seimbang sesuai kemampuannya.",
+        q: "Kelompokmu punya 3 tugas: presentasi, laporan, dan dekorasi. Ada 3 anggota. Pembagian yang adil adalah:",
         opt: [
-          { id: "A", text: "Bagi tugas secara proporsional sesuai kemampuan masing-masing anggota agar adil merata.", isCorrect: true, explanation: "Sangat adil! Setiap hak harus diimbangi dengan kewajiban yang seimbang." },
-          { id: "B", text: "Biarkan saja mereka malas karena mereka anak orang kaya.", isCorrect: false, explanation: "Salah besar! Keadilan tidak memandang kekayaan atau kedudukan." },
-          { id: "C", text: "Keluarkan mereka dari sekolah secara sepihak.", isCorrect: false, explanation: "Berlebihan. Bimbingan dan pembagian tugas adil adalah solusi bijak." },
+          { id: "A", text: "Setiap orang mendapat 1 tugas seimbang sesuai kemampuan dan saling membantu.", isCorrect: true, explanation: "Adil! Setiap anggota berkontribusi setara bagi kelompok." },
+          { id: "B", text: "Semua tugas dikerjakan oleh ketua seorang diri.", isCorrect: false, explanation: "Tidak adil membebankan seluruh pekerjaan pada satu orang." },
+          { id: "C", text: "Satu orang santai tanpa tugas tetapi tetap dapat nilai tinggi.", isCorrect: false, explanation: "Curang dan melanggar prinsip keadilan sosial." },
         ],
       },
-      2: {
-        title: "Kasus II: Fasilitas Membaca di Perpustakaan Desa",
-        q: "Buku ensiklopedia favorit di perpustakaan sangat diminati banyak siswa. Tindakan yang mencerminkan keadilan sosial:",
+      fasilitas: {
+        title: "Kasus 2: Pemerataan Fasilitas Sekolah (Di Kantor)",
+        desc: "Fasilitas diberikan kepada yang belum pernah mendapatkannya agar merata.",
+        q: "Ada dana bantuan komputer untuk 1 kelas. Kelas A sudah dapat tahun lalu, Kelas B belum pernah. Ke mana dana diberikan?",
         opt: [
-          { id: "A", text: "Menerapkan sistem antrean peminjaman bergiliran secara teratur bagi seluruh siswa tanpa pilih kasih.", isCorrect: true, explanation: "Bijaksana! Keadilan sosial memberikan akses yang sama bagi seluruh warga sekolah." },
-          { id: "B", text: "Memberikan buku tersebut selamanya hanya kepada juara kelas saja.", isCorrect: false, explanation: "Kurang adil. Seluruh siswa berhak membaca dan mengembangkan diri." },
-          { id: "C", text: "Menyembunyikan buku agar tidak ada yang bisa membaca.", isCorrect: false, explanation: "Tindakan egois yang merugikan orang banyak." },
+          { id: "A", text: "Kelas B, agar terjadi pemerataan fasilitas belajar yang adil.", isCorrect: true, explanation: "Adil! Pemerataan akses pendidikan bagi seluruh anak." },
+          { id: "B", text: "Kelas A lagi, karena siswanya dianggap lebih pintar.", isCorrect: false, explanation: "Diskriminasi! Seluruh siswa berhak mendapat fasilitas setara." },
+          { id: "C", text: "Disimpan saja dan tidak dibelikan apa-apa.", isCorrect: false, explanation: "Dana harus digunakan demi kemaslahatan bersama." },
         ],
       },
-      3: {
-        title: "Kasus III: Penghargaan Hasil Gotong Royong",
-        q: "Kelompokmu memenangkan piala kebersihan kelas berkat kerja keras bersama seluruh anggota. Sikap ketua kelompok:",
+      karya: {
+        title: "Kasus 3: Pengakuan Hak Cipta Hasil Kerja (Di Pameran)",
+        desc: "Mengakui karya bersama secara jujur tanpa klaim sepihak.",
+        q: "Karya robot kelompokmu dipamerkan di mall. Satu anak mengaku itu murni buatannya sendiri. Sikap adilmu:",
         opt: [
-          { id: "A", text: "Menyampaikan terima kasih kepada seluruh anggota dan merayakan kemenangan bersama secara setara.", isCorrect: true, explanation: "Sikap pemimpin Pancasila sejati! Menghargai hasil karya orang lain adalah butir Sila ke-5." },
-          { id: "B", text: "Mengaku bahwa piala itu murni hasil kerja keras ketua seorang diri.", isCorrect: false, explanation: "Egois dan curang. Mengabaikan jerih payah kawan melanggar Sila ke-5." },
-          { id: "C", text: "Membuang piala karena merasa hadiahnya kurang mewah.", isCorrect: false, explanation: "Tidak bersyukur dan tidak menghargai usaha bersama." },
+          { id: "A", text: "Klarifikasi dengan santun kepada dewan juri bahwa itu hasil karya bersama.", isCorrect: true, explanation: "Adil! Menghormati dan melindungi hak setiap anggota kelompok." },
+          { id: "B", text: "Diamkan saja karena malas ribut.", isCorrect: false, explanation: "Mendiamkan ketidakjujuran merugikan kawan lainnya." },
+          { id: "C", text: "Ikut-ikutan mengaku itu buatanmu sendiri.", isCorrect: false, explanation: "Tidak jujur dan melanggar moralitas Sila ke-5." },
         ],
       },
     };
 
-    const qData = cMap[caseId] ?? cMap[1]!;
-    if (!qData) return;
+    const cData = caseMap[caseKey] ?? caseMap["tugas"]!;
+
     setDialogState({
       isOpen: true,
-      title: qData.title,
-      characterName: "Dewi Keadilan Nusantara",
+      title: cData.title,
+      characterName: "Hakim Cilik Keadilan",
       characterAvatar: "⚖️",
-      question: qData.q,
-      options: qData.opt,
+      question: cData.q,
+      options: cData.opt,
       onSuccess: () => {
         playCoinSound();
         playCorrectSound();
+        addPoints(15, `Memutuskan ${cData.title}`);
+        addNote({
+          id: `z5_${caseKey}`,
+          zona: "Zona 5 - Timbangan Keadilan",
+          namaObjek: cData.title,
+          soal: cData.q,
+          jawabanUser: cData.opt[0]?.text ?? "",
+          isCorrect: true,
+          penjelasan: cData.desc,
+        });
+
         setZona5CasesDone((prev) => {
-          const next = [...prev, caseId];
+          const next = [...prev, caseKey];
           if (next.length >= 3) {
             playBadgeFanfareSound();
-            setActiveNotification("🎉 3 Kasus Keadilan Selesai! Gerbang MISI AKBAR 'Selamatkan Negeri Garuda' Telah Terbuka!");
+            unlockBadge("b5");
             setCurrentZone("misi_akbar");
+            setActiveNotification("🎉 3 Kasus Diputuskan Adil! Gerbang MISI AKBAR 'Selamatkan Negeri Garuda' Terbuka! (+50 Poin Bonus!)");
+            addPoints(50, "Menyelesaikan Zona 5");
+            setAdventureScore((s) => s + 65);
           } else {
-            setActiveNotification(`⚖️ Kasus ${caseId} Diputuskan Adil! (${next.length}/3 Kasus)`);
+            setActiveNotification(`⚖️ Keputusan Kasus ${cData.title} Ditegakkan Adil! (${next.length}/3 Kasus)`);
+            setAdventureScore((s) => s + 15);
           }
           return next;
         });
-        setAdventureScore((s) => s + 25);
       },
     });
-  }, [zona5CasesDone]);
+  }, [zona5CasesDone, addPoints, addNote, unlockBadge]);
 
-  // Buka Misi Akbar: Pulihkan Cahaya Garuda
-  const triggerMisiAkbarPrompt = useCallback((crystalId: number) => {
-    if (akbarCrystalsDone.includes(crystalId)) {
-      setActiveNotification("💎 Kristal ini telah terpasang kokoh di Altar Garuda!");
+  // FASE 6: MISI AKBAR — SELAMATKAN NEGERI GARUDA
+  const triggerMisiAkbarPrompt = useCallback((crystalIndex: number) => {
+    if (akbarCrystalsDone.includes(crystalIndex)) {
+      setActiveNotification("💎 Kristal ini telah terpasang bercahaya di Altar Garuda!");
       setTimeout(() => setActiveNotification(null), 2500);
       return;
     }
 
-    const crystalTitles: Record<number, string> = {
-      1: "Kristal Bintang Emas (Ketuhanan Yang Maha Esa) ⭐",
-      2: "Kristal Rantai Baja (Kemanusiaan yang Adil dan Beradab) ⛓️",
-      3: "Kristal Beringin Rindang (Persatuan Indonesia) 🌳",
-      4: "Kristal Kepala Banteng (Hikmat Musyawarah Mufakat) 🐂",
-      5: "Kristal Padi & Kapas (Keadilan Sosial Seluruh Rakyat) 🌾",
+    const crystalActions: Record<number, { title: string; q: string; opt: any[]; desc: string }> = {
+      1: {
+        title: "Kristal 1 (Sila 1): Berdiri di Zona Doa",
+        desc: "Ketuhanan yang Maha Esa - Doa bersama bagi kedamaian bangsa.",
+        q: "Berdirilah hening di zona doa selama 3 detik. Serukan doa untuk kedamaian seluruh rakyat Indonesia!",
+        opt: [
+          { id: "A", text: "Semoga Tuhan Yang Maha Esa senantiasa menjaga kedamaian dan persatuan Indonesia!", isCorrect: true, explanation: "Doa tulusmu membangkitkan Cahaya Ketuhanan di Altar Garuda." },
+          { id: "B", text: "Saya tidak peduli dengan kedamaian sesama.", isCorrect: false, explanation: "Nilai Sila 1 mengajarkan kepedulian religius terhadap sesama." },
+        ],
+      },
+      2: {
+        title: "Kristal 2 (Sila 2): Tolong Rekan yang Terjatuh",
+        desc: "Kemanusiaan yang Adil dan Beradab - Uluran tangan penyelamat.",
+        q: "Seorang kawan penjelajah terpeleset di tangga altar. Tindakan kemanusiaanmu:",
+        opt: [
+          { id: "A", text: "Mengulurkan tangan dengan sigap dan membantunya naik ke pelataran altar.", isCorrect: true, explanation: "Uluran tanganmu mengaktifkan Kristal Rantai Kemanusiaan!" },
+          { id: "B", text: "Menyalahkannya karena kurang hati-hati.", isCorrect: false, explanation: "Bukan menyalahkan, namun menolong adalah sikap mulia." },
+        ],
+      },
+      3: {
+        title: "Kristal 3 (Sila 3): Susun Puzzle Bendera Merah Putih",
+        desc: "Persatuan Indonesia - Berkibarlah Sang Saka Merah Putih.",
+        q: "Susun warna bendera kebangsaan kita secara benar dan kokoh di puncak tiang altar:",
+        opt: [
+          { id: "A", text: "Merah di bagian atas (keberanian) dan Putih di bagian bawah (kesucian).", isCorrect: true, explanation: "Sang Merah Putih berkibar megah menyatukan seluruh nusantara!" },
+          { id: "B", text: "Putih di atas dan Merah di bawah.", isCorrect: false, explanation: "Susunan warna bendera Indonesia adalah Merah di atas, Putih di bawah." },
+        ],
+      },
+      4: {
+        title: "Kristal 4 (Sila 4): Soal Cepat Musyawarah",
+        desc: "Kerakyatan yang Dipimpin oleh Hikmat Kebijaksanaan.",
+        q: "Apa inti utama dari musyawarah mufakat?",
+        opt: [
+          { id: "A", text: "Mencapai kesepakatan bersama yang mengutamakan kepentingan umum secara bijak.", isCorrect: true, explanation: "Mufakat melambangkan kebijaksanaan kepemimpinan bangsa." },
+          { id: "B", text: "Pihak yang suaranya paling keras berhak menang mutlak.", isCorrect: false, explanation: "Musyawarah mengedepankan akal sehat dan hati nurani." },
+        ],
+      },
+      5: {
+        title: "Kristal 5 (Sila 5): Bagikan 5 Koin Merata ke 5 Rekan",
+        desc: "Keadilan Sosial - Berbagi berkah tanpa membedakan teman.",
+        q: "Ada 5 koin emas gotong royong dan 5 rekan penjelajah. Bagaimana pembagian yang adil?",
+        opt: [
+          { id: "A", text: "Setiap rekan mendapatkan masing-masing 1 koin emas secara adil dan merata.", isCorrect: true, explanation: "Sempurna! Keadilan sosial terwujud nyata bagi seluruh rakyat." },
+          { id: "B", text: "Semua 5 koin diambil sendiri oleh ketua penjelajah.", isCorrect: false, explanation: "Itu ketamakan yang melanggar nilai Sila ke-5." },
+        ],
+      },
     };
+
+    const curC = crystalActions[crystalIndex] ?? crystalActions[1]!;
 
     setDialogState({
       isOpen: true,
-      title: `Altar Garuda: Pasang ${crystalTitles[crystalId]}`,
-      characterName: "Garuda Emas Penjaga Negeri",
+      title: curC.title,
+      characterName: "Garuda Emas Nusantara",
       characterAvatar: "🦅",
-      question: `Gotong royong memulihkan Negeri Garuda! Serukan komitmen luhur pengamalan Sila ke-${crystalId}:`,
-      options: [
-        { id: "A", text: `Saya berjanji mengamalkan nilai luhur Sila ke-${crystalId} dalam kehidupan sehari-hari di rumah dan sekolah!`, isCorrect: true, explanation: "Garuda Emas bersorak bahagia! Ikrar sucimu membakar semangat kebangsaan." },
-        { id: "B", text: "Hanya menghafal saat ulangan saja tapi tidak mempraktikkannya.", isCorrect: false, explanation: "Nilai Pancasila harus dipraktikkan nyata, bukan sekadar hafalan lisan." },
-      ],
+      question: curC.q,
+      options: curC.opt,
       onSuccess: () => {
         playCoinSound();
         playRobotAwakeSound();
+        addPoints(20, `Memasang ${curC.title}`);
+        addNote({
+          id: `akbar_${crystalIndex}`,
+          zona: "Misi Akbar - Selamatkan Negeri Garuda",
+          namaObjek: curC.title,
+          soal: curC.q,
+          jawabanUser: curC.opt[0]?.text ?? "",
+          isCorrect: true,
+          penjelasan: curC.desc,
+        });
+
         setAkbarCrystalsDone((prev) => {
-          const next = [...prev, crystalId];
+          const next = [...prev, crystalIndex];
           if (next.length >= 5) {
             playBadgeFanfareSound();
+            unlockBadge("b6");
             setCurrentZone("tamat");
-            setActiveNotification("🏆 MAHA KARYA SELESAI! NEGERI GARUDA BERSINAR GEMILANG! KAMU PENJELAJAH PANCASILA SEJATI!");
-            addPoints(50);
+            addPoints(100, "Menyelesaikan Misi Akbar Negeri Garuda");
+            setActiveNotification("🏆 PANCASILA HIDUP DALAM DIRIMU! SELURUH CAHAYA GARUDA TELAH PULIH! (+100 Poin Akbar!)");
+            setAdventureScore((s) => s + 120);
           } else {
-            setActiveNotification(`💎 Kristal ${crystalId}/5 Berhasil Disematkan ke Altar Garuda!`);
+            setActiveNotification(`💎 Kristal ${crystalIndex}/5 Berhasil Disematkan! Cahaya Garuda Semakin Terang!`);
+            setAdventureScore((s) => s + 20);
           }
           return next;
         });
-        setAdventureScore((s) => s + 30);
       },
     });
-  }, [akbarCrystalsDone, addPoints]);
+  }, [akbarCrystalsDone, addPoints, addNote, unlockBadge]);
 
   // --------------------------------------------------------------------------
-  // ENGINE 3D ROBLOX THREE.JS UNTUK NEGERI GARUDA
+  // ENGINE 3D THREE.JS UNTUK LOBBY & 5 ZONA & MISI AKBAR
   // --------------------------------------------------------------------------
   useEffect(() => {
-    if (gameType !== "adventure" || !isOpen || !mountEl) return;
+    if (!isOpen || !mountEl) return;
 
     const mount = mountEl;
 
     // 1. SETUP SCENE, CAMERA, & RENDERER
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color("#60a5fa"); // Langit Cerah Roblox
-    scene.fog = new THREE.FogExp2("#93c5fd", 0.007);
+    scene.background = new THREE.Color("#87CEEB"); // Langit Biru Cerah (#87CEEB sesuai blueprint)
+    scene.fog = new THREE.FogExp2("#93c5fd", 0.006);
 
     const getViewportSize = () => {
       const rect = mount.getBoundingClientRect();
@@ -632,11 +825,11 @@ export default function AdaptiveEduGameModal({
     const { w: initW, h: initH } = getViewportSize();
 
     const camera = new THREE.PerspectiveCamera(58, initW / initH, 0.1, 1000);
-    camera.position.set(0, 4.2, 14.5);
-    camera.lookAt(0, 1.6, 6);
+    camera.position.set(0, 4.5, 16);
+    camera.lookAt(0, 1.8, 8);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-    renderer.setClearColor("#60a5fa", 1);
+    renderer.setClearColor("#87CEEB", 1);
     renderer.setSize(initW, initH);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
@@ -651,7 +844,7 @@ export default function AdaptiveEduGameModal({
 
     mount.appendChild(renderer.domElement);
 
-    // 2. LIGHTING (Terang & Bersahabat)
+    // 2. LIGHTING (Terang & Hangat Sesuai Blueprint)
     const ambientLight = new THREE.AmbientLight("#ffffff", 0.95);
     scene.add(ambientLight);
 
@@ -666,90 +859,85 @@ export default function AdaptiveEduGameModal({
     sunLight.shadow.mapSize.height = 1024;
     scene.add(sunLight);
 
-    // 3. TERRAIN BESAR NEGERI GARUDA (Lobby hingga Misi Akbar: Z = +20 s/d Z = -480)
-    const groundGeo = new THREE.PlaneGeometry(100, 560);
-    const groundMat = new THREE.MeshLambertMaterial({ color: "#4ade80" }); // Hijau Rumput Roblox
+    // 3. TERRAIN BESAR (Rumput Hijau #228B22 + Jalur Batu Kuning Emas)
+    const groundGeo = new THREE.PlaneGeometry(120, 580);
+    const groundMat = new THREE.MeshLambertMaterial({ color: "#228B22" });
     const groundMesh = new THREE.Mesh(groundGeo, groundMat);
     groundMesh.rotation.x = -Math.PI / 2;
     groundMesh.position.set(0, 0, -220);
     groundMesh.receiveShadow = true;
     scene.add(groundMesh);
 
-    // Jalur Jalan Utama Desa (Yellow Sand Path)
-    const pathGeo = new THREE.PlaneGeometry(12, 540);
+    // Jalur Jalan Utama Desa
+    const pathGeo = new THREE.PlaneGeometry(12, 560);
     const pathMat = new THREE.MeshLambertMaterial({ color: "#fef08a" });
     const pathMesh = new THREE.Mesh(pathGeo, pathMat);
     pathMesh.rotation.x = -Math.PI / 2;
     pathMesh.position.set(0, 0.02, -220);
     scene.add(pathMesh);
 
-    // Dinding Pembatas Tebing Kiri & Kanan (Roblox Cliff)
-    const wallGeo = new THREE.BoxGeometry(4, 18, 560);
+    // Tebing Pembatas Kiri & Kanan
+    const wallGeo = new THREE.BoxGeometry(4, 20, 580);
     const wallMat = new THREE.MeshLambertMaterial({ color: "#b45309" });
     const leftWall = new THREE.Mesh(wallGeo, wallMat);
-    leftWall.position.set(-48, 9, -220);
+    leftWall.position.set(-54, 10, -220);
     scene.add(leftWall);
 
     const rightWall = new THREE.Mesh(wallGeo, wallMat);
-    rightWall.position.set(48, 9, -220);
+    rightWall.position.set(54, 10, -220);
     scene.add(rightWall);
 
     // ------------------------------------------------------------------------
-    // FASE 0: LOBBY & PATUNG GARUDA UTAMA DI TENGAH (Z = 0)
+    // FASE 0: LOBBY & PATUNG GARUDA (TINGGI 20 STUD SESUAI BLUEPRINT)
     // ------------------------------------------------------------------------
     const lobbyGroup = new THREE.Group();
+    const podMesh = new THREE.Mesh(
+      new THREE.CylinderGeometry(7, 8.5, 3, 16),
+      new THREE.MeshLambertMaterial({ color: "#e2e8f0" })
+    );
+    podMesh.position.set(0, 1.5, 0);
+    lobbyGroup.add(podMesh);
 
-    // Podium Marmer Patung Garuda
-    const podGeo = new THREE.CylinderGeometry(6, 7.5, 2.5, 16);
-    const podMat = new THREE.MeshLambertMaterial({ color: "#e2e8f0" });
-    const podium = new THREE.Mesh(podGeo, podMat);
-    podium.position.set(0, 1.25, 0);
-    lobbyGroup.add(podium);
+    // Model Garuda Emas 20 Stud
+    const garudaGoldMat = new THREE.MeshLambertMaterial({ color: "#FFD700", emissive: "#b45309" });
+    const gBody = new THREE.Mesh(new THREE.BoxGeometry(2.6, 4.5, 1.8), garudaGoldMat);
+    gBody.position.set(0, 5.2, 0);
+    lobbyGroup.add(gBody);
 
-    // Patung Garuda Emas Megah
-    const garudaMat = new THREE.MeshLambertMaterial({ color: "#facc15" });
-    const bodyG = new THREE.Mesh(new THREE.BoxGeometry(2.4, 3.5, 1.6), garudaMat);
-    bodyG.position.set(0, 4.25, 0);
-    lobbyGroup.add(bodyG);
+    const gLeftWing = new THREE.Mesh(new THREE.BoxGeometry(4.2, 1.8, 0.4), garudaGoldMat);
+    gLeftWing.position.set(-3.6, 5.8, 0);
+    gLeftWing.rotation.z = Math.PI / 8;
+    lobbyGroup.add(gLeftWing);
 
-    // Sayap Garuda Kiri & Kanan
-    const wingGeo = new THREE.BoxGeometry(3.6, 1.6, 0.4);
-    const leftWing = new THREE.Mesh(wingGeo, garudaMat);
-    leftWing.position.set(-3.2, 4.8, 0);
-    leftWing.rotation.z = Math.PI / 8;
-    lobbyGroup.add(leftWing);
+    const gRightWing = new THREE.Mesh(new THREE.BoxGeometry(4.2, 1.8, 0.4), garudaGoldMat);
+    gRightWing.position.set(3.6, 5.8, 0);
+    gRightWing.rotation.z = -Math.PI / 8;
+    lobbyGroup.add(gRightWing);
 
-    const rightWing = new THREE.Mesh(wingGeo, garudaMat);
-    rightWing.position.set(3.2, 4.8, 0);
-    rightWing.rotation.z = -Math.PI / 8;
-    lobbyGroup.add(rightWing);
+    const gHead = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.4, 1.5), garudaGoldMat);
+    gHead.position.set(0, 8.0, 0.4);
+    lobbyGroup.add(gHead);
 
-    // Kepala Garuda
-    const headG = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.4), garudaMat);
-    headG.position.set(0, 6.4, 0.4);
-    lobbyGroup.add(headG);
-
-    // Paruh Garuda
-    const beakG = new THREE.Mesh(new THREE.ConeGeometry(0.5, 1.0, 4), new THREE.MeshLambertMaterial({ color: "#ea580c" }));
-    beakG.rotation.x = Math.PI / 2;
-    beakG.position.set(0, 6.2, 1.3);
-    lobbyGroup.add(beakG);
+    const gBeak = new THREE.Mesh(new THREE.ConeGeometry(0.5, 1.2, 4), new THREE.MeshLambertMaterial({ color: "#ea580c" }));
+    gBeak.rotation.x = Math.PI / 2;
+    gBeak.position.set(0, 7.8, 1.4);
+    lobbyGroup.add(gBeak);
 
     scene.add(lobbyGroup);
 
-    // NPC PAK GURU VIRTUAL DI LOBBY (Dekat Z = +6)
+    // NPC PAK GURU VIRTUAL (Kemeja Batik Biru + Peci Hitam)
     const guruGroup = new THREE.Group();
-    const guruBody = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.6, 0.8), new THREE.MeshLambertMaterial({ color: "#0284c7" })); // Baju Biru Pendidik
-    guruBody.position.y = 2.2;
-    guruGroup.add(guruBody);
+    const guruB = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.6, 0.8), new THREE.MeshLambertMaterial({ color: "#0284c7" }));
+    guruB.position.y = 2.2;
+    guruGroup.add(guruB);
 
-    const guruHead = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.9), new THREE.MeshLambertMaterial({ color: "#fed7aa" }));
-    guruHead.position.y = 3.45;
-    guruGroup.add(guruHead);
+    const guruH = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.9), new THREE.MeshLambertMaterial({ color: "#fed7aa" }));
+    guruH.position.y = 3.45;
+    guruGroup.add(guruH);
 
-    const guruPeci = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.4, 0.95), new THREE.MeshLambertMaterial({ color: "#0f172a" })); // Peci Hitam
-    guruPeci.position.y = 3.95;
-    guruGroup.add(guruPeci);
+    const guruP = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.4, 0.95), new THREE.MeshLambertMaterial({ color: "#0f172a" }));
+    guruP.position.y = 3.95;
+    guruGroup.add(guruP);
 
     // Label Pak Guru
     const guruCanvas = document.createElement("canvas");
@@ -760,8 +948,7 @@ export default function AdaptiveEduGameModal({
     gCtx.font = "bold 26px sans-serif";
     gCtx.textAlign = "center";
     gCtx.fillText("👨‍🏫 Pak Guru Virtual", 150, 42);
-    const guruTex = new THREE.CanvasTexture(guruCanvas);
-    const guruSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: guruTex }));
+    const guruSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(guruCanvas) }));
     guruSprite.position.set(0, 4.8, 0);
     guruSprite.scale.set(3.2, 0.7, 1);
     guruGroup.add(guruSprite);
@@ -769,8 +956,8 @@ export default function AdaptiveEduGameModal({
     guruGroup.position.set(-4, 0, 8);
     scene.add(guruGroup);
 
-    // 5 PILAR BELAJAR BEBAS DI SEKELILING LOBBY
-    const pilarColors = ["#facc15", "#f97316", "#22c55e", "#ef4444", "#eab308"];
+    // 5 PILAR MODE BELAJAR (SILINDER 8 STUD SESUAI BLUEPRINT)
+    const pilarColors = ["#FFD700", "#f97316", "#22c55e", "#ef4444", "#eab308"];
     const pilarCoords = [
       { x: -14, z: 2, sila: 1 },
       { x: -9, z: -8, sila: 2 },
@@ -788,7 +975,6 @@ export default function AdaptiveEduGameModal({
       pMesh.position.y = 2.5;
       pGroup.add(pMesh);
 
-      // Kristal / Simbol Mengapung di Atas Pilar
       const gemMesh = new THREE.Mesh(
         new THREE.OctahedronGeometry(1.0),
         new THREE.MeshLambertMaterial({ color: "#ffffff", emissive: pilarColors[idx] })
@@ -803,90 +989,80 @@ export default function AdaptiveEduGameModal({
     // ------------------------------------------------------------------------
     // FASE 1: ZONA 1 "CAHAYA KETUHANAN" (Z = -50 s/d Z = -90)
     // ------------------------------------------------------------------------
-    const z1House = new THREE.Mesh(
-      new THREE.BoxGeometry(16, 10, 14),
-      new THREE.MeshLambertMaterial({ color: "#bae6fd" }) // Kuil Putih Langit
-    );
+    const z1House = new THREE.Mesh(new THREE.BoxGeometry(16, 10, 14), new THREE.MeshLambertMaterial({ color: "#bae6fd" }));
     z1House.position.set(16, 5, -70);
     scene.add(z1House);
 
-    // 5 Objek Simbol Kepercayaan di Zona 1
-    const z1SymbolsMeshes: THREE.Mesh[] = [];
     const z1SymbolPositions = [
-      { x: -5, z: -55, id: 1 }, // Lentera
-      { x: 4, z: -62, id: 2 },  // Kitab
-      { x: -3, z: -70, id: 3 }, // Bunga
-      { x: 5, z: -78, id: 4 },  // Lonceng
-      { x: -2, z: -85, id: 5 }, // Kubah
+      { x: -5, z: -55, id: "lilin" },
+      { x: 4, z: -62, id: "kitab" },
+      { x: -3, z: -70, id: "bunga" },
+      { x: 5, z: -78, id: "dupa" },
+      { x: -2, z: -85, id: "lentera" },
     ];
 
-    z1SymbolPositions.forEach((pos) => {
+    const z1Meshes: THREE.Mesh[] = [];
+    z1SymbolPositions.forEach((sp) => {
       const symMesh = new THREE.Mesh(
         new THREE.DodecahedronGeometry(0.8),
-        new THREE.MeshLambertMaterial({ color: "#facc15", emissive: "#eab308" })
+        new THREE.MeshLambertMaterial({ color: "#FFD700", emissive: "#eab308" })
       );
-      symMesh.position.set(pos.x, 1.4, pos.z);
-      symMesh.castShadow = true;
+      symMesh.position.set(sp.x, 1.4, sp.z);
       scene.add(symMesh);
-      z1SymbolsMeshes.push(symMesh);
+      z1Meshes.push(symMesh);
     });
 
     // ------------------------------------------------------------------------
     // FASE 2: ZONA 2 "RANTAI KEMANUSIAAN" (Z = -120 s/d Z = -160)
     // ------------------------------------------------------------------------
-    // Desa Rumah Warga
-    const z2House = new THREE.Mesh(
-      new THREE.BoxGeometry(14, 8, 12),
-      new THREE.MeshLambertMaterial({ color: "#fed7aa" })
-    );
+    const z2House = new THREE.Mesh(new THREE.BoxGeometry(14, 8, 12), new THREE.MeshLambertMaterial({ color: "#fed7aa" }));
     z2House.position.set(-18, 4, -140);
     scene.add(z2House);
 
-    // NPC Doni Jatuh Sepeda (Z = -128)
+    // Adi Terjatuh Sepeda (Z = -128)
     const doniGroup = new THREE.Group();
-    const doniBody = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.7, 1.4), new THREE.MeshLambertMaterial({ color: "#ea580c" }));
-    doniBody.position.y = 0.35;
-    doniGroup.add(doniBody);
+    const doniB = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.7, 1.4), new THREE.MeshLambertMaterial({ color: "#ea580c" }));
+    doniB.position.y = 0.35;
+    doniGroup.add(doniB);
     doniGroup.position.set(3, 0, -128);
     scene.add(doniGroup);
 
-    // NPC Ibu Siti Bawa Belanjaan (Z = -142)
+    // Bu Sari Bawa Belanjaan (Z = -142)
     const sitiGroup = new THREE.Group();
-    const sitiBody = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.5, 0.7), new THREE.MeshLambertMaterial({ color: "#ec4899" }));
-    sitiBody.position.y = 1.8;
-    sitiGroup.add(sitiBody);
+    const sitiB = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.5, 0.7), new THREE.MeshLambertMaterial({ color: "#ec4899" }));
+    sitiB.position.y = 1.8;
+    sitiGroup.add(sitiB);
     sitiGroup.position.set(-4, 0, -142);
     scene.add(sitiGroup);
 
-    // NPC Rian Korban Bullying (Z = -156)
+    // Rina Anti-Bullying (Z = -156)
     const rianGroup = new THREE.Group();
-    const rianBody = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.5, 0.7), new THREE.MeshLambertMaterial({ color: "#6366f1" }));
-    rianBody.position.y = 1.8;
-    rianGroup.add(rianBody);
+    const rianB = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.5, 0.7), new THREE.MeshLambertMaterial({ color: "#6366f1" }));
+    rianB.position.y = 1.8;
+    rianGroup.add(rianB);
     rianGroup.position.set(2, 0, -156);
     scene.add(rianGroup);
 
     // ------------------------------------------------------------------------
-    // FASE 3: ZONA 3 "POHON PERSATUAN" (Z = -190 s/d Z = -230)
+    // FASE 3: ZONA 3 "POHON PERSATUAN" (POHON BERINGIN 40 STUD SESUAI BLUEPRINT)
     // ------------------------------------------------------------------------
-    // Pohon Beringin Raksasa di Tengah
     const beringinGroup = new THREE.Group();
-    const trunkMesh = new THREE.Mesh(new THREE.CylinderGeometry(2.5, 3.8, 12, 12), new THREE.MeshLambertMaterial({ color: "#78350f" }));
-    trunkMesh.position.y = 6;
+    const trunkMesh = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 4.0, 14, 12), new THREE.MeshLambertMaterial({ color: "#78350f" }));
+    trunkMesh.position.y = 7;
     beringinGroup.add(trunkMesh);
-    const crownMesh = new THREE.Mesh(new THREE.DodecahedronGeometry(7.5), new THREE.MeshLambertMaterial({ color: "#15803d" }));
-    crownMesh.position.y = 14;
+    const crownMesh = new THREE.Mesh(new THREE.DodecahedronGeometry(8.5), new THREE.MeshLambertMaterial({ color: "#15803d" }));
+    crownMesh.position.y = 16;
     beringinGroup.add(crownMesh);
     beringinGroup.position.set(0, 0, -210);
     scene.add(beringinGroup);
 
-    // 3 Daun Persatuan Tersembunyi (Z = -198, -212, -225)
-    const leafMeshes: THREE.Mesh[] = [];
+    // 3 Daun Persatuan: Gua (Z = -198), Bukit (Z = -212), Batu (Z = -225)
     const leafPositions = [
-      { x: -9, z: -198, id: 1 },
-      { x: 8, z: -212, id: 2 },
-      { x: -7, z: -225, id: 3 },
+      { x: -9, z: -198, id: "gua" },
+      { x: 8, z: -212, id: "bukit" },
+      { x: -7, z: -225, id: "batu" },
     ];
+    const leafMeshes: THREE.Mesh[] = [];
     leafPositions.forEach((lp) => {
       const lMesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.9), new THREE.MeshLambertMaterial({ color: "#22c55e", emissive: "#16a34a" }));
       lMesh.position.set(lp.x, 1.5, lp.z);
@@ -895,21 +1071,19 @@ export default function AdaptiveEduGameModal({
     });
 
     // ------------------------------------------------------------------------
-    // FASE 4: ZONA 4 "RUANG MUSYAWARAH" (Z = -260 s/d Z = -300)
+    // FASE 4: ZONA 4 "RUANG MUSYAWARAH" (BALAI DESA & MEJA BUNDAR)
     // ------------------------------------------------------------------------
     const balaiDesa = new THREE.Mesh(new THREE.BoxGeometry(18, 9, 16), new THREE.MeshLambertMaterial({ color: "#fecaca" }));
     balaiDesa.position.set(16, 4.5, -280);
     scene.add(balaiDesa);
 
-    // Meja Bundar Musyawarah di Depan Balai
     const tableMesh = new THREE.Mesh(new THREE.CylinderGeometry(3.5, 3.5, 1.2, 16), new THREE.MeshLambertMaterial({ color: "#b91c1c" }));
     tableMesh.position.set(0, 0.6, -280);
     scene.add(tableMesh);
 
     // ------------------------------------------------------------------------
-    // FASE 5: ZONA 5 "TIMBANGAN KEADILAN" (Z = -330 s/d Z = -370)
+    // FASE 5: ZONA 5 "TIMBANGAN KEADILAN" (MONUMEN TIMBANGAN EMAS)
     // ------------------------------------------------------------------------
-    // Monumen Timbangan Emas Raksasa
     const scaleGroup = new THREE.Group();
     const scalePole = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.4, 9, 8), new THREE.MeshLambertMaterial({ color: "#ca8a04" }));
     scalePole.position.y = 4.5;
@@ -921,16 +1095,14 @@ export default function AdaptiveEduGameModal({
     scene.add(scaleGroup);
 
     // ------------------------------------------------------------------------
-    // FASE 6: MISI AKBAR "SELAMATKAN NEGERI GARUDA" (Z = -410 s/d Z = -450)
+    // FASE 6: MISI AKBAR (GARUDA RAKSASA & ALTARE)
     // ------------------------------------------------------------------------
-    // Lapangan Altar Garuda Agung
     const akbarAltar = new THREE.Mesh(new THREE.CylinderGeometry(10, 12, 3, 24), new THREE.MeshLambertMaterial({ color: "#1e1b4b" }));
     akbarAltar.position.set(0, 1.5, -430);
     scene.add(akbarAltar);
 
-    // Garuda Raksasa di Altar Akhir
     const megaGaruda = lobbyGroup.clone();
-    megaGaruda.scale.set(2.2, 2.2, 2.2);
+    megaGaruda.scale.set(2.4, 2.4, 2.4);
     megaGaruda.position.set(0, 3, -430);
     scene.add(megaGaruda);
 
@@ -939,28 +1111,24 @@ export default function AdaptiveEduGameModal({
     // ------------------------------------------------------------------------
     const playerGroup = new THREE.Group();
 
-    // Badan: Kemeja Putih Seragam SD
+    // Torso Putih SD + Dasi Merah
     const torsoMesh = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.5, 0.7), new THREE.MeshLambertMaterial({ color: "#ffffff" }));
     torsoMesh.position.y = 2.15;
-    torsoMesh.castShadow = true;
     playerGroup.add(torsoMesh);
 
-    // Dasi Merah SD
     const tieMesh = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.9, 0.08), new THREE.MeshLambertMaterial({ color: "#dc2626" }));
     tieMesh.position.set(0, 2.15, 0.38);
     playerGroup.add(tieMesh);
 
-    // Tas Ransel Oranye di Punggung
     const backpackMesh = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.2, 0.45), new THREE.MeshLambertMaterial({ color: "#f97316" }));
     backpackMesh.position.set(0, 2.2, -0.45);
     playerGroup.add(backpackMesh);
 
-    // Kepala Siswa SD
+    // Kepala + Topi Merah Putih
     const headMesh = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.85, 0.85), new THREE.MeshLambertMaterial({ color: "#fed7aa" }));
     headMesh.position.y = 3.35;
     playerGroup.add(headMesh);
 
-    // Topi Merah Putih SD
     const capTop = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.35, 0.92), new THREE.MeshLambertMaterial({ color: "#dc2626" }));
     capTop.position.y = 3.95;
     playerGroup.add(capTop);
@@ -969,16 +1137,11 @@ export default function AdaptiveEduGameModal({
     capVisor.position.set(0, 3.82, 0.55);
     playerGroup.add(capVisor);
 
-    // Lengan & Tangan
-    const sleeveGeo = new THREE.BoxGeometry(0.48, 0.6, 0.48);
-    const handGeo = new THREE.BoxGeometry(0.44, 0.7, 0.44);
-    const sleeveMat = new THREE.MeshLambertMaterial({ color: "#ffffff" });
-    const handMat = new THREE.MeshLambertMaterial({ color: "#fed7aa" });
-
+    // Lengan & Kaki
     const leftArm = new THREE.Group();
-    const lSlv = new THREE.Mesh(sleeveGeo, sleeveMat);
+    const lSlv = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.6, 0.48), new THREE.MeshLambertMaterial({ color: "#ffffff" }));
     lSlv.position.y = 0.3;
-    const lHnd = new THREE.Mesh(handGeo, handMat);
+    const lHnd = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.7, 0.44), new THREE.MeshLambertMaterial({ color: "#fed7aa" }));
     lHnd.position.y = -0.3;
     leftArm.add(lSlv);
     leftArm.add(lHnd);
@@ -986,23 +1149,15 @@ export default function AdaptiveEduGameModal({
     playerGroup.add(leftArm);
 
     const rightArm = new THREE.Group();
-    const rSlv = lSlv.clone();
-    const rHnd = lHnd.clone();
-    rightArm.add(rSlv);
-    rightArm.add(rHnd);
+    rightArm.add(lSlv.clone());
+    rightArm.add(lHnd.clone());
     rightArm.position.set(0.95, 2.15, 0);
     playerGroup.add(rightArm);
 
-    // Kaki: Celana Merah SD + Sepatu Hitam
-    const pantsGeo = new THREE.BoxGeometry(0.55, 0.75, 0.55);
-    const shoeGeo = new THREE.BoxGeometry(0.56, 0.35, 0.65);
-    const pantsMat = new THREE.MeshLambertMaterial({ color: "#dc2626" });
-    const shoeMat = new THREE.MeshLambertMaterial({ color: "#0f172a" });
-
     const leftLeg = new THREE.Group();
-    const lPnt = new THREE.Mesh(pantsGeo, pantsMat);
+    const lPnt = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.75, 0.55), new THREE.MeshLambertMaterial({ color: "#dc2626" }));
     lPnt.position.y = 0.35;
-    const lSh = new THREE.Mesh(shoeGeo, shoeMat);
+    const lSh = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.35, 0.65), new THREE.MeshLambertMaterial({ color: "#0f172a" }));
     lSh.position.set(0, -0.45, 0.05);
     leftLeg.add(lPnt);
     leftLeg.add(lSh);
@@ -1010,14 +1165,12 @@ export default function AdaptiveEduGameModal({
     playerGroup.add(leftLeg);
 
     const rightLeg = new THREE.Group();
-    const rPnt = lPnt.clone();
-    const rSh = lSh.clone();
-    rightLeg.add(rPnt);
-    rightLeg.add(rSh);
+    rightLeg.add(lPnt.clone());
+    rightLeg.add(lSh.clone());
     rightLeg.position.set(0.35, 0.7, 0);
     playerGroup.add(rightLeg);
 
-    // Label Nama
+    // Label Penjelajah
     const nameCanvas = document.createElement("canvas");
     nameCanvas.width = 340;
     nameCanvas.height = 64;
@@ -1025,18 +1178,17 @@ export default function AdaptiveEduGameModal({
     nCtx.fillStyle = "#ffffff";
     nCtx.font = "bold 26px sans-serif";
     nCtx.textAlign = "center";
-    nCtx.fillText("🎒 Penjelajah Muda Pancasila", 170, 42);
-    const nameTex = new THREE.CanvasTexture(nameCanvas);
-    const nameSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: nameTex }));
+    nCtx.fillText("🎒 Penjelajah Pancasila", 170, 42);
+    const nameSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(nameCanvas) }));
     nameSprite.position.set(0, 4.6, 0);
     nameSprite.scale.set(3.6, 0.75, 1);
     playerGroup.add(nameSprite);
 
-    playerGroup.position.set(0, 0, 6);
+    playerGroup.position.set(0, 0, 8);
     scene.add(playerGroup);
 
     // ------------------------------------------------------------------------
-    // ANIMATION & GAME LOOP
+    // GAME LOOP
     // ------------------------------------------------------------------------
     let animId: number;
     let vy = 0;
@@ -1067,9 +1219,9 @@ export default function AdaptiveEduGameModal({
         playerGroup.position.x += moveX * speed * delta;
         playerGroup.position.z += moveZ * speed * delta;
 
-        // Batasi arena
-        playerGroup.position.x = Math.max(-38, Math.min(38, playerGroup.position.x));
-        playerGroup.position.z = Math.max(-460, Math.min(18, playerGroup.position.z));
+        // Batasi batas arena
+        playerGroup.position.x = Math.max(-42, Math.min(42, playerGroup.position.x));
+        playerGroup.position.z = Math.max(-460, Math.min(22, playerGroup.position.z));
 
         const targetRot = Math.atan2(moveX, moveZ);
         playerGroup.rotation.y = targetRot + Math.PI;
@@ -1104,18 +1256,17 @@ export default function AdaptiveEduGameModal({
         }
       }
 
-      // Simpan Posisi Player ke Ref untuk Interaksi ProximityPrompt
       playerPosRef.current = {
         x: playerGroup.position.x,
         y: playerGroup.position.y,
         z: playerGroup.position.z,
       };
 
-      // Efek rotasi objek kristal mengapung
-      z1SymbolsMeshes.forEach((m) => (m.rotation.y += delta * 1.5));
+      // Efek rotasi mengapung kristal & daun
+      z1Meshes.forEach((m) => (m.rotation.y += delta * 1.5));
       leafMeshes.forEach((m) => (m.rotation.y += delta * 2.0));
 
-      // KAMERA THIRD-PERSON PERSPECTIVE
+      // Third-person camera tracking
       const camTargetX = playerGroup.position.x;
       const camTargetY = playerGroup.position.y + 4.5;
       const camTargetZ = playerGroup.position.z + 8.5;
@@ -1125,7 +1276,6 @@ export default function AdaptiveEduGameModal({
       camera.position.z += (camTargetZ - camera.position.z) * 0.12;
       camera.lookAt(playerGroup.position.x, playerGroup.position.y + 1.8, playerGroup.position.z - 3);
 
-      // Responsif Viewport Size
       const { w, h } = getViewportSize();
       if (
         renderer.domElement.clientWidth !== w ||
@@ -1142,7 +1292,6 @@ export default function AdaptiveEduGameModal({
     renderer.render(scene, camera);
     animate();
 
-    // Event Listeners Resize & Keyboard
     const handleResize = () => {
       const { w, h } = getViewportSize();
       camera.aspect = w / h;
@@ -1167,7 +1316,6 @@ export default function AdaptiveEduGameModal({
       }
       if (e.key === "e" || e.key === "E") {
         e.preventDefault();
-        // Cek Interaksi ProximityPrompt Berdasarkan Posisi Pemain
         const pz = playerPosRef.current.z;
         const px = playerPosRef.current.x;
 
@@ -1175,7 +1323,7 @@ export default function AdaptiveEduGameModal({
         if (Math.abs(pz - 8) < 4 && Math.abs(px - (-4)) < 4) {
           setShowGuruPrompt(true);
         }
-        // Dekat 5 Pilar Belajar Bebas di Lobby
+        // Dekat 5 Pilar Mode Belajar
         else if (pz > -18 && pz < 10) {
           pilarCoords.forEach((pc) => {
             if (Math.abs(pz - pc.z) < 3.5 && Math.abs(px - pc.x) < 3.5) {
@@ -1184,7 +1332,7 @@ export default function AdaptiveEduGameModal({
             }
           });
         }
-        // Zona 1: Simbol Kepercayaan
+        // Zona 1: 5 Objek
         if (pz <= -50 && pz >= -90) {
           z1SymbolPositions.forEach((sp) => {
             if (Math.abs(pz - sp.z) < 4.5 && Math.abs(px - sp.x) < 4.5) {
@@ -1192,13 +1340,13 @@ export default function AdaptiveEduGameModal({
             }
           });
         }
-        // Zona 2: Tolong Warga
+        // Zona 2: 3 Warga
         else if (pz <= -120 && pz >= -160) {
-          if (Math.abs(pz - (-128)) < 4.5) triggerZona2Prompt("doni");
-          if (Math.abs(pz - (-142)) < 4.5) triggerZona2Prompt("ibu_siti");
-          if (Math.abs(pz - (-156)) < 4.5) triggerZona2Prompt("rian_bullying");
+          if (Math.abs(pz - (-128)) < 4.5) triggerZona2Prompt("adi");
+          if (Math.abs(pz - (-142)) < 4.5) triggerZona2Prompt("bu_sari");
+          if (Math.abs(pz - (-156)) < 4.5) triggerZona2Prompt("rina");
         }
-        // Zona 3: Daun Persatuan
+        // Zona 3: 3 Daun Persatuan
         else if (pz <= -190 && pz >= -230) {
           leafPositions.forEach((lp) => {
             if (Math.abs(pz - lp.z) < 4.5 && Math.abs(px - lp.x) < 4.5) {
@@ -1210,11 +1358,11 @@ export default function AdaptiveEduGameModal({
         else if (pz <= -260 && pz >= -300) {
           if (Math.abs(pz - (-280)) < 7) triggerZona4Prompt();
         }
-        // Zona 5: Kasus Keadilan
+        // Zona 5: 3 Kasus Keadilan
         else if (pz <= -330 && pz >= -370) {
-          if (Math.abs(pz - (-345)) < 5) triggerZona5Prompt(1);
-          if (Math.abs(pz - (-355)) < 5) triggerZona5Prompt(2);
-          if (Math.abs(pz - (-365)) < 5) triggerZona5Prompt(3);
+          if (Math.abs(pz - (-345)) < 5) triggerZona5Prompt("tugas");
+          if (Math.abs(pz - (-355)) < 5) triggerZona5Prompt("fasilitas");
+          if (Math.abs(pz - (-365)) < 5) triggerZona5Prompt("karya");
         }
         // Misi Akbar
         else if (pz <= -410 && pz >= -450) {
@@ -1255,7 +1403,6 @@ export default function AdaptiveEduGameModal({
     };
   }, [
     mountEl,
-    gameType,
     isOpen,
     pilarMateriList,
     triggerZona1Prompt,
@@ -1277,7 +1424,7 @@ export default function AdaptiveEduGameModal({
         aria-modal="true"
         aria-labelledby="negeri-garuda-title"
       >
-        {/* TOP HUD BAR */}
+        {/* TOP HUD BAR ROBLOX */}
         <header className="h-14 bg-slate-900/95 border-b-2 border-yellow-400 text-white px-4 sm:px-6 flex items-center justify-between shrink-0 shadow-lg z-20">
           <div className="flex items-center gap-3 min-w-0">
             <span className="w-9 h-9 rounded-xl bg-gradient-to-tr from-yellow-400 to-amber-500 flex items-center justify-center text-xl shadow-md shrink-0">
@@ -1285,7 +1432,7 @@ export default function AdaptiveEduGameModal({
             </span>
             <div className="min-w-0">
               <h2 id="negeri-garuda-title" className="font-black text-sm sm:text-base text-yellow-300 truncate tracking-wide">
-                NEGERI GARUDA: PETUALANGAN 5 SILA & MISI AKBAR
+                PETUALANGAN PANCASILA: JELAJAH NEGERI GARUDA
               </h2>
               <p className="text-[11px] text-slate-300 truncate">
                 Fase: <b className="text-emerald-400 uppercase">{currentZone.replace("_", " ")}</b> • Materi: {resolvedTitle}
@@ -1294,6 +1441,34 @@ export default function AdaptiveEduGameModal({
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* Tombol 📖 Buku Catatan Pelajar */}
+            <button
+              type="button"
+              onClick={() => {
+                playClickSound();
+                setShowNotebook(true);
+              }}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-full text-xs shadow-sm transition flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>📖</span>
+              <span className="hidden sm:inline">Buku Catatan ({notebookNotes.length})</span>
+            </button>
+
+            {/* Tombol 🎖️ Badges Penghargaan */}
+            <button
+              type="button"
+              onClick={() => {
+                playClickSound();
+                setShowBadgesModal(true);
+              }}
+              className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3 py-1.5 rounded-full text-xs shadow-sm transition flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>🎖️</span>
+              <span className="hidden sm:inline">
+                Badges ({badges.filter((b) => b.unlocked).length}/6)
+              </span>
+            </button>
+
             {/* Papan Skor Button */}
             <button
               type="button"
@@ -1328,7 +1503,7 @@ export default function AdaptiveEduGameModal({
               }}
               className={`px-3 py-1.5 rounded-full text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
                 bgmEnabled
-                  ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                  ? "bg-teal-600 hover:bg-teal-700 text-white shadow-sm"
                   : "bg-slate-700 hover:bg-slate-600 text-slate-300"
               }`}
             >
@@ -1368,16 +1543,16 @@ export default function AdaptiveEduGameModal({
                   SELAMAT DATANG DI NEGERI GARUDA! 🇮🇩
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-                  Jadilah <b>Penjelajah Muda Pancasila</b>! Jelajahi 5 Zona luhur bangsa, bantu warga desa, pimpin musyawarah mufakat, tegakkan keadilan, dan selamatkan Negeri Garuda dalam <b>Misi Akbar</b> gotong royong!
+                  Jadilah <b>Penjelajah Muda Pancasila</b>! Jelajahi 5 Zona luhur bangsa, bantu warga desa, kumpulkan daun persatuan, pimpin musyawarah mufakat, tegakkan keadilan, dan pulihkan cahaya Garuda dalam <b>Misi Akbar</b> gotong royong!
                 </p>
                 <div className="bg-slate-900/90 p-3 rounded-2xl border border-yellow-400/30 text-xs text-yellow-200 flex items-center justify-center gap-4">
-                  <span>🎮 <b>WASD / Panah</b>: Jalan</span>
+                  <span>🎮 <b>WASD / Panah</b>: Gerak</span>
                   <span>•</span>
                   <span>🟡 <b>Spasi</b>: Lompat</span>
                   <span>•</span>
-                  <span>⚡ <b>Shift</b>: Lari</span>
+                  <span>⚡ <b>Shift</b>: Sprint</span>
                   <span>•</span>
-                  <span>🎯 <b>E</b>: Aksi / Bicara</span>
+                  <span>🎯 <b>E</b>: Interaksi ProximityPrompt</span>
                 </div>
               </div>
               <button
@@ -1389,7 +1564,7 @@ export default function AdaptiveEduGameModal({
                 }}
                 className="bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-base sm:text-lg py-4 px-10 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition border-4 border-white flex items-center gap-3 cursor-pointer"
               >
-                <span>▶️ MULAI PETUALANGAN NEGERI GARUDA 🎵</span>
+                <span>▶️ MULAI JELAJAH NEGERI GARUDA (DENGAN MUSIK 🎵)</span>
               </button>
             </div>
           )}
@@ -1399,7 +1574,7 @@ export default function AdaptiveEduGameModal({
             {[
               { id: "lobby", label: "Lobby Garuda", icon: "🏛️" },
               { id: "zona1", label: "Zona 1: Cahaya Ketuhanan", icon: "⭐" },
-              { id: "zona2", label: "Zona 2: Rantai Kemanusiaan", icon: "⛓️" },
+              { id: "zona2", label: "Zona 2: Rantai Kemanusiaan", icon: "🔗" },
               { id: "zona3", label: "Zona 3: Pohon Persatuan", icon: "🌳" },
               { id: "zona4", label: "Zona 4: Ruang Musyawarah", icon: "🐂" },
               { id: "zona5", label: "Zona 5: Timbangan Keadilan", icon: "🌾" },
@@ -1421,10 +1596,17 @@ export default function AdaptiveEduGameModal({
             ))}
           </div>
 
-          {/* NOTIFIKASI AKSI DI TENGAH ATAS */}
+          {/* NOTIFIKASI DI LAYAR */}
           {activeNotification && (
             <div className="absolute top-18 inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-30 max-w-xl bg-slate-900/95 border-2 border-yellow-400 p-3.5 rounded-2xl shadow-2xl text-center animate-in fade-in zoom-in text-white text-xs sm:text-sm font-bold backdrop-blur-md">
               {activeNotification}
+            </div>
+          )}
+
+          {/* CUTSCENE BANNER (ZONA 3 POHON BERINGIN) */}
+          {cutsceneText && (
+            <div className="absolute inset-x-8 bottom-24 z-40 bg-emerald-950/95 border-4 border-emerald-400 p-5 rounded-3xl text-center text-white text-sm sm:text-base font-black shadow-2xl animate-in fade-in zoom-in-95 backdrop-blur-md">
+              {cutsceneText}
             </div>
           )}
 
@@ -1498,7 +1680,7 @@ export default function AdaptiveEduGameModal({
                   </span>
                   <div>
                     <span className="text-[10px] font-bold text-yellow-400 uppercase tracking-wider">
-                      Area Belajar Bebas Sila ke-{selectedPilar.sila}
+                      Pilar Mode Belajar Sila ke-{selectedPilar.sila}
                     </span>
                     <h3 className="font-black text-base text-white">
                       {selectedPilar.judul}
@@ -1548,13 +1730,13 @@ export default function AdaptiveEduGameModal({
 
                 <div className="bg-slate-800/80 p-4 rounded-2xl border border-slate-700 text-xs sm:text-sm leading-relaxed text-slate-200 space-y-2">
                   <p>
-                    "Halo Penjelajah Muda yang cerdas dan berbudi luhur! Selamat datang di <b>Negeri Garuda</b>."
+                    "Selamat datang, Penjelajah Muda! Negeri Garuda kehilangan cahayanya. Tugasmu memulihkannya!"
                   </p>
                   <p>
-                    "Di sini kamu akan berpetualang menelusuri 5 Zona Pancasila. Setiap zona memiliki tantangan sikap nyata yang harus kamu selesaikan untuk membuka zona berikutnya."
+                    "Ada 5 zona yang harus kamu lewati. Setiap zona mengajarkan satu sila Pancasila. Tekan <b>E</b> di dekat objek atau warga untuk berinteraksi. Selamat berpetualang!"
                   </p>
                   <p className="text-yellow-300 font-bold">
-                    "Tekan 'E' saat berada di dekat objek atau warga untuk berinteraksi. Selamat berjuang!"
+                    "Butuh bantuan belajar? Coba baca 5 pilar di sebelahku!"
                   </p>
                 </div>
 
@@ -1564,6 +1746,135 @@ export default function AdaptiveEduGameModal({
                   className="w-full bg-sky-500 hover:bg-sky-600 text-white font-black py-2.5 rounded-xl text-xs transition cursor-pointer"
                 >
                   Siap, Pak Guru! Mulai Petualangan 🚀
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL 📖 BUKU CATATAN PELAJAR (SESUAI BLUEPRINT) */}
+          {showNotebook && (
+            <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+              <div className="bg-slate-900 border-4 border-emerald-400 rounded-3xl max-w-xl w-full p-6 text-white space-y-4 shadow-2xl flex flex-col max-h-[85vh]">
+                <div className="flex items-center justify-between border-b border-slate-700 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-2xl">📖</span>
+                    <div>
+                      <h3 className="font-black text-base text-emerald-300">
+                        Buku Catatan Penjelajah Pancasila
+                      </h3>
+                      <p className="text-[11px] text-slate-400">
+                        Daftar soal, jawaban, dan penjelasan nilai yang telah kamu selesaikan
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowNotebook(false)}
+                    className="text-slate-400 hover:text-white text-base px-2 py-1"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto space-y-3 pr-1 text-xs">
+                  {notebookNotes.length === 0 ? (
+                    <div className="text-center py-10 text-slate-400 space-y-2">
+                      <span className="text-4xl block">📝</span>
+                      <p>Buku catatanmu masih kosong.</p>
+                      <p className="text-[11px]">Jelajahi zona dan selesaikan tantangan untuk mencatat nilai-nilai luhur!</p>
+                    </div>
+                  ) : (
+                    notebookNotes.map((n, i) => (
+                      <div
+                        key={i}
+                        className="bg-slate-800/90 border border-slate-700 rounded-2xl p-3.5 space-y-1.5"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-black text-emerald-400">{n.zona}</span>
+                          <span className="text-[10px] text-slate-400">{n.waktu}</span>
+                        </div>
+                        <div className="font-bold text-white text-xs">
+                          {n.namaObjek}: "{n.soal}"
+                        </div>
+                        <div className="text-slate-300">
+                          <b>Jawabanmu:</b> {n.jawabanUser}
+                        </div>
+                        <div className="bg-emerald-950/40 border border-emerald-500/30 p-2 rounded-xl text-emerald-300 text-[11px]">
+                          💡 <b>Penjelasan:</b> {n.penjelasan}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowNotebook(false)}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition"
+                >
+                  Tutup Buku Catatan
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL 🎖️ BADGES PENGHARGAAN (SESUAI BLUEPRINT) */}
+          {showBadgesModal && (
+            <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+              <div className="bg-slate-900 border-4 border-amber-400 rounded-3xl max-w-lg w-full p-6 text-white space-y-4 shadow-2xl">
+                <div className="flex items-center justify-between border-b border-slate-700 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-2xl">🎖️</span>
+                    <div>
+                      <h3 className="font-black text-base text-amber-300">
+                        Lencana Penghargaan Petualangan
+                      </h3>
+                      <p className="text-[11px] text-slate-400">
+                        Koleksi 6 badge kehormatan pengamalan Pancasila
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowBadgesModal(false)}
+                    className="text-slate-400 hover:text-white text-base px-2 py-1"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {badges.map((b) => (
+                    <div
+                      key={b.id}
+                      className={`p-3 rounded-2xl border flex items-center gap-3 ${
+                        b.unlocked
+                          ? "bg-amber-400/20 border-yellow-400 text-yellow-200"
+                          : "bg-slate-800/50 border-slate-700/60 opacity-60 text-slate-400"
+                      }`}
+                    >
+                      <span className="text-3xl">{b.unlocked ? b.symbol : "🔒"}</span>
+                      <div className="min-w-0">
+                        <h4 className="font-black text-xs text-white truncate">
+                          {b.name}
+                        </h4>
+                        <p className="text-[10px] text-slate-300 leading-tight">
+                          {b.desc}
+                        </p>
+                        <span className="text-[9px] font-bold block mt-0.5 text-amber-400">
+                          {b.unlocked ? "✓ Berhasil Diraih" : "Terkunci"}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowBadgesModal(false)}
+                  className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl text-xs transition"
+                >
+                  Tutup Lencana
                 </button>
               </div>
             </div>
@@ -1591,11 +1902,11 @@ export default function AdaptiveEduGameModal({
 
                 <div className="space-y-2 text-xs">
                   {[
-                    { rank: "🥇", name: "Budi Santoso", score: "180 Poin", badge: "Pancasila Sejati" },
-                    { rank: "🥈", name: "Siti Rahma", score: "165 Poin", badge: "Ksatria Kemanusiaan" },
-                    { rank: "🥉", name: "Edo Pratama", score: "150 Poin", badge: "Pemimpin Musyawarah" },
+                    { rank: "🥇", name: "Budi Santoso", score: "480 Poin", badge: "Pancasila Sejati" },
+                    { rank: "🥈", name: "Siti Rahma", score: "420 Poin", badge: "Ksatria Kemanusiaan" },
+                    { rank: "🥉", name: "Edo Pratama", score: "360 Poin", badge: "Pemimpin Musyawarah" },
                     { rank: "4", name: "Kamu (Siswa)", score: `${adventureScore} Poin`, badge: "Penjelajah Aktif", highlight: true },
-                    { rank: "5", name: "Dayu Kemala", score: "120 Poin", badge: "Penegak Keadilan" },
+                    { rank: "5", name: "Dayu Kemala", score: "290 Poin", badge: "Penegak Keadilan" },
                   ].map((s, idx) => (
                     <div
                       key={idx}
@@ -1636,11 +1947,11 @@ export default function AdaptiveEduGameModal({
                   🏆
                 </div>
                 <div className="space-y-2">
-                  <h3 className="font-black text-2xl text-yellow-300">
-                    SELAMAT! CAHAYA NEGERI GARUDA TELAH PULIH! 🇮🇩
+                  <h3 className="font-black text-2xl sm:text-3xl text-yellow-300">
+                    PANCASILA HIDUP DALAM DIRIMU! 🇮🇩
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-                    Kamu telah menyelesaikan seluruh petualangan 5 Sila dan memimpin gotong royong Misi Akbar! Nilai-nilai luhur Pancasila kini hidup nyata dalam tindakanmu.
+                    Kamu telah menyelesaikan seluruh petualangan 5 Sila dan memimpin gotong royong memulihkan Negeri Garuda!
                   </p>
                 </div>
 
@@ -1652,7 +1963,7 @@ export default function AdaptiveEduGameModal({
                     🎖️ PENJELAJAH PANCASILA SEJATI
                   </div>
                   <div className="text-xs text-emerald-400 font-bold pt-1">
-                    🪙 Total Skor Aksi: {adventureScore} Poin • +50 Poin Prestasi Pelajar!
+                    🪙 Total Skor Akhir: {adventureScore} Poin • +100 Poin Prestasi Pelajar!
                   </div>
                 </div>
 
@@ -1662,8 +1973,8 @@ export default function AdaptiveEduGameModal({
                     playClickSound();
                     setCurrentZone("lobby");
                     setAdventureScore(0);
-                    setZona1Found([]);
-                    setZona2Helped([]);
+                    setZona1DoneCount([]);
+                    setZona2DoneCount([]);
                     setZona3Leaves([]);
                     setZona4MusyawarahDone(false);
                     setZona5CasesDone([]);
@@ -1671,7 +1982,7 @@ export default function AdaptiveEduGameModal({
                   }}
                   className="w-full bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-slate-950 font-black py-3 rounded-full text-sm shadow-xl transition cursor-pointer"
                 >
-                  🔄 Mainkan Petualangan dari Awal (Lobby)
+                  🔄 Kembali ke Lobby Negeri Garuda
                 </button>
               </div>
             </div>
@@ -1730,7 +2041,6 @@ export default function AdaptiveEduGameModal({
               <button
                 type="button"
                 onClick={() => {
-                  // Memicu tombol E
                   const event = new KeyboardEvent("keydown", { key: "e" });
                   window.dispatchEvent(event);
                 }}
