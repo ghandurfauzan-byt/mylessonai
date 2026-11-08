@@ -1,14 +1,16 @@
 // frontend/src/components/AdaptiveEduGameModal.tsx
-// Game Edukasi 3D Roblox: "Jelajah Suku Nusantara & Desa Pancasila"
-// Fitur Utama:
-// 1. Gapura Masuk Megah (Gapura Nusantara Tradisional) di titik awal
-// 2. Jalur pedesaan asri dengan pepohonan rindang, kelapa, bunga, dan lentera
-// 3. Koin Emas & Bintang Pancasila berputar di sepanjang jalan yang bisa diambil (Pick-up +5 Poin)
-// 4. Suasana multiplayer kelas: Teman-teman sekelas (NPC siswa) yang sedang berjalan & menjelajah bersama
-// 5. Rumah Adat 5 Suku Nusantara (Suku Jawa, Sunda, Minang, Dayak, Papua)
-//    - Di setiap suku ada tokoh adat yang menyapa dan memberi pertanyaan edukatif seputar Pancasila
-// 6. UI Modern Elegan & Rounded (Glassmorphism, Pill Buttons, Animasi Ceria - Tidak Kaku / Kotak-kotak)
-// 7. Papan Skor Kelas (Leaderboard Siswa) yang interaktif dan dinamis
+// Game Edukasi 3D Roblox: "Jelajah Suku Nusantara & Desa Pancasila Online"
+// Fitur Baru:
+// 1. Leaderboard Kelas di Awalan (di samping Gapura Masuk)
+// 2. Pak Guru Virtual dengan Voice Suara Penjelasan Nyata (Web Speech API id-ID):
+//    - Penjelasan apa itu Pancasila
+//    - Makna per Sila (1 s/d 5) dan contoh implementasinya
+//    - Arahan cara bermain game petualangan
+// 3. Petunjuk Layar Awal mengarahkan pemain ke Pak Guru ("👉 Temui Pak Guru Virtual")
+// 4. Fitur Siswa Kelas Online: Teman-teman sekelas muncul saat join dengan kostum berbeda
+//    (Pramuka cokelat, Batik hijau, Kaos olahraga biru, Batik ungu)
+// 5. Interaksi antar-siswa: Sapa & Dadah ("👋 Hai kawan! Semangat belajar Pancasila!")
+// 6. Koin emas di sepanjang jalan pedesaan & 5 Rumah Suku Adat
 
 "use client";
 
@@ -67,15 +69,21 @@ interface RoadCoin {
   collected: boolean;
 }
 
-// Model Teman Sekelas
-interface Classmate {
+// Model Siswa Online (Classmate)
+interface OnlineStudent {
+  id: string;
   name: string;
   avatar: string;
+  costumeName: string;
+  shirtColor: string;
+  pantsColor: string;
   x: number;
   z: number;
   speed: number;
   dir: number;
+  isOnline: boolean;
   mesh?: THREE.Group;
+  lastGreeting?: string;
 }
 
 export default function AdaptiveEduGameModal({
@@ -98,13 +106,21 @@ export default function AdaptiveEduGameModal({
   const [visitedSukuIds, setVisitedSukuIds] = useState<string[]>([]);
   const [activeNotification, setActiveNotification] = useState<string | null>(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
-  const [showGuideModal, setShowGuideModal] = useState(false);
   const [allSukuCompleted, setAllSukuCompleted] = useState(false);
 
-  // Dialog State untuk Kuis di Rumah Suku
+  // Status Panduan Pak Guru
+  const [hasTalkedToGuru, setHasTalkedToGuru] = useState(false);
+  const [showGuruDialog, setShowGuruDialog] = useState(false);
+  const [guruTab, setGuruTab] = useState<"apa_itu" | "makna_sila" | "cara_main">("apa_itu");
+  const [isGuruSpeaking, setIsGuruSpeaking] = useState(false);
+
+  // Dialog Kuis Rumah Suku
   const [activeSukuDialog, setActiveSukuDialog] = useState<SukuAdat | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [answerFeedback, setAnswerFeedback] = useState<{ isCorrect: boolean; text: string } | null>(null);
+
+  // Sapaan Interaksi Teman
+  const [friendGreetingBubble, setFriendGreetingBubble] = useState<{ name: string; text: string } | null>(null);
 
   // Mount Element Ref Callback untuk Three.js
   const [mountEl, setMountEl] = useState<HTMLDivElement | null>(null);
@@ -127,10 +143,48 @@ export default function AdaptiveEduGameModal({
   });
 
   // State Posisi Pemain dalam 3D
-  const playerPosRef = useRef<{ x: number; y: number; z: number }>({ x: 0, y: 0, z: 12 });
+  const playerPosRef = useRef<{ x: number; y: number; z: number }>({ x: 0, y: 0, z: 18 });
 
   // --------------------------------------------------------------------------
-  // DATA 5 SUKU NUSANTARA (1 SUKU UNTUK 1 SILA PANCASILA)
+  // SUARA PENJELASAN PAK GURU (WEB SPEECH SYNTHESIS API - BAHASA INDONESIA)
+  // --------------------------------------------------------------------------
+  const speakGuruVoice = useCallback((text: string) => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "id-ID";
+      utterance.rate = 1.0;
+      utterance.pitch = 1.05;
+
+      const voices = window.speechSynthesis.getVoices();
+      const idVoice = voices.find(
+        (v) =>
+          v.lang.includes("id") ||
+          v.lang.includes("ID") ||
+          v.name.toLowerCase().includes("indonesia")
+      );
+      if (idVoice) utterance.voice = idVoice;
+
+      utterance.onstart = () => setIsGuruSpeaking(true);
+      utterance.onend = () => setIsGuruSpeaking(false);
+      utterance.onerror = () => setIsGuruSpeaking(false);
+
+      window.speechSynthesis.speak(utterance);
+    } catch {
+      setIsGuruSpeaking(false);
+    }
+  }, []);
+
+  const stopGuruVoice = useCallback(() => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+      setIsGuruSpeaking(false);
+    }
+  }, []);
+
+  // --------------------------------------------------------------------------
+  // DATA 5 SUKU NUSANTARA
   // --------------------------------------------------------------------------
   const sukuList: SukuAdat[] = useMemo(() => [
     {
@@ -225,14 +279,71 @@ export default function AdaptiveEduGameModal({
     },
   ], []);
 
-  // Leaderboard Kelas Simulasi
+  // --------------------------------------------------------------------------
+  // SISWA ONLINE (KOSTUM BERBEDA SESUAI BLUEPRINT ONLINE GAME)
+  // --------------------------------------------------------------------------
+  const [onlineStudents, setOnlineStudents] = useState<OnlineStudent[]>([
+    {
+      id: "siti",
+      name: "Siti Rahma",
+      avatar: "👧",
+      costumeName: "Seragam Pramuka",
+      shirtColor: "#78350f", // Cokelat Pramuka
+      pantsColor: "#451a03",
+      x: -2.5,
+      z: -18,
+      speed: 2.2,
+      dir: -1,
+      isOnline: true,
+    },
+    {
+      id: "budi",
+      name: "Budi Santoso",
+      avatar: "👦",
+      costumeName: "Batik Nusantara Hijau",
+      shirtColor: "#15803d", // Batik Hijau
+      pantsColor: "#0f172a",
+      x: 2.5,
+      z: -70,
+      speed: 2.5,
+      dir: 1,
+      isOnline: true,
+    },
+    {
+      id: "edo",
+      name: "Edo Pratama",
+      avatar: "🧒",
+      costumeName: "Baju Olahraga Biru",
+      shirtColor: "#0284c7", // Biru Olahraga
+      pantsColor: "#1e293b",
+      x: -2.0,
+      z: -130,
+      speed: 2.1,
+      dir: -1,
+      isOnline: true,
+    },
+    {
+      id: "dayu",
+      name: "Dayu Kemala",
+      avatar: "👧",
+      costumeName: "Batik Nusantara Ungu",
+      shirtColor: "#7e22ce", // Ungu Elegan
+      pantsColor: "#0f172a",
+      x: 2.2,
+      z: -190,
+      speed: 2.4,
+      dir: 1,
+      isOnline: true,
+    },
+  ]);
+
+  // Leaderboard Kelas Real-Time
   const classLeaderboard = useMemo(() => [
-    { rank: 1, name: "Siti Rahma", points: 145, avatar: "👧", badge: "Pancasila Juara" },
-    { rank: 2, name: "Budi Santoso", points: 130, avatar: "👦", badge: "Ksatria Suku" },
-    { rank: 3, name: "Kamu (Penjelajah)", points: adventureScore, avatar: "🎒", badge: "Penjelajah Aktif", isPlayer: true },
-    { rank: 4, name: "Edo Pratama", points: 95, avatar: "🧒", badge: "Duta Toleransi" },
-    { rank: 5, name: "Dayu Kemala", points: 80, avatar: "👧", badge: "Sahabat Desa" },
-    { rank: 6, name: "Beni Nugraha", points: 65, avatar: "👦", badge: "Pengelana Rukun" },
+    { rank: 1, name: "Siti Rahma", points: 145, avatar: "👧", costume: "Pramuka", status: "Online 🟢" },
+    { rank: 2, name: "Budi Santoso", points: 130, avatar: "👦", costume: "Batik Hijau", status: "Online 🟢" },
+    { rank: 3, name: "Kamu (Pelajar)", points: adventureScore, avatar: "🎒", costume: "Merah Putih", status: "Online 🟢", isPlayer: true },
+    { rank: 4, name: "Edo Pratama", points: 95, avatar: "🧒", costume: "Olahraga Biru", status: "Online 🟢" },
+    { rank: 5, name: "Dayu Kemala", points: 80, avatar: "👧", costume: "Batik Ungu", status: "Online 🟢" },
   ].sort((a, b) => b.points - a.points), [adventureScore]);
 
   // Reset Saat Modal Buka
@@ -247,10 +358,14 @@ export default function AdaptiveEduGameModal({
       setSelectedAnswer(null);
       setAnswerFeedback(null);
       setShowLeaderboard(false);
-      setShowGuideModal(false);
       setAllSukuCompleted(false);
+      setHasTalkedToGuru(false);
+      setShowGuruDialog(false);
+      setGuruTab("apa_itu");
+      setFriendGreetingBubble(null);
+      stopGuruVoice();
     }
-  }, [isOpen]);
+  }, [isOpen, stopGuruVoice]);
 
   // Kontrol Background Music
   useEffect(() => {
@@ -259,8 +374,28 @@ export default function AdaptiveEduGameModal({
     }
     return () => {
       stopAdventureBgm();
+      stopGuruVoice();
     };
-  }, [isOpen, gameStarted, bgmEnabled]);
+  }, [isOpen, gameStarted, bgmEnabled, stopGuruVoice]);
+
+  // Sapa Teman Sekelas (Interaksi Dadah Online)
+  const handleGreetClassmate = useCallback((student: OnlineStudent) => {
+    playCoinSound();
+    playCorrectSound();
+    setAdventureScore((s) => s + 5);
+    addPoints(5, `Menyapa teman sekelas: ${student.name}`);
+
+    setFriendGreetingBubble({
+      name: student.name,
+      text: `👋 "Halo juga! Senang ketemu di jalan desa! Ayo kumpulkan koin & jelajahi 5 Suku bareng!"`,
+    });
+
+    setActiveNotification(`👋 Kamu menyapa ${student.name} (${student.costumeName})! (+5 Poin Persahabatan!)`);
+    setTimeout(() => {
+      setFriendGreetingBubble(null);
+      setActiveNotification(null);
+    }, 4500);
+  }, [addPoints]);
 
   // Jawab Pertanyaan Suku
   const handleAnswerSuku = (suku: SukuAdat, optId: string) => {
@@ -277,7 +412,7 @@ export default function AdaptiveEduGameModal({
         const nextVisited = [...visitedSukuIds, suku.id];
         setVisitedSukuIds(nextVisited);
         setAdventureScore((s) => s + 25);
-        addPoints(25, `Menjawab soal di ${suku.namaSuku}`);
+        addPoints(25, `Menjawab kuis ${suku.namaSuku}`);
 
         if (nextVisited.length >= 5) {
           setTimeout(() => {
@@ -294,7 +429,7 @@ export default function AdaptiveEduGameModal({
   };
 
   // --------------------------------------------------------------------------
-  // ENGINE 3D THREE.JS: DUNIA DESA SUKU NUSANTARA
+  // ENGINE 3D THREE.JS: GAPURA, PAK GURU, LEADERBOARD AWAL, JALUR DESA & SISWA
   // --------------------------------------------------------------------------
   useEffect(() => {
     if (!isOpen || !mountEl) return;
@@ -303,7 +438,7 @@ export default function AdaptiveEduGameModal({
 
     // 1. SETUP SCENE, CAMERA, & RENDERER
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color("#7dd3fc"); // Langit Biru Sejuk Tropis
+    scene.background = new THREE.Color("#7dd3fc");
     scene.fog = new THREE.FogExp2("#bae6fd", 0.006);
 
     const getViewportSize = () => {
@@ -316,8 +451,8 @@ export default function AdaptiveEduGameModal({
     const { w: initW, h: initH } = getViewportSize();
 
     const camera = new THREE.PerspectiveCamera(56, initW / initH, 0.1, 1000);
-    camera.position.set(0, 4.5, 20);
-    camera.lookAt(0, 1.8, 12);
+    camera.position.set(0, 4.5, 26);
+    camera.lookAt(0, 1.8, 18);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     renderer.setClearColor("#7dd3fc", 1);
@@ -335,7 +470,7 @@ export default function AdaptiveEduGameModal({
 
     mount.appendChild(renderer.domElement);
 
-    // 2. LIGHTING (Terang, Alami & Hangat)
+    // 2. LIGHTING
     const ambientLight = new THREE.AmbientLight("#ffffff", 0.95);
     scene.add(ambientLight);
 
@@ -346,21 +481,19 @@ export default function AdaptiveEduGameModal({
     const sunLight = new THREE.DirectionalLight("#fffbeb", 1.4);
     sunLight.position.set(25, 60, 20);
     sunLight.castShadow = true;
-    sunLight.shadow.mapSize.width = 1024;
-    sunLight.shadow.mapSize.height = 1024;
     scene.add(sunLight);
 
-    // 3. TERRAIN LEMBUT DESA (Rumput Hijau Subur & Jalan Paving Alami)
-    const groundGeo = new THREE.PlaneGeometry(140, 420);
-    const groundMat = new THREE.MeshLambertMaterial({ color: "#22c55e" }); // Hijau Segar
+    // 3. TERRAIN LEMBUT DESA
+    const groundGeo = new THREE.PlaneGeometry(140, 440);
+    const groundMat = new THREE.MeshLambertMaterial({ color: "#22c55e" });
     const groundMesh = new THREE.Mesh(groundGeo, groundMat);
     groundMesh.rotation.x = -Math.PI / 2;
     groundMesh.position.set(0, 0, -150);
     groundMesh.receiveShadow = true;
     scene.add(groundMesh);
 
-    // Jalur Jalan Paving Pedesaan (Beige Batu Halus)
-    const pathGeo = new THREE.PlaneGeometry(12, 380);
+    // Jalan Paving Pedesaan
+    const pathGeo = new THREE.PlaneGeometry(12, 400);
     const pathMat = new THREE.MeshLambertMaterial({ color: "#fef08a" });
     const pathMesh = new THREE.Mesh(pathGeo, pathMat);
     pathMesh.rotation.x = -Math.PI / 2;
@@ -368,33 +501,21 @@ export default function AdaptiveEduGameModal({
     scene.add(pathMesh);
 
     // ------------------------------------------------------------------------
-    // GAPURA MASUK MEGAH (GAPURA NUSANTARA MERAH BATA & EMAS) DI Z = +14
+    // GAPURA MASUK MEGAH (Z = +14)
     // ------------------------------------------------------------------------
     const gapuraGroup = new THREE.Group();
-    const pillarMat = new THREE.MeshLambertMaterial({ color: "#b91c1c" }); // Merah Bata Megah
+    const pillarMat = new THREE.MeshLambertMaterial({ color: "#b91c1c" });
     const goldMat = new THREE.MeshLambertMaterial({ color: "#facc15" });
 
-    // Pilar Kiri
+    // Pilar Kiri & Kanan
     const leftPil = new THREE.Mesh(new THREE.BoxGeometry(2.4, 8, 2.4), pillarMat);
     leftPil.position.set(-6.5, 4, 14);
     gapuraGroup.add(leftPil);
 
-    const leftTop = new THREE.Mesh(new THREE.ConeGeometry(2.0, 3, 4), goldMat);
-    leftTop.position.set(-6.5, 9.5, 14);
-    leftTop.rotation.y = Math.PI / 4;
-    gapuraGroup.add(leftTop);
-
-    // Pilar Kanan
     const rightPil = new THREE.Mesh(new THREE.BoxGeometry(2.4, 8, 2.4), pillarMat);
     rightPil.position.set(6.5, 4, 14);
     gapuraGroup.add(rightPil);
 
-    const rightTop = new THREE.Mesh(new THREE.ConeGeometry(2.0, 3, 4), goldMat);
-    rightTop.position.set(6.5, 9.5, 14);
-    rightTop.rotation.y = Math.PI / 4;
-    gapuraGroup.add(rightTop);
-
-    // Balok Atas Penghubung Gapura
     const archBeam = new THREE.Mesh(new THREE.BoxGeometry(15, 1.8, 2.2), pillarMat);
     archBeam.position.set(0, 8.2, 14);
     gapuraGroup.add(archBeam);
@@ -407,14 +528,13 @@ export default function AdaptiveEduGameModal({
     bCtx.fillStyle = "#facc15";
     bCtx.fillRect(0, 0, 512, 128);
     bCtx.fillStyle = "#1e1b4b";
-    bCtx.font = "bold 38px sans-serif";
+    bCtx.font = "bold 36px sans-serif";
     bCtx.textAlign = "center";
     bCtx.fillText("DESA PANCASILA NUSANTARA", 256, 75);
 
-    const bannerTex = new THREE.CanvasTexture(bannerCanvas);
     const bannerMesh = new THREE.Mesh(
       new THREE.PlaneGeometry(12, 2.4),
-      new THREE.MeshBasicMaterial({ map: bannerTex })
+      new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(bannerCanvas) })
     );
     bannerMesh.position.set(0, 8.2, 15.15);
     gapuraGroup.add(bannerMesh);
@@ -422,14 +542,103 @@ export default function AdaptiveEduGameModal({
     scene.add(gapuraGroup);
 
     // ------------------------------------------------------------------------
-    // PEPOHONAN RINDANG & KELAPA DI SEPANJANG JALAN
+    // PAPAN SKOR KELAS 3D DI AWALAN (DI KANAN GAPURA: X = +4.5, Z = +16)
+    // ------------------------------------------------------------------------
+    const lbGroup = new THREE.Group();
+    const lbPole1 = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 5, 8), new THREE.MeshLambertMaterial({ color: "#78350f" }));
+    lbPole1.position.set(-2.2, 2.5, 0);
+    lbGroup.add(lbPole1);
+    const lbPole2 = lbPole1.clone();
+    lbPole2.position.set(2.2, 2.5, 0);
+    lbGroup.add(lbPole2);
+
+    const lbCanvas = document.createElement("canvas");
+    lbCanvas.width = 512;
+    lbCanvas.height = 360;
+    const lbCtx = lbCanvas.getContext("2d")!;
+    lbCtx.fillStyle = "#1e1b4b";
+    lbCtx.fillRect(0, 0, 512, 360);
+    lbCtx.strokeStyle = "#facc15";
+    lbCtx.lineWidth = 10;
+    lbCtx.strokeRect(5, 5, 502, 350);
+
+    lbCtx.fillStyle = "#facc15";
+    lbCtx.font = "bold 30px sans-serif";
+    lbCtx.textAlign = "center";
+    lbCtx.fillText("🏆 PAPAN SKOR KELAS", 256, 45);
+
+    lbCtx.font = "bold 22px sans-serif";
+    lbCtx.fillStyle = "#ffffff";
+    lbCtx.textAlign = "left";
+    lbCtx.fillText("🥇 Siti Rahma: 145 Poin", 40, 110);
+    lbCtx.fillText("🥈 Budi Santoso: 130 Poin", 40, 160);
+    lbCtx.fillText("🥉 Kamu (Siswa): 0 Poin", 40, 210);
+    lbCtx.fillText("4.  Edo Pratama: 95 Poin", 40, 260);
+    lbCtx.fillText("5.  Dayu Kemala: 80 Poin", 40, 310);
+
+    const lbBoard = new THREE.Mesh(
+      new THREE.PlaneGeometry(5, 3.5),
+      new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(lbCanvas) })
+    );
+    lbBoard.position.set(0, 3.5, 0.05);
+    lbGroup.add(lbBoard);
+
+    lbGroup.position.set(4.5, 0, 16);
+    scene.add(lbGroup);
+
+    // ------------------------------------------------------------------------
+    // PAK GURU VIRTUAL DI AWALAN (DI KIRI GAPURA: X = -4.0, Z = +16)
+    // ------------------------------------------------------------------------
+    const guruGroup = new THREE.Group();
+    const guruBody = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.6, 0.8), new THREE.MeshLambertMaterial({ color: "#0284c7" }));
+    guruBody.position.y = 2.2;
+    guruGroup.add(guruBody);
+
+    const guruHead = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.9), new THREE.MeshLambertMaterial({ color: "#fed7aa" }));
+    guruHead.position.y = 3.45;
+    guruGroup.add(guruHead);
+
+    const guruPeci = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.4, 0.95), new THREE.MeshLambertMaterial({ color: "#0f172a" }));
+    guruPeci.position.y = 3.95;
+    guruGroup.add(guruPeci);
+
+    // Lingkaran Emas Penanda di Bawah Kaki Pak Guru
+    const ringGeo = new THREE.RingGeometry(1.2, 1.6, 32);
+    const ringMat = new THREE.MeshBasicMaterial({ color: "#facc15", side: THREE.DoubleSide });
+    const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+    ringMesh.rotation.x = -Math.PI / 2;
+    ringMesh.position.y = 0.05;
+    guruGroup.add(ringMesh);
+
+    // Label Pak Guru
+    const guruCanvas = document.createElement("canvas");
+    guruCanvas.width = 340;
+    guruCanvas.height = 80;
+    const gCtx = guruCanvas.getContext("2d")!;
+    gCtx.fillStyle = "#ffffff";
+    gCtx.font = "bold 26px sans-serif";
+    gCtx.textAlign = "center";
+    gCtx.fillText("👨‍🏫 Pak Guru Virtual", 170, 38);
+    gCtx.fillStyle = "#facc15";
+    gCtx.font = "bold 22px sans-serif";
+    gCtx.fillText("Tekan 'E' untuk Suara Guru 🔊", 170, 70);
+
+    const guruSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(guruCanvas) }));
+    guruSprite.position.set(0, 5.0, 0);
+    guruSprite.scale.set(3.8, 0.9, 1);
+    guruGroup.add(guruSprite);
+
+    guruGroup.position.set(-4.0, 0, 16);
+    scene.add(guruGroup);
+
+    // ------------------------------------------------------------------------
+    // PEPOHONAN RINDANG DI SEPANJANG JALAN
     // ------------------------------------------------------------------------
     const treeGroup = new THREE.Group();
     const trunkMat = new THREE.MeshLambertMaterial({ color: "#78350f" });
     const leafMat = new THREE.MeshLambertMaterial({ color: "#15803d" });
 
-    for (let tz = 10; tz > -320; tz -= 18) {
-      // Pohon Kiri
+    for (let tz = 12; tz > -320; tz -= 18) {
       const tL = new THREE.Group();
       const trL = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.5, 5, 8), trunkMat);
       trL.position.y = 2.5;
@@ -440,7 +649,6 @@ export default function AdaptiveEduGameModal({
       tL.position.set(-8.5 - Math.random() * 3, 0, tz);
       treeGroup.add(tL);
 
-      // Pohon Kanan
       const tR = new THREE.Group();
       const trR = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.5, 5, 8), trunkMat);
       trR.position.y = 2.5;
@@ -460,8 +668,8 @@ export default function AdaptiveEduGameModal({
     const coinGeo = new THREE.CylinderGeometry(0.55, 0.55, 0.15, 16);
     const coinMat = new THREE.MeshLambertMaterial({ color: "#facc15", emissive: "#ca8a04" });
 
-    for (let cz = 5; cz > -300; cz -= 7) {
-      const offsetX = (Math.sin(cz * 0.4) * 3.5);
+    for (let cz = 8; cz > -300; cz -= 7) {
+      const offsetX = Math.sin(cz * 0.4) * 3.5;
       const cMesh = new THREE.Mesh(coinGeo, coinMat);
       cMesh.rotation.x = Math.PI / 2;
       cMesh.position.set(offsetX, 0.8, cz);
@@ -478,12 +686,11 @@ export default function AdaptiveEduGameModal({
     }
 
     // ------------------------------------------------------------------------
-    // 5 RUMAH ADAT SUKU NUSANTARA (JAWA, SUNDA, MINANG, DAYAK, PAPUA)
+    // 5 RUMAH ADAT SUKU NUSANTARA
     // ------------------------------------------------------------------------
     sukuList.forEach((suku) => {
       const hGroup = new THREE.Group();
 
-      // Badan Rumah
       const wallMesh = new THREE.Mesh(
         new THREE.BoxGeometry(11, 7.5, 9),
         new THREE.MeshLambertMaterial({ color: suku.warnaKhas })
@@ -492,36 +699,23 @@ export default function AdaptiveEduGameModal({
       wallMesh.castShadow = true;
       hGroup.add(wallMesh);
 
-      // Atap Khas Rumah Adat
       let roofMesh: THREE.Mesh;
       if (suku.id === "minang") {
-        // Atap Gonjong Runcing Minang
-        roofMesh = new THREE.Mesh(
-          new THREE.ConeGeometry(8, 6, 4),
-          new THREE.MeshLambertMaterial({ color: "#78350f" })
-        );
+        roofMesh = new THREE.Mesh(new THREE.ConeGeometry(8, 6, 4), new THREE.MeshLambertMaterial({ color: "#78350f" }));
         roofMesh.rotation.y = Math.PI / 4;
         roofMesh.position.y = 9.8;
       } else if (suku.id === "papua") {
-        // Atap Bulat Melengkung Honai
-        roofMesh = new THREE.Mesh(
-          new THREE.SphereGeometry(6, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2),
-          new THREE.MeshLambertMaterial({ color: "#ca8a04" })
-        );
+        roofMesh = new THREE.Mesh(new THREE.SphereGeometry(6, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshLambertMaterial({ color: "#ca8a04" }));
         roofMesh.position.y = 7.5;
       } else {
-        // Atap Limas Tradisional Joglo/Sunda/Dayak
-        roofMesh = new THREE.Mesh(
-          new THREE.ConeGeometry(8.5, 4.5, 4),
-          new THREE.MeshLambertMaterial({ color: "#92400e" })
-        );
+        roofMesh = new THREE.Mesh(new THREE.ConeGeometry(8.5, 4.5, 4), new THREE.MeshLambertMaterial({ color: "#92400e" }));
         roofMesh.rotation.y = Math.PI / 4;
         roofMesh.position.y = 9.5;
       }
       roofMesh.castShadow = true;
       hGroup.add(roofMesh);
 
-      // Papan Nama Suku Mengapung di Depan Rumah
+      // Papan Label Rumah Adat
       const labelCanvas = document.createElement("canvas");
       labelCanvas.width = 360;
       labelCanvas.height = 96;
@@ -534,7 +728,7 @@ export default function AdaptiveEduGameModal({
       lCtx.fillText(`${suku.simbolSila} ${suku.namaSuku}`, 180, 42);
       lCtx.font = "bold 20px sans-serif";
       lCtx.fillStyle = "#b91c1c";
-      lCtx.fillText("Tekan 'E' untuk Kuis", 180, 76);
+      lCtx.fillText("Tekan 'E' untuk Kuis Sila", 180, 76);
 
       const labelTex = new THREE.CanvasTexture(labelCanvas);
       const labelSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: labelTex }));
@@ -542,84 +736,70 @@ export default function AdaptiveEduGameModal({
       labelSprite.scale.set(5.5, 1.4, 1);
       hGroup.add(labelSprite);
 
-      // NPC Tokoh Suku Berdiri di Depan Pintu
-      const npcGroup = new THREE.Group();
-      const nBody = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.5, 0.7), new THREE.MeshLambertMaterial({ color: suku.warnaKhas }));
-      nBody.position.y = 1.9;
-      npcGroup.add(nBody);
-
-      const nHead = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.85, 0.85), new THREE.MeshLambertMaterial({ color: "#fed7aa" }));
-      nHead.position.y = 3.0;
-      npcGroup.add(nHead);
-
-      npcGroup.position.set(0, 0, 5.5);
-      hGroup.add(npcGroup);
-
       hGroup.position.set(suku.xPos, 0, suku.zPos);
       scene.add(hGroup);
     });
 
     // ------------------------------------------------------------------------
-    // TEMAN-TEMAN SEKELAS (SIMULASI SISWA KELAS BERJALAN DI JALAN)
+    // SISWA ONLINE DENGAN KOSTUM BERBEDA (PRAMUKA, BATIK, OLAHRAGA)
     // ------------------------------------------------------------------------
-    const classmatesData: Classmate[] = [
-      { name: "Siti Rahma", avatar: "👧", x: -2, z: -20, speed: 2.2, dir: -1 },
-      { name: "Budi Santoso", avatar: "👦", x: 2.5, z: -60, speed: 2.5, dir: 1 },
-      { name: "Edo Pratama", avatar: "🧒", x: -1.8, z: -120, speed: 2.0, dir: -1 },
-      { name: "Dayu Kemala", avatar: "👧", x: 2.2, z: -180, speed: 2.4, dir: 1 },
-      { name: "Beni Nugraha", avatar: "👦", x: -2.2, z: -240, speed: 2.1, dir: -1 },
-    ];
+    onlineStudents.forEach((student) => {
+      const stGroup = new THREE.Group();
 
-    classmatesData.forEach((cm) => {
-      const cmGroup = new THREE.Group();
-      const cBody = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.4, 0.6), new THREE.MeshLambertMaterial({ color: "#ffffff" }));
-      cBody.position.y = 1.8;
-      cmGroup.add(cBody);
+      // Baju Sesuai Kostum
+      const sBody = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.4, 0.6), new THREE.MeshLambertMaterial({ color: student.shirtColor }));
+      sBody.position.y = 1.8;
+      stGroup.add(sBody);
 
-      const cHead = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), new THREE.MeshLambertMaterial({ color: "#fed7aa" }));
-      cHead.position.y = 2.9;
-      cmGroup.add(cHead);
+      // Celana Sesuai Kostum
+      const sPants = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.7, 0.55), new THREE.MeshLambertMaterial({ color: student.pantsColor }));
+      sPants.position.y = 0.7;
+      stGroup.add(sPants);
 
-      // Label Nama Siswa
+      const sHead = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), new THREE.MeshLambertMaterial({ color: "#fed7aa" }));
+      sHead.position.y = 2.9;
+      stGroup.add(sHead);
+
+      // Label Nama Siswa & Kostum
       const nameCanvas = document.createElement("canvas");
-      nameCanvas.width = 250;
-      nameCanvas.height = 64;
+      nameCanvas.width = 320;
+      nameCanvas.height = 74;
       const nCtx = nameCanvas.getContext("2d")!;
       nCtx.fillStyle = "#ffffff";
       nCtx.font = "bold 24px sans-serif";
       nCtx.textAlign = "center";
-      nCtx.fillText(`${cm.avatar} ${cm.name}`, 125, 42);
-      const nameSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(nameCanvas) }));
-      nameSprite.position.set(0, 3.8, 0);
-      nameSprite.scale.set(3.0, 0.7, 1);
-      cmGroup.add(nameSprite);
+      nCtx.fillText(`${student.avatar} ${student.name}`, 160, 36);
+      nCtx.font = "bold 18px sans-serif";
+      nCtx.fillStyle = "#facc15";
+      nCtx.fillText(`[${student.costumeName}] (E: Sapa 👋)`, 160, 64);
 
-      cmGroup.position.set(cm.x, 0, cm.z);
-      scene.add(cmGroup);
-      cm.mesh = cmGroup;
+      const nameSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(nameCanvas) }));
+      nameSprite.position.set(0, 4.0, 0);
+      nameSprite.scale.set(3.5, 0.8, 1);
+      stGroup.add(nameSprite);
+
+      stGroup.position.set(student.x, 0, student.z);
+      scene.add(stGroup);
+      student.mesh = stGroup;
     });
 
     // ------------------------------------------------------------------------
-    // KARAKTER UTAMA SISWA (ROBLOX 3D SERAGAM SD MERAH PUTIH)
+    // KARAKTER UTAMA SISWA (MERAH PUTIH)
     // ------------------------------------------------------------------------
     const playerGroup = new THREE.Group();
 
-    // Torso Kemeja Putih SD
     const torsoMesh = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.5, 0.7), new THREE.MeshLambertMaterial({ color: "#ffffff" }));
     torsoMesh.position.y = 2.15;
     playerGroup.add(torsoMesh);
 
-    // Dasi Merah
     const tieMesh = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.9, 0.08), new THREE.MeshLambertMaterial({ color: "#dc2626" }));
     tieMesh.position.set(0, 2.15, 0.38);
     playerGroup.add(tieMesh);
 
-    // Tas Ransel Oranye
     const backpackMesh = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.2, 0.45), new THREE.MeshLambertMaterial({ color: "#f97316" }));
     backpackMesh.position.set(0, 2.2, -0.45);
     playerGroup.add(backpackMesh);
 
-    // Kepala & Topi SD
     const headMesh = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.85, 0.85), new THREE.MeshLambertMaterial({ color: "#fed7aa" }));
     headMesh.position.y = 3.35;
     playerGroup.add(headMesh);
@@ -632,16 +812,11 @@ export default function AdaptiveEduGameModal({
     capVisor.position.set(0, 3.82, 0.55);
     playerGroup.add(capVisor);
 
-    // Lengan Kiri & Kanan
-    const sleeveGeo = new THREE.BoxGeometry(0.48, 0.6, 0.48);
-    const handGeo = new THREE.BoxGeometry(0.44, 0.7, 0.44);
-    const sleeveMat = new THREE.MeshLambertMaterial({ color: "#ffffff" });
-    const handMat = new THREE.MeshLambertMaterial({ color: "#fed7aa" });
-
+    // Kaki & Lengan
     const leftArm = new THREE.Group();
-    const lSlv = new THREE.Mesh(sleeveGeo, sleeveMat);
+    const lSlv = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.6, 0.48), new THREE.MeshLambertMaterial({ color: "#ffffff" }));
     lSlv.position.y = 0.3;
-    const lHnd = new THREE.Mesh(handGeo, handMat);
+    const lHnd = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.7, 0.44), new THREE.MeshLambertMaterial({ color: "#fed7aa" }));
     lHnd.position.y = -0.3;
     leftArm.add(lSlv);
     leftArm.add(lHnd);
@@ -654,7 +829,6 @@ export default function AdaptiveEduGameModal({
     rightArm.position.set(0.95, 2.15, 0);
     playerGroup.add(rightArm);
 
-    // Kaki Merah SD + Sepatu Hitam
     const leftLeg = new THREE.Group();
     const lPnt = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.75, 0.55), new THREE.MeshLambertMaterial({ color: "#dc2626" }));
     lPnt.position.y = 0.35;
@@ -671,7 +845,7 @@ export default function AdaptiveEduGameModal({
     rightLeg.position.set(0.35, 0.7, 0);
     playerGroup.add(rightLeg);
 
-    // Label Nama Pemain
+    // Label Pemain
     const playerNameCanvas = document.createElement("canvas");
     playerNameCanvas.width = 300;
     playerNameCanvas.height = 64;
@@ -685,11 +859,11 @@ export default function AdaptiveEduGameModal({
     pNameSprite.scale.set(3.4, 0.75, 1);
     playerGroup.add(pNameSprite);
 
-    playerGroup.position.set(0, 0, 12);
+    playerGroup.position.set(0, 0, 18);
     scene.add(playerGroup);
 
     // ------------------------------------------------------------------------
-    // GAME LOOP: GERAKAN PEMAIN, ANIMASI TEMAN, DAN KOIN PICK-UP
+    // GAME LOOP
     // ------------------------------------------------------------------------
     let animId: number;
     let vy = 0;
@@ -720,9 +894,8 @@ export default function AdaptiveEduGameModal({
         playerGroup.position.x += moveX * speed * delta;
         playerGroup.position.z += moveZ * speed * delta;
 
-        // Batasi arena jalan
         playerGroup.position.x = Math.max(-28, Math.min(28, playerGroup.position.x));
-        playerGroup.position.z = Math.max(-320, Math.min(22, playerGroup.position.z));
+        playerGroup.position.z = Math.max(-320, Math.min(24, playerGroup.position.z));
 
         const targetRot = Math.atan2(moveX, moveZ);
         playerGroup.rotation.y = targetRot + Math.PI;
@@ -740,7 +913,7 @@ export default function AdaptiveEduGameModal({
         rightArm.rotation.x = 0;
       }
 
-      // Gravitasi & Lompatan
+      // Gravitasi & Lompat
       if (keys.jump && !isJumping) {
         vy = 9.8;
         isJumping = true;
@@ -763,12 +936,10 @@ export default function AdaptiveEduGameModal({
         z: playerGroup.position.z,
       };
 
-      // 1. Putar Koin Emas & Cek Pick-up di Jalan
+      // Putar Koin Emas & Cek Pick-up di Jalan
       coinList.forEach((coin) => {
         if (!coin.collected && coin.mesh) {
           coin.mesh.rotation.z += delta * 3.5;
-
-          // Jarak tabrakan pick-up (radius 1.8 stud)
           const dist = Math.hypot(
             playerGroup.position.x - coin.x,
             playerGroup.position.z - coin.z
@@ -785,16 +956,19 @@ export default function AdaptiveEduGameModal({
         }
       });
 
-      // 2. Animasi Teman Sekelas Berjalan Santai di Jalan
-      classmatesData.forEach((cm) => {
-        if (cm.mesh) {
-          cm.mesh.position.z += cm.speed * cm.dir * delta;
-          if (cm.mesh.position.z > 0) cm.dir = -1;
-          if (cm.mesh.position.z < -290) cm.dir = 1;
+      // Animasi Siswa Online Berjalan
+      onlineStudents.forEach((student) => {
+        if (student.mesh) {
+          student.mesh.position.z += student.speed * student.dir * delta;
+          if (student.mesh.position.z > 5) student.dir = -1;
+          if (student.mesh.position.z < -290) student.dir = 1;
         }
       });
 
-      // 3. Kamera Third-Person Halus
+      // Animasi Denyut Cincin Emas Pak Guru
+      ringMesh.rotation.z += delta * 2;
+
+      // Kamera Third-Person
       const camTargetX = playerGroup.position.x;
       const camTargetY = playerGroup.position.y + 4.2;
       const camTargetZ = playerGroup.position.z + 8.5;
@@ -846,10 +1020,34 @@ export default function AdaptiveEduGameModal({
         const px = playerPosRef.current.x;
         const pz = playerPosRef.current.z;
 
-        // Cek apakah pemain dekat dengan salah satu dari 5 Rumah Suku
+        // 1. Cek Apakah Dekat dengan Pak Guru Virtual (X = -4.0, Z = +16)
+        const distToGuru = Math.hypot(px - (-4.0), pz - 16);
+        if (distToGuru < 4.8) {
+          setShowGuruDialog(true);
+          setHasTalkedToGuru(true);
+          setGuruTab("apa_itu");
+          // Otomatis bunyikan voice Pak Guru pertama kali
+          speakGuruVoice(
+            "Halo Penjelajah Muda! Selamat datang di Desa Pancasila Nusantara. Pancasila adalah lima dasar dan pedoman hidup luhur bangsa Indonesia yang menyatukan kita semua dari Sabang sampai Merauke."
+          );
+          return;
+        }
+
+        // 2. Cek Apakah Dekat dengan Teman Sekelas Online
+        for (const student of onlineStudents) {
+          if (student.mesh) {
+            const distToFriend = Math.hypot(px - student.mesh.position.x, pz - student.mesh.position.z);
+            if (distToFriend < 4.5) {
+              handleGreetClassmate(student);
+              return;
+            }
+          }
+        }
+
+        // 3. Cek Apakah Dekat dengan Salah Satu Rumah Suku
         for (const suku of sukuList) {
-          const dist = Math.hypot(px - suku.xPos, pz - suku.zPos);
-          if (dist < 12) {
+          const distToSuku = Math.hypot(px - suku.xPos, pz - suku.zPos);
+          if (distToSuku < 12) {
             setActiveSukuDialog(suku);
             setSelectedAnswer(null);
             setAnswerFeedback(null);
@@ -857,8 +1055,7 @@ export default function AdaptiveEduGameModal({
           }
         }
 
-        // Jika tidak di dekat suku, beri notifikasi petunjuk
-        setActiveNotification("💡 Jalan mendekat ke Rumah Adat Suku lalu tekan 'E' untuk menjawab kuis!");
+        setActiveNotification("💡 Dekati Pak Guru, Teman Sekelas, atau Rumah Suku lalu tekan 'E'!");
         setTimeout(() => setActiveNotification(null), 3000);
       }
     };
@@ -884,8 +1081,17 @@ export default function AdaptiveEduGameModal({
         mount.removeChild(renderer.domElement);
       }
       renderer.dispose();
+      stopGuruVoice();
     };
-  }, [mountEl, isOpen, sukuList, addPoints]);
+  }, [
+    mountEl,
+    isOpen,
+    sukuList,
+    onlineStudents,
+    handleGreetClassmate,
+    speakGuruVoice,
+    stopGuruVoice,
+  ]);
 
   if (!isOpen) return null;
 
@@ -897,7 +1103,7 @@ export default function AdaptiveEduGameModal({
         aria-modal="true"
         aria-labelledby="game-title"
       >
-        {/* HUD ATAS MODERN & ROUNDED (TIDAK KOTAK KAKU) */}
+        {/* HUD ATAS MODERN & ROUNDED */}
         <header className="h-16 bg-slate-900/90 backdrop-blur-md border-b border-yellow-400/40 text-white px-4 sm:px-6 flex items-center justify-between shrink-0 shadow-xl z-20">
           <div className="flex items-center gap-3 min-w-0">
             <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-2xl shadow-lg shrink-0">
@@ -905,16 +1111,16 @@ export default function AdaptiveEduGameModal({
             </span>
             <div className="min-w-0">
               <h2 id="game-title" className="font-black text-sm sm:text-base text-yellow-300 truncate tracking-wide">
-                JELAJAH 5 SUKU NUSANTARA: PETUALANGAN PANCASILA
+                PETUALANGAN PANCASILA: JELAJAH DESA NUSANTARA ONLINE
               </h2>
               <p className="text-[11px] text-slate-300 truncate">
-                Materi: <b className="text-emerald-400">{resolvedTitle}</b>
+                Materi: <b className="text-emerald-400">{resolvedTitle}</b> • Teman Online: <b className="text-emerald-400">4 Siswa 🟢</b>
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            {/* Papan Skor Kelas (Leaderboard) */}
+            {/* Papan Skor Kelas */}
             <button
               type="button"
               onClick={() => {
@@ -970,6 +1176,7 @@ export default function AdaptiveEduGameModal({
               onClick={() => {
                 playClickSound();
                 stopAdventureBgm();
+                stopGuruVoice();
                 onClose();
               }}
               className="bg-red-600 hover:bg-red-700 text-white font-black px-4 py-2 rounded-2xl text-xs shadow-md transition hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-1"
@@ -985,7 +1192,17 @@ export default function AdaptiveEduGameModal({
           {/* THREE.JS CANVAS MOUNT */}
           <div ref={setMountEl} className="absolute inset-0 w-full h-full block" />
 
-          {/* OVERLAY AWAL MULAI MAIN (CERIA & MODERN) */}
+          {/* PETUNJUK LAYAR AWAL MENGARAHKAN KE PAK GURU (SESUAI REQUEST) */}
+          {!hasTalkedToGuru && gameStarted && (
+            <div className="absolute top-20 inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-30 max-w-lg bg-yellow-400 text-slate-950 p-3 rounded-2xl shadow-2xl text-center animate-bounce font-black text-xs sm:text-sm border-2 border-white flex items-center justify-center gap-2">
+              <span>👉</span>
+              <span>
+                PETUNJUK: Temui <b>Pak Guru Virtual</b> (di sebelah kiri gapura) lalu tekan <b>'E'</b> untuk penjelasan suara & cara bermain!
+              </span>
+            </div>
+          )}
+
+          {/* OVERLAY AWAL MULAI MAIN */}
           {!gameStarted && (
             <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-5 animate-in fade-in">
               <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-yellow-400 via-amber-500 to-orange-500 flex items-center justify-center text-5xl shadow-2xl border-4 border-white animate-bounce">
@@ -993,10 +1210,10 @@ export default function AdaptiveEduGameModal({
               </div>
               <div className="space-y-2 max-w-lg">
                 <h3 className="font-black text-2xl sm:text-3xl text-yellow-300 tracking-wide">
-                  AYO JELAJAH DESA PANCASILA! 🇮🇩
+                  AYO MASUK KE DESA PANCASILA! 🇮🇩
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-                  Masuklah lewat <b>Gapura Nusantara</b> bersama teman-teman sekelasmu! Kumpulkan koin emas di sepanjang jalan pedesaan, kunjungi <b>5 Rumah Suku Adat</b>, dan jawab pertanyaan pengamalan Pancasila!
+                  Teman-teman sekelasmu sudah online! Di awal ada <b>Papan Skor Kelas</b> dan <b>Pak Guru Virtual</b> yang siap menjelaskan materi lewat suara. Kumpulkan koin di jalan dan kunjungi 5 rumah suku adat!
                 </p>
                 <div className="bg-slate-900/90 p-3.5 rounded-2xl border border-yellow-400/40 text-xs text-yellow-200 flex flex-wrap items-center justify-center gap-3">
                   <span>🎮 <b>WASD / Panah</b>: Jalan</span>
@@ -1005,7 +1222,7 @@ export default function AdaptiveEduGameModal({
                   <span>•</span>
                   <span>⚡ <b>Shift</b>: Sprint Lari</span>
                   <span>•</span>
-                  <span>🎯 <b>E</b>: Kuis Rumah Suku</span>
+                  <span>🎯 <b>E</b>: Bicara / Sapa Teman</span>
                 </div>
               </div>
               <button
@@ -1029,7 +1246,179 @@ export default function AdaptiveEduGameModal({
             </div>
           )}
 
-          {/* DIALOG POPUP KUIS RUMAH SUKU (MODERN GLASSMORPHISM & ROUNDED PILL) */}
+          {/* BALON INTERAKSI DADAH MENYAPA TEMAN ONLINE */}
+          {friendGreetingBubble && (
+            <div className="absolute bottom-28 inset-x-6 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-30 max-w-md bg-emerald-950/95 border-3 border-emerald-400 p-4 rounded-3xl shadow-2xl text-center animate-in zoom-in-95 text-white space-y-1 backdrop-blur-md">
+              <span className="text-xs text-emerald-400 font-black uppercase tracking-wider block">
+                👋 Sapaan dari {friendGreetingBubble.name} (Online)
+              </span>
+              <p className="text-xs sm:text-sm font-bold text-slate-100">
+                {friendGreetingBubble.text}
+              </p>
+            </div>
+          )}
+
+          {/* DIALOG PAK GURU VIRTUAL DENGAN VOICE SUARA ASLI INDONESIA */}
+          {showGuruDialog && (
+            <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+              <div className="bg-slate-900/95 border-3 border-sky-400 rounded-3xl max-w-lg w-full p-6 text-white space-y-4 shadow-2xl">
+                <div className="flex items-center justify-between border-b border-slate-700 pb-3">
+                  <div className="flex items-center gap-3">
+                    <span className="w-14 h-14 rounded-2xl bg-sky-500/20 border border-sky-400 flex items-center justify-center text-3xl shadow-md">
+                      👨‍🏫
+                    </span>
+                    <div>
+                      <h3 className="font-black text-base sm:text-lg text-sky-300">
+                        Pak Guru Virtual
+                      </h3>
+                      <p className="text-xs text-slate-300">
+                        Pemandu Materi & Petualangan Pancasila
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (isGuruSpeaking) {
+                          stopGuruVoice();
+                        } else {
+                          if (guruTab === "apa_itu") {
+                            speakGuruVoice(
+                              "Pancasila adalah lima dasar dan pedoman hidup luhur bangsa Indonesia yang menyatukan kita semua dari Sabang sampai Merauke."
+                            );
+                          } else if (guruTab === "makna_sila") {
+                            speakGuruVoice(
+                              "Sila 1 Ketuhanan: saling menghormati ibadah teman. Sila 2 Kemanusiaan: tolong menolong tanpa pamrih. Sila 3 Persatuan: rukun berbeda suku. Sila 4 Kerakyatan: musyawarah mufakat. Sila 5 Keadilan: bersikap adil dan gotong royong."
+                            );
+                          } else {
+                            speakGuruVoice(
+                              "Cara mainnya mudah: jalan dengan WASD atau panah, ambil koin emas di jalan, kunjungi 5 rumah suku adat di kiri dan kanan jalan lalu tekan E untuk menjawab kuis dan sapa teman sekelasmu!"
+                            );
+                          }
+                        }
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                        isGuruSpeaking
+                          ? "bg-rose-600 text-white animate-pulse"
+                          : "bg-sky-500 hover:bg-sky-600 text-white"
+                      }`}
+                    >
+                      <span>{isGuruSpeaking ? "⏹️ Hentikan Suara" : "🔊 Putar Suara Guru"}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Tab Pilihan Penjelasan Pak Guru */}
+                <div className="flex items-center gap-2 p-1 bg-slate-800 rounded-2xl border border-slate-700">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setGuruTab("apa_itu");
+                      speakGuruVoice(
+                        "Pancasila adalah lima dasar dan pedoman hidup luhur bangsa Indonesia yang menyatukan kita semua dari Sabang sampai Merauke."
+                      );
+                    }}
+                    className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+                      guruTab === "apa_itu"
+                        ? "bg-sky-500 text-white shadow-md"
+                        : "text-slate-300 hover:text-white"
+                    }`}
+                  >
+                    📖 Apa Itu Pancasila?
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setGuruTab("makna_sila");
+                      speakGuruVoice(
+                        "Sila 1 Ketuhanan: saling menghormati ibadah teman. Sila 2 Kemanusiaan: tolong menolong tanpa pamrih. Sila 3 Persatuan: rukun berbeda suku. Sila 4 Kerakyatan: musyawarah mufakat. Sila 5 Keadilan: bersikap adil dan gotong royong."
+                      );
+                    }}
+                    className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+                      guruTab === "makna_sila"
+                        ? "bg-sky-500 text-white shadow-md"
+                        : "text-slate-300 hover:text-white"
+                    }`}
+                  >
+                    ⭐ Makna 5 Sila & Aksi
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setGuruTab("cara_main");
+                      speakGuruVoice(
+                        "Cara mainnya mudah: jalan dengan WASD atau panah, ambil koin emas di jalan, kunjungi 5 rumah suku adat di kiri dan kanan jalan lalu tekan E untuk menjawab kuis dan sapa teman sekelasmu!"
+                      );
+                    }}
+                    className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+                      guruTab === "cara_main"
+                        ? "bg-sky-500 text-white shadow-md"
+                        : "text-slate-300 hover:text-white"
+                    }`}
+                  >
+                    🎮 Cara Main Game
+                  </button>
+                </div>
+
+                {/* Konten Penjelasan Sesuai Tab */}
+                <div className="bg-slate-800/90 p-4 rounded-2xl border border-slate-700 text-xs sm:text-sm leading-relaxed text-slate-200 space-y-2">
+                  {guruTab === "apa_itu" && (
+                    <div className="space-y-2">
+                      <b className="text-yellow-300 block">Pondasi Luhur Bangsa Indonesia:</b>
+                      <p>
+                        "Pancasila adalah lima dasar dan pedoman hidup luhur bangsa Indonesia yang dirumuskan oleh para pendiri bangsa. Nilai-nilai ini menjadi perekat persatuan di tengah keberagaman ratusan suku bangsa dan budaya Nusantara."
+                      </p>
+                    </div>
+                  )}
+
+                  {guruTab === "makna_sila" && (
+                    <div className="space-y-1.5 text-xs">
+                      <div>⭐ <b>Sila 1</b>: Menghormati teman beribadah & rukun antarumat beragama.</div>
+                      <div>⛓️ <b>Sila 2</b>: Gemar menolong sesama & tidak mengejek teman (anti-bullying).</div>
+                      <div>🌳 <b>Sila 3</b>: Bangga bermain rukun dengan teman dari berbagai suku daerah.</div>
+                      <div>🐂 <b>Sila 4</b>: Mengutamakan musyawarah mufakat dalam mengambil keputusan bersama.</div>
+                      <div>🌾 <b>Sila 5</b>: Bersikap adil, tidak pilih kasih, dan suka gotong royong.</div>
+                    </div>
+                  )}
+
+                  {guruTab === "cara_main" && (
+                    <div className="space-y-2">
+                      <b className="text-emerald-300 block">Panduan Petualangan Jelajah:</b>
+                      <p>
+                        1. <b>Jalan</b> melewati Gapura Nusantara dengan tombol WASD atau Panah.<br />
+                        2. <b>Kumpulkan Koin Emas (+5 Poin)</b> yang bertebaran di sepanjang jalan desa.<br />
+                        3. <b>Kunjungi 5 Rumah Suku Adat</b> (Jawa, Sunda, Minang, Dayak, Papua) lalu tekan <b>'E'</b> untuk kuis (+25 Poin).<br />
+                        4. <b>Sapa Teman Sekelas Online</b> yang sedang berpapasan dengan menekan <b>'E'</b>!
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-between items-center pt-2">
+                  <span className="text-[11px] text-slate-400">
+                    {isGuruSpeaking ? "🔊 Sedang bersuara..." : "Tekan tombol audio untuk suara"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      stopGuruVoice();
+                      setShowGuruDialog(false);
+                      setActiveNotification("🚀 Petunjuk selesai! Silakan mulai menjelajahi jalan desa!");
+                      setTimeout(() => setActiveNotification(null), 3000);
+                    }}
+                    className="bg-sky-500 hover:bg-sky-600 text-white font-bold py-2.5 px-6 rounded-2xl text-xs transition cursor-pointer"
+                  >
+                    Siap, Pak Guru! Mulai Petualangan 🚀
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* DIALOG POPUP KUIS RUMAH SUKU */}
           {activeSukuDialog && (
             <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
               <div className="bg-slate-900/95 border-3 border-yellow-400 rounded-3xl max-w-lg w-full p-6 text-white space-y-4 shadow-2xl">
@@ -1076,7 +1465,6 @@ export default function AdaptiveEduGameModal({
                   ))}
                 </div>
 
-                {/* Feedback Penjelasan */}
                 {answerFeedback && (
                   <div
                     className={`p-3 rounded-2xl text-xs font-bold animate-in fade-in ${
@@ -1106,7 +1494,7 @@ export default function AdaptiveEduGameModal({
             </div>
           )}
 
-          {/* MODAL PAPAN SKOR KELAS (LEADERBOARD SISWA SATU KELAS) */}
+          {/* MODAL PAPAN SKOR KELAS */}
           {showLeaderboard && (
             <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
               <div className="bg-slate-900/95 border-3 border-indigo-400 rounded-3xl max-w-md w-full p-6 text-white space-y-4 shadow-2xl">
@@ -1115,10 +1503,10 @@ export default function AdaptiveEduGameModal({
                     <span className="text-3xl">🏆</span>
                     <div>
                       <h3 className="font-black text-base text-indigo-300">
-                        Papan Skor Siswa Kelas
+                        Papan Skor Siswa Kelas Online
                       </h3>
                       <p className="text-[11px] text-slate-400">
-                        Peringkat kawan sekelas di Petualangan Pancasila
+                        Peringkat kawan sekelas yang aktif di Petualangan Pancasila
                       </p>
                     </div>
                   </div>
@@ -1148,7 +1536,9 @@ export default function AdaptiveEduGameModal({
                         <span className="text-lg">{s.avatar}</span>
                         <div className="min-w-0">
                           <span className="block font-black text-white">{s.name}</span>
-                          <span className="text-[10px] text-slate-400">{s.badge}</span>
+                          <span className="text-[10px] text-slate-400">
+                            Kostum: {s.costume} • <span className="text-emerald-400">{s.status}</span>
+                          </span>
                         </div>
                       </div>
                       <div className="text-right">
@@ -1271,7 +1661,7 @@ export default function AdaptiveEduGameModal({
                 className="px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 font-black text-xs sm:text-sm shadow-xl flex items-center gap-2 cursor-pointer border-2 border-white"
               >
                 <span>🎯</span>
-                <span>KUIS SUKU (E)</span>
+                <span>INTERAKSI (E)</span>
               </button>
 
               <button
