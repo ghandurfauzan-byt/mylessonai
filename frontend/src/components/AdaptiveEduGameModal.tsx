@@ -260,18 +260,29 @@ export default function AdaptiveEduGameModal({
     scene.background = new THREE.Color("#60a5fa"); // Roblox Bright Sky
     scene.fog = new THREE.FogExp2("#93c5fd", 0.008);
 
-    const camera = new THREE.PerspectiveCamera(
-      58,
-      mount.clientWidth / mount.clientHeight,
-      0.1,
-      1000
-    );
+    const getViewportSize = () => {
+      const w = mount.clientWidth > 50 ? mount.clientWidth : window.innerWidth;
+      const h = mount.clientHeight > 50 ? mount.clientHeight : Math.max(300, window.innerHeight - 56);
+      return { w, h };
+    };
+
+    const { w: initW, h: initH } = getViewportSize();
+
+    const camera = new THREE.PerspectiveCamera(58, initW / initH, 0.1, 1000);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-    renderer.setSize(mount.clientWidth, mount.clientHeight);
+    renderer.setSize(initW, initH);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    renderer.domElement.style.position = "absolute";
+    renderer.domElement.style.top = "0";
+    renderer.domElement.style.left = "0";
+    renderer.domElement.style.width = "100%";
+    renderer.domElement.style.height = "100%";
+    renderer.domElement.style.display = "block";
+
     mount.appendChild(renderer.domElement);
 
     // 2. LIGHTING (Terang, Hangat Khas Roblox Sun)
@@ -669,6 +680,19 @@ export default function AdaptiveEduGameModal({
       camera.position.z += (camTargetZ - camera.position.z) * 0.12;
       camera.lookAt(playerGroup.position.x, playerGroup.position.y + 1.6, playerGroup.position.z - 3);
 
+      // Auto-update canvas viewport size jika ada perubahan dimensi layar
+      const { w, h } = getViewportSize();
+      if (
+        renderer.domElement.width === 0 ||
+        renderer.domElement.height === 0 ||
+        Math.abs(renderer.domElement.clientWidth - w) > 10 ||
+        Math.abs(renderer.domElement.clientHeight - h) > 10
+      ) {
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h, false);
+      }
+
       renderer.render(scene, camera);
     };
 
@@ -677,9 +701,10 @@ export default function AdaptiveEduGameModal({
     // Resize Handler
     const handleResize = () => {
       if (!mount) return;
-      camera.aspect = mount.clientWidth / mount.clientHeight;
+      const { w, h } = getViewportSize();
+      camera.aspect = w / h;
       camera.updateProjectionMatrix();
-      renderer.setSize(mount.clientWidth, mount.clientHeight);
+      renderer.setSize(w, h, false);
     };
     window.addEventListener("resize", handleResize);
 
@@ -887,7 +912,10 @@ export default function AdaptiveEduGameModal({
                 </div>
               </div>
             ) : (
-              <div className="w-full h-full relative">
+              <div className="absolute inset-0 w-full h-full overflow-hidden">
+                {/* THREE.JS 3D CANVAS MOUNT */}
+                <div ref={mountRef} className="absolute inset-0 w-full h-full block" />
+
                 {/* OVERLAY AWAL MULAI MAIN (UN-MUTE AUDIO) */}
                 {!gameStarted && (
                   <div className="absolute inset-0 z-40 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-5 animate-in fade-in">
@@ -915,9 +943,6 @@ export default function AdaptiveEduGameModal({
                     </button>
                   </div>
                 )}
-
-                {/* THREE.JS 3D CANVAS MOUNT */}
-                <div ref={mountRef} className="w-full h-full block" />
 
                 {/* HUD PROGRESS 5 SILA DI ATAS */}
                 <div className="absolute top-3 inset-x-4 sm:inset-x-12 z-20 flex items-center justify-between gap-1.5 sm:gap-3 bg-slate-900/85 backdrop-blur-md p-2.5 rounded-2xl border border-yellow-400/40">
