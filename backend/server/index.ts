@@ -92,7 +92,7 @@ import {
   updateUserProfile,
   verifyUserCredentials,
 } from "./data";
-import { SESSION_COOKIE, USER_ID_COOKIE, isValidRole } from "./session";
+import { SESSION_COOKIE, USER_ID_COOKIE, isValidRole, type Role } from "./session";
 import { checkChromaHealth } from "./chroma";
 import { checkLocalLlmHealth, queryLocalLlm } from "./local_llm";
 
@@ -2296,6 +2296,93 @@ router.post("/llm/generate", async (req: Request, res: Response) => {
   }
   const result = await queryLocalLlm({ prompt, systemPrompt, model, temperature });
   return res.json(result);
+});
+
+// Endpoint Otomasi Generator Game Berbasis Materi Kurikulum (Integrasi Manus AI)
+router.post("/games/manus-generate", async (req: Request, res: Response) => {
+  try {
+    const { chapterId, chapterTitle, subject } = req.body || {};
+
+    const idStr = String(chapterId || "").toLowerCase();
+    const titleStr = String(chapterTitle || "").toLowerCase();
+    const subjStr = String(subject || "").toLowerCase();
+
+    // Deteksi cerdas jenis materi:
+    // Jika Basa Jawa / Aksara / Pasangan / Kosakata -> Format Menjodohkan (Matching Puzzle)
+    // Jika PKn / Pancasila / Norma / Gotong Royong -> Format Petualangan Pengamalan (Adventure Quest)
+    const isJawa =
+      subjStr.includes("jawa") ||
+      idStr.includes("bjawa") ||
+      idStr.includes("aksara") ||
+      idStr.includes("unggah") ||
+      idStr.includes("punokawan") ||
+      idStr.includes("pandhawa") ||
+      titleStr.includes("jawa") ||
+      titleStr.includes("aksara") ||
+      titleStr.includes("unggah") ||
+      titleStr.includes("punokawan");
+
+    const gameType: "adventure" | "matching" = isJawa ? "matching" : "adventure";
+
+    let gamePrompt = "";
+    let detailedSpecs = {};
+
+    if (gameType === "adventure") {
+      gamePrompt = `Buat game web browser interaktif ramah anak SD (HTML5/Canvas/Phaser) bertema: "${chapterTitle || "Pengamalan Nilai Pancasila"}". Genre: 2D Adventure Quest & Pengamalan Sehari-hari. Karakter pemain anak SD menjelajahi peta desa dan sekolah, menyelesaikan 3 pos misi perbuatan baik (gotong royong, toleransi, tolong-menolong). Setiap pilihan bijak memberikan koin emas +10 dan efek suara riang. Grafik kartun cerah, kontrol tombol panah dan spasi yang mudah.`;
+      detailedSpecs = {
+        genre: "2D Adventure Quest / RPG Nilai",
+        targetAudience: "Siswa Sekolah Dasar (SD)",
+        coreMechanics: "Eksplorasi peta, dialog studi kasus, pilihan tindakan moral, reward bintang",
+        theme: chapterTitle || "Pengamalan Nilai Pancasila"
+      };
+    } else {
+      gamePrompt = `Buat game web edukasi interaktif anak SD bertema: "${chapterTitle || "Belajar Aksara & Basa Jawa"}". Genre: Menjodohkan Kartu Pasangan (Memory/Matching Drag-and-Drop). Pemain mencocokkan kartu aksara/kata Jawa dengan pasangan artinya atau bunyi latinnya. Terdapat timer tantangan 60 detik, skor koin emas, animasi kartu bersinar saat cocok, dan suara tepuk tangan saat menang.`;
+      detailedSpecs = {
+        genre: "Interactive Matching Puzzle / Drag-and-Drop",
+        targetAudience: "Siswa Sekolah Dasar (SD)",
+        coreMechanics: "Pencocokan kartu simbol/kata, timer countdown, combo streak, leaderboard",
+        theme: chapterTitle || "Belajar Aksara & Basa Jawa"
+      };
+    }
+
+    const manusApiKey = process.env.MANUS_API_KEY;
+    let manusTaskResult = null;
+
+    if (manusApiKey) {
+      try {
+        const manusRes = await fetch("https://api.manus.ai/v2/tasks", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${manusApiKey}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            prompt: gamePrompt
+          })
+        });
+        manusTaskResult = await manusRes.json();
+      } catch (apiErr: any) {
+        console.warn("[Manus API] Gagal memanggil endpoint eksternal Manus:", apiErr.message);
+      }
+    }
+
+    return res.json({
+      success: true,
+      chapterId,
+      chapterTitle,
+      gameType,
+      prompt: gamePrompt,
+      specs: detailedSpecs,
+      manusTask: manusTaskResult,
+      directLauncherUrl: `https://manus.im/app?prompt=${encodeURIComponent(gamePrompt)}`,
+      timestamp: new Date().toISOString()
+    });
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      message: `Gagal memproses generator game: ${err.message}`
+    });
+  }
 });
 
 app.use("/api/v1", v1Router);

@@ -1,5 +1,6 @@
 // src/views/PelajarDashboardPage.tsx — Ruang Belajar Siswa SD (PKn & Bahasa Jawa)
 
+import AdaptiveEduGameModal from "@/components/AdaptiveEduGameModal";
 import AiContentPanel from "@/components/AiContentPanel";
 import ChapterModeSelector from "@/components/ChapterModeSelector";
 import LevelBadge from "@/components/LevelBadge";
@@ -103,6 +104,7 @@ export default function PelajarDashboardPage() {
 
   // State Modal Lencana Interaktif
   const [selectedBadge, setSelectedBadge] = useState<BadgeDetail | null>(null);
+  const [isGameModalOpen, setIsGameModalOpen] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const badgeSpeechTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -883,6 +885,36 @@ export default function PelajarDashboardPage() {
 
           <ChapterModeSelector chapter={chapter} mode={mode} />
 
+          {/* Tombol Game Edukasi Interaktif (Otomatis Adaptif Sesuai Materi) */}
+          <div>
+            <button
+              type="button"
+              onClick={() => {
+                playClickSound();
+                setIsGameModalOpen(true);
+              }}
+              className="w-full bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 hover:from-amber-600 hover:to-orange-600 text-white font-black py-3.5 px-4 rounded-2xl transition shadow-lg shadow-orange-500/25 hover:scale-105 active:scale-95 flex items-center justify-between border-4 border-white dark:border-amber-600 group cursor-pointer"
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center font-black text-lg shrink-0">
+                  {isJawaCurrent ? "🧩" : "🗺️"}
+                </span>
+                <div className="text-left min-w-0">
+                  <div className="text-[10px] font-black uppercase tracking-wider text-yellow-100 flex items-center gap-1">
+                    <span>Game AI Adaptif</span>
+                    <span className="bg-white/20 px-1 rounded text-[9px]">Manus Ready</span>
+                  </div>
+                  <div className="text-xs sm:text-sm font-black truncate">
+                    {isJawaCurrent ? "Teka-Teki Menjodohkan 🧩" : "Petualangan Pengamalan 🗺️"}
+                  </div>
+                </div>
+              </div>
+              <span className="text-[11px] bg-white text-orange-900 font-black px-2 py-0.5 rounded-full shadow-xs shrink-0">
+                +25 Poin ⭐
+              </span>
+            </button>
+          </div>
+
           {/* Tombol Mulai Kuis Evaluasi */}
           <div>
             <Link
@@ -1564,6 +1596,18 @@ export default function PelajarDashboardPage() {
           </div>
         </ModalPortal>
       )}
+
+      {/* Modal Game Edukasi Adaptif (Petualangan Pengamalan / Menjodohkan + Manus AI) */}
+      <AdaptiveEduGameModal
+        isOpen={isGameModalOpen}
+        onClose={() => setIsGameModalOpen(false)}
+        chapter={chapter}
+        chapterTitle={
+          availableChapters.find((c) => c.value === chapter)?.label ||
+          activeValidatedModule?.title ||
+          chapter
+        }
+      />
     </div>
   );
 }
