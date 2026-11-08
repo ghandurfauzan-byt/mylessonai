@@ -94,7 +94,7 @@ export default function AdaptiveEduGameModal({
   const gameType: "adventure" | "matching" = isMatchingGenre ? "matching" : "adventure";
 
   // --------------------------------------------------------------------------
-  // 5 MISI AKSI NYATA PENGAMALAN 5 SILA PANCASILA (ROLEPLAY AKSI ROBLOX)
+  // 5 MISI AKSI NYATA PENGAMALAN 5 SILA PANCASILA DI DESA NUSANTARA
   // --------------------------------------------------------------------------
   const initialMissions: SilaActionMission[] = useMemo(() => {
     return [
@@ -102,70 +102,70 @@ export default function AdaptiveEduGameModal({
         id: 1,
         silaNumber: 1,
         symbol: "⭐",
-        title: "Toleransi Tempat Ibadah",
+        title: "Sila 1: Toleransi & Rukun Beragama",
         zoneZ: -55,
-        islandName: "Pulau Bintang (Sila 1)",
+        islandName: "Desa Rukun: Rumah Ibadah Damai",
         actionTargetName: "Radio Speaker Bising",
         actionIcon: "📻",
-        actionPrompt: "🔇 MATIKAN RADIO & JAGA KETENANGAN",
-        instructionText: "Di dekat rumah ibadah kawan, ada radio speaker yang menyala bising. Matikan volumenya agar kawan bisa beribadah khusyuk!",
-        successStory: "Alhamdulillah / Puji Tuhan! Kamu mematikan suara bising sehingga Samuel & Siti bisa beribadah dengan damai dan khusyuk.",
+        actionPrompt: "🔇 MATIKAN RADIO & HORMATI IBADAH",
+        instructionText: "Di depan rumah ibadah desa, temanmu sedang beribadah. Ada radio yang menyala bising. Matikan radio untuk menjaga ketenangan!",
+        successStory: "Alhamdulillah & Puji Tuhan! Kamu mengamalkan Sila ke-1: Menghormati teman yang sedang beribadah tanpa mengganggunya.",
         completed: false,
       },
       {
         id: 2,
         silaNumber: 2,
         symbol: "⛓️",
-        title: "Kemanusiaan & Pertolongan",
+        title: "Sila 2: Tolong-Menolong & Kasih Sayang",
         zoneZ: -125,
-        islandName: "Pulau Rantai (Sila 2)",
+        islandName: "Jalan Desa: Pos Kemanusiaan",
         actionTargetName: "Doni Terjatuh Sepeda",
         actionIcon: "🩹",
-        actionPrompt: "🩹 OBATI LUKA & BANTU DONI BERDIRI",
-        instructionText: "Doni terjatuh dari sepedanya di jembatan bebatuan dan lututnya terluka! Ambil kotak P3K dan bantu Doni berdiri.",
-        successStory: "Luar biasa berbudi pekerti! Kamu sigap mengobati luka Doni dan membantunya bangun dengan penuh kasih sayang.",
+        actionPrompt: "🩹 OBATI LUKA & BANTU TEMAN BERDIRI",
+        instructionText: "Doni tergelincir dari sepedanya di jembatan desa dan lututnya terluka! Ambil kotak P3K dan bantu Doni berdiri.",
+        successStory: "Hebat sekali! Kamu mengamalkan Sila ke-2: Gemar menolong sesama manusia yang tertimpa musibah dengan penuh kasih sayang.",
         completed: false,
       },
       {
         id: 3,
         silaNumber: 3,
         symbol: "🌳",
-        title: "Persatuan Bhinneka Tunggal Ika",
+        title: "Sila 3: Persatuan & Cinta Tanah Air",
         zoneZ: -195,
-        islandName: "Pulau Beringin (Sila 3)",
+        islandName: "Lapangan Desa: Pos Bhinneka Tunggal Ika",
         actionTargetName: "Tiang Balai Bhinneka",
         actionIcon: "🇮🇩",
-        actionPrompt: "🇮🇩 KIBARKAN BENDERA & AJAK MAIN BERSAMA",
-        instructionText: "Ada teman-teman dari berbagai suku yang belum rukun membentuk tim kasti. Kibarkan bendera Merah Putih di balai untuk menyatukan mereka!",
-        successStory: "Bhinneka Tunggal Ika! Seluruh anak dari Sabang sampai Merauke kini bersatu gembira bermain bersama tanpa membeda-bedakan.",
+        actionPrompt: "🇮🇩 KIBARKAN BENDERA & AJAK MAIN RUKUN",
+        instructionText: "Anak-anak desa dari berbagai suku ingin bermain kasti bersama. Kibarkan bendera Merah Putih di tiang balai untuk menyatukan mereka!",
+        successStory: "Bhinneka Tunggal Ika! Kamu mengamalkan Sila ke-3: Menjaga kerukunan dan tidak membeda-bedakan suku atau asal daerah teman.",
         completed: false,
       },
       {
         id: 4,
         silaNumber: 4,
         symbol: "🐂",
-        title: "Musyawarah Mufakat",
+        title: "Sila 4: Musyawarah & Menghargai Pendapat",
         zoneZ: -265,
-        islandName: "Pulau Banteng (Sila 4)",
+        islandName: "Balai Warga: Pos Musyawarah Desa",
         actionTargetName: "Kotak Suara Balai Desa",
         actionIcon: "🗳️",
-        actionPrompt: "🗳️ MASUKKAN SUARA & DUKUNG KEPUTUSAN KELAS",
-        instructionText: "Di Balai Desa sedang diadakan musyawarah pemilihan tujuan karya wisata. Masukkan surat kesepakatan dan dukung keputusan bersama!",
-        successStory: "Sikap pemimpin bijak! Kamu menerima hasil mufakat dengan lapang dada dan menghormati keputusan musyawarah bersama.",
+        actionPrompt: "🗳️ MASUKKAN SUARA & DUKUNG KEPUTUSAN BERSAMA",
+        instructionText: "Di Balai Desa sedang diadakan musyawarah pemilihan tujuan karya wisata. Masukkan surat kesepakatan dan dukung hasil musyawarah!",
+        successStory: "Sikap pemimpin bijak! Kamu mengamalkan Sila ke-4: Mengutamakan musyawarah mufakat dan menghargai keputusan bersama dengan lapang dada.",
         completed: false,
       },
       {
         id: 5,
         silaNumber: 5,
         symbol: "🌾",
-        title: "Keadilan Gotong Royong",
+        title: "Sila 5: Gotong Royong & Keadilan Sosial",
         zoneZ: -335,
-        islandName: "Pulau Padi & Kapas (Sila 5)",
+        islandName: "Lumbung Desa: Pos Gotong Royong",
         actionTargetName: "Kotak Alat Piket Bersama",
         actionIcon: "🧹",
         actionPrompt: "🧹 BAGIKAN TUGAS PIKET SECARA ADIL MERATA",
-        instructionText: "Tiba di pos akhir Lumbung Keadilan! Bagikan alat sapu dan tugas piket secara merata kepada seluruh anggota regu piket.",
-        successStory: "Keadilan sosial terwujud sempurna! Semua anak mendapat tugas yang seimbang dan adil tanpa ada yang diberatkan.",
+        instructionText: "Tiba di pos akhir Desa! Mari kerja bakti membersihkan desa dengan membagi alat sapu secara adil dan merata kepada seluruh kawan.",
+        successStory: "Keadilan sosial terwujud sempurna! Kamu mengamalkan Sila ke-5: Gemar gotong royong dan bersikap adil tanpa pilih kasih kepada semua teman.",
         completed: false,
       },
     ];
@@ -356,6 +356,60 @@ export default function AdaptiveEduGameModal({
     }
     scene.add(cloudGroup);
 
+    // Pagar Kayu Pedesaan di Tepi Jalan (Desa Asri)
+    const fenceGroup = new THREE.Group();
+    const postGeo = new THREE.CylinderGeometry(0.12, 0.12, 1.6, 6);
+    const postMat = new THREE.MeshLambertMaterial({ color: "#78350f" });
+    const railGeo = new THREE.BoxGeometry(0.1, 0.15, 6);
+    const railMat = new THREE.MeshLambertMaterial({ color: "#92400e" });
+
+    for (let fz = 0; fz > -360; fz -= 6) {
+      const pL = new THREE.Mesh(postGeo, postMat);
+      pL.position.set(-6, 0.8, fz);
+      fenceGroup.add(pL);
+      const rL = new THREE.Mesh(railGeo, railMat);
+      rL.position.set(-6, 0.9, fz - 3);
+      fenceGroup.add(rL);
+
+      const pR = new THREE.Mesh(postGeo, postMat);
+      pR.position.set(6, 0.8, fz);
+      fenceGroup.add(pR);
+      const rR = new THREE.Mesh(railGeo, railMat);
+      rR.position.set(6, 0.9, fz - 3);
+      fenceGroup.add(rR);
+    }
+    scene.add(fenceGroup);
+
+    // Pepohonan Pedesaan Nusantara (Pohon Rindang & Kelapa Desa)
+    const treeGroup = new THREE.Group();
+    const trunkGeo = new THREE.CylinderGeometry(0.35, 0.5, 5, 8);
+    const trunkMat = new THREE.MeshLambertMaterial({ color: "#78350f" });
+    const leavesGeo = new THREE.DodecahedronGeometry(2.4);
+    const leavesMat = new THREE.MeshLambertMaterial({ color: "#15803d" });
+
+    for (let tz = -15; tz > -360; tz -= 22) {
+      const treeL = new THREE.Group();
+      const trL = new THREE.Mesh(trunkGeo, trunkMat);
+      trL.position.y = 2.5;
+      const lvL = new THREE.Mesh(leavesGeo, leavesMat);
+      lvL.position.y = 5.5;
+      treeL.add(trL);
+      treeL.add(lvL);
+      treeL.position.set(-14 - Math.random() * 6, 0, tz);
+      treeGroup.add(treeL);
+
+      const treeR = new THREE.Group();
+      const trR = new THREE.Mesh(trunkGeo, trunkMat);
+      trR.position.y = 2.5;
+      const lvR = new THREE.Mesh(leavesGeo, leavesMat);
+      lvR.position.y = 5.5;
+      treeR.add(trR);
+      treeR.add(lvR);
+      treeR.position.set(22 + Math.random() * 6, 0, tz);
+      treeGroup.add(treeR);
+    }
+    scene.add(treeGroup);
+
     // 4. MEMBUAT 5 RUMAH 3D BESAR DI TIAP ZONA SILA PANCASILA
     const houseConfigs = [
       { z: -55, color: "#38bdf8", roof: "#facc15", name: "Rumah Ibadah & Toleransi ⭐" },
@@ -483,81 +537,156 @@ export default function AdaptiveEduGameModal({
       }
     });
 
-    // 7. KARAKTER 3D ROBLOX AVATAR (Mirip Persis Foto Roblox Pengguna!)
+    // 7. KARAKTER 3D ROBLOX: ANAK SD INDONESIA (SERAGAM MERAH PUTIH + TOPI SD + RANSEL SEKOLAH)
     const playerGroup = new THREE.Group();
 
-    // Badan Kotak (Torso)
+    // Badan Kotak: Kemeja Putih Seragam SD
     const torsoGeo = new THREE.BoxGeometry(1.3, 1.5, 0.7);
-    const torsoMat = new THREE.MeshLambertMaterial({ color: "#2563eb" }); // Baju Biru
+    const torsoMat = new THREE.MeshLambertMaterial({ color: "#ffffff" }); // Kemeja Putih SD
     const torsoMesh = new THREE.Mesh(torsoGeo, torsoMat);
     torsoMesh.position.y = 2.15;
     torsoMesh.castShadow = true;
     playerGroup.add(torsoMesh);
 
-    // Jaket Hitam Luaran (Vest)
-    const vestGeo = new THREE.BoxGeometry(1.36, 1.4, 0.76);
-    const vestMat = new THREE.MeshLambertMaterial({ color: "#0f172a" }); // Jaket Gelap
-    const vestMesh = new THREE.Mesh(vestGeo, vestMat);
-    vestMesh.position.y = 2.15;
-    playerGroup.add(vestMesh);
+    // Dasi Merah SD Khas Siswa Indonesia
+    const tieGeo = new THREE.BoxGeometry(0.22, 0.9, 0.08);
+    const tieMat = new THREE.MeshLambertMaterial({ color: "#dc2626" }); // Merah Dasi SD
+    const tieMesh = new THREE.Mesh(tieGeo, tieMat);
+    tieMesh.position.set(0, 2.15, 0.38);
+    playerGroup.add(tieMesh);
+
+    // Saku Kemeja SD di Dada Kiri
+    const pocketGeo = new THREE.BoxGeometry(0.28, 0.32, 0.06);
+    const pocketMat = new THREE.MeshLambertMaterial({ color: "#e2e8f0" });
+    const pocketMesh = new THREE.Mesh(pocketGeo, pocketMat);
+    pocketMesh.position.set(-0.35, 2.35, 0.38);
+    playerGroup.add(pocketMesh);
+
+    // Tas Ransel Sekolah 3D di Punggung
+    const backpackGeo = new THREE.BoxGeometry(1.0, 1.2, 0.45);
+    const backpackMat = new THREE.MeshLambertMaterial({ color: "#f97316" }); // Ransel Oranye Ceria
+    const backpackMesh = new THREE.Mesh(backpackGeo, backpackMat);
+    backpackMesh.position.set(0, 2.2, -0.45);
+    backpackMesh.castShadow = true;
+    playerGroup.add(backpackMesh);
+
+    // Tali Ransel di Bahu Kiri & Kanan
+    const strapGeo = new THREE.BoxGeometry(0.12, 1.3, 0.1);
+    const strapMat = new THREE.MeshLambertMaterial({ color: "#ea580c" });
+    const strapL = new THREE.Mesh(strapGeo, strapMat);
+    strapL.position.set(-0.4, 2.2, 0.36);
+    const strapR = strapL.clone();
+    strapR.position.set(0.4, 2.2, 0.36);
+    playerGroup.add(strapL);
+    playerGroup.add(strapR);
 
     // Kepala Kotak Roblox
     const headGeo = new THREE.BoxGeometry(0.85, 0.85, 0.85);
-    const headMat = new THREE.MeshLambertMaterial({ color: "#fed7aa" }); // Warna kulit
+    const headMat = new THREE.MeshLambertMaterial({ color: "#fed7aa" }); // Warna kulit ramah
     const headMesh = new THREE.Mesh(headGeo, headMat);
     headMesh.position.y = 3.35;
     headMesh.castShadow = true;
     playerGroup.add(headMesh);
 
-    // Rambut Cokelat Khas Roblox (Bacon Hair Style!)
-    const hairGeo = new THREE.BoxGeometry(0.95, 0.45, 0.95);
-    const hairMat = new THREE.MeshLambertMaterial({ color: "#854d0e" });
+    // Rambut Hitam Anak SD
+    const hairGeo = new THREE.BoxGeometry(0.88, 0.3, 0.88);
+    const hairMat = new THREE.MeshLambertMaterial({ color: "#1e293b" });
     const hairMesh = new THREE.Mesh(hairGeo, hairMat);
-    hairMesh.position.y = 3.85;
+    hairMesh.position.y = 3.75;
     playerGroup.add(hairMesh);
 
-    // Lengan Kiri & Kanan (Kotak dengan Tangan Putih C-shape)
-    const armGeo = new THREE.BoxGeometry(0.5, 1.3, 0.5);
-    const armMat = new THREE.MeshLambertMaterial({ color: "#0f172a" });
-    const leftArm = new THREE.Mesh(armGeo, armMat);
+    // Topi Merah-Putih Siswa SD (Bagian Atas Merah, Bagian Bawah Putih)
+    const capTopGeo = new THREE.BoxGeometry(0.92, 0.35, 0.92);
+    const capTopMat = new THREE.MeshLambertMaterial({ color: "#dc2626" }); // Merah Topi SD
+    const capTopMesh = new THREE.Mesh(capTopGeo, capTopMat);
+    capTopMesh.position.y = 3.95;
+    playerGroup.add(capTopMesh);
+
+    // Pet / Lidah Topi SD di Depan
+    const visorGeo = new THREE.BoxGeometry(0.85, 0.08, 0.45);
+    const visorMat = new THREE.MeshLambertMaterial({ color: "#dc2626" });
+    const visorMesh = new THREE.Mesh(visorGeo, visorMat);
+    visorMesh.position.set(0, 3.82, 0.55);
+    playerGroup.add(visorMesh);
+
+    // Lengan Kiri & Kanan (Lengan Baju Putih + Tangan Kuning)
+    const sleeveGeo = new THREE.BoxGeometry(0.5, 0.6, 0.5);
+    const sleeveMat = new THREE.MeshLambertMaterial({ color: "#ffffff" }); // Lengan Putih
+
+    const handGeo = new THREE.BoxGeometry(0.45, 0.7, 0.45);
+    const handMat = new THREE.MeshLambertMaterial({ color: "#fed7aa" });
+
+    // Lengan Kiri
+    const leftArm = new THREE.Group();
+    const lSleeve = new THREE.Mesh(sleeveGeo, sleeveMat);
+    lSleeve.position.y = 0.35;
+    const lHand = new THREE.Mesh(handGeo, handMat);
+    lHand.position.y = -0.3;
+    leftArm.add(lSleeve);
+    leftArm.add(lHand);
     leftArm.position.set(-0.95, 2.15, 0);
     playerGroup.add(leftArm);
 
-    const rightArm = new THREE.Mesh(armGeo, armMat);
+    // Lengan Kanan
+    const rightArm = new THREE.Group();
+    const rSleeve = lSleeve.clone();
+    const rHand = lHand.clone();
+    rightArm.add(rSleeve);
+    rightArm.add(rHand);
     rightArm.position.set(0.95, 2.15, 0);
     playerGroup.add(rightArm);
 
-    // Kaki Kiri & Kanan (Celana Hitam + Sepatu Putih)
-    const legGeo = new THREE.BoxGeometry(0.55, 1.4, 0.55);
-    const legMat = new THREE.MeshLambertMaterial({ color: "#1e293b" }); // Celana Hitam
-    const leftLeg = new THREE.Mesh(legGeo, legMat);
+    // Kaki Kiri & Kanan: Celana Merah SD + Kaos Kaki Putih + Sepatu Hitam
+    const pantsGeo = new THREE.BoxGeometry(0.55, 0.75, 0.55);
+    const pantsMat = new THREE.MeshLambertMaterial({ color: "#dc2626" }); // Celana Merah SD
+
+    const sockGeo = new THREE.BoxGeometry(0.52, 0.35, 0.52);
+    const sockMat = new THREE.MeshLambertMaterial({ color: "#ffffff" }); // Kaos Kaki Putih
+
+    const shoeGeo = new THREE.BoxGeometry(0.56, 0.35, 0.65);
+    const shoeMat = new THREE.MeshLambertMaterial({ color: "#0f172a" }); // Sepatu Hitam
+
+    // Kaki Kiri
+    const leftLeg = new THREE.Group();
+    const lPants = new THREE.Mesh(pantsGeo, pantsMat);
+    lPants.position.y = 0.35;
+    const lSock = new THREE.Mesh(sockGeo, sockMat);
+    lSock.position.y = -0.15;
+    const lShoe = new THREE.Mesh(shoeGeo, shoeMat);
+    lShoe.position.set(0, -0.45, 0.05);
+    leftLeg.add(lPants);
+    leftLeg.add(lSock);
+    leftLeg.add(lShoe);
     leftLeg.position.set(-0.35, 0.7, 0);
     playerGroup.add(leftLeg);
 
-    const rightLeg = new THREE.Mesh(legGeo, legMat);
+    // Kaki Kanan
+    const rightLeg = new THREE.Group();
+    const rPants = lPants.clone();
+    const rSock = lSock.clone();
+    const rShoe = lShoe.clone();
+    rightLeg.add(rPants);
+    rightLeg.add(rSock);
+    rightLeg.add(rShoe);
     rightLeg.position.set(0.35, 0.7, 0);
     playerGroup.add(rightLeg);
 
-    // Sepatu Putih
-    const shoeGeo = new THREE.BoxGeometry(0.56, 0.35, 0.65);
-    const shoeMat = new THREE.MeshLambertMaterial({ color: "#f8fafc" });
-    const leftShoe = new THREE.Mesh(shoeGeo, shoeMat);
-    leftShoe.position.set(-0.35, 0.18, 0.05);
-    playerGroup.add(leftShoe);
-
-    const rightShoe = new THREE.Mesh(shoeGeo, shoeMat);
-    rightShoe.position.set(0.35, 0.18, 0.05);
-    playerGroup.add(rightShoe);
-
     // Label Nama Di Atas Karakter
     const nameCanvas = document.createElement("canvas");
-    nameCanvas.width = 256;
+    nameCanvas.width = 320;
     nameCanvas.height = 64;
     const nCtx = nameCanvas.getContext("2d")!;
     nCtx.fillStyle = "#ffffff";
     nCtx.font = "bold 26px sans-serif";
     nCtx.textAlign = "center";
-    nCtx.fillText("⭐ Petualang SD", 128, 42);
+    nCtx.fillText("🎒 Budi (Siswa SD Pancasila)", 160, 42);
+
+    const nameTex = new THREE.CanvasTexture(nameCanvas);
+    const nameSpriteMat = new THREE.SpriteMaterial({ map: nameTex });
+    const nameSprite = new THREE.Sprite(nameSpriteMat);
+    nameSprite.position.set(0, 4.6, 0);
+    nameSprite.scale.set(3.5, 0.75, 1);
+    playerGroup.add(nameSprite);
 
     const nameTex = new THREE.CanvasTexture(nameCanvas);
     const nameSpriteMat = new THREE.SpriteMaterial({ map: nameTex });
@@ -800,12 +929,12 @@ export default function AdaptiveEduGameModal({
         <header className="h-14 bg-slate-900/95 border-b-2 border-yellow-400 text-white px-4 sm:px-6 flex items-center justify-between shrink-0 shadow-lg z-20">
           <div className="flex items-center gap-3 min-w-0">
             <span className="w-9 h-9 rounded-xl bg-gradient-to-tr from-yellow-400 to-orange-500 flex items-center justify-center text-xl shadow-md shrink-0">
-              {gameType === "adventure" ? "🕹️" : "🧩"}
+              {gameType === "adventure" ? "🎒" : "🧩"}
             </span>
             <div className="min-w-0">
               <h2 id="roblox-game-title" className="font-black text-sm sm:text-base text-yellow-300 truncate tracking-wide">
                 {gameType === "adventure"
-                  ? "DUNIA 3D ROBLOX: JELAJAH DESA 5 SILA & OBBY AKSI NYATA"
+                  ? "PETUALANGAN DI DESA PANCASILA: PENGAMALAN SISWA SD MERAH PUTIH"
                   : "TEKA-TEKI MENJODOHKAN KARTU CERIA"}
               </h2>
               <p className="text-[11px] text-slate-300 truncate">
@@ -883,10 +1012,10 @@ export default function AdaptiveEduGameModal({
                 </div>
                 <div className="space-y-1">
                   <h3 className="font-black text-2xl text-yellow-300">
-                    SELAMAT! KAMU JUARA 5 AKSI PANCASILA!
+                    SELAMAT! KAMU SISWA TELADAN DESA PANCASILA! 🇮🇩
                   </h3>
                   <p className="text-sm font-medium text-slate-300">
-                    Kamu berhasil melakukan 5 aksi pengamalan nyata dan menuntaskan rintangan obby di Dunia 3D Roblox!
+                    Kamu berhasil memahami dan mempraktikkan seluruh pengamalan 5 Sila Pancasila dalam perjalanan di Desa Nusantara!
                   </p>
                 </div>
                 <div className="inline-flex items-center gap-3 bg-yellow-400/20 text-yellow-300 font-black px-5 py-2.5 rounded-2xl border border-yellow-400 text-sm">
@@ -907,7 +1036,7 @@ export default function AdaptiveEduGameModal({
                     }}
                     className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black py-3 px-8 rounded-full shadow-lg transition text-sm cursor-pointer"
                   >
-                    🔄 Main Petualangan 3D dari Awal
+                    🔄 Main Jelajah Desa dari Awal
                   </button>
                 </div>
               </div>
@@ -920,14 +1049,14 @@ export default function AdaptiveEduGameModal({
                 {!gameStarted && (
                   <div className="absolute inset-0 z-40 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-5 animate-in fade-in">
                     <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-yellow-400 via-amber-500 to-orange-500 flex items-center justify-center text-5xl shadow-2xl border-4 border-white animate-bounce">
-                      🕹️
+                      🎒
                     </div>
                     <div className="space-y-2 max-w-md">
                       <h3 className="font-black text-2xl text-yellow-300 tracking-wide">
-                        DUNIA 3D ROBLOX: AKSI PANCASILA
+                        PETUALANGAN DI DESA PANCASILA 🇮🇩
                       </h3>
                       <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-                        Jelajahi desa 3D dengan karakter Roblox! Bukan sekadar menjawab kuis, kamu akan langsung mempraktikkan <b>5 Aksi Nyata Pengamalan Pancasila</b> di rumah-rumah warga dan melompati rintangan obby!
+                        Ayo berpetualang sebagai <b>Siswa SD Berseragam Merah Putih</b>! Menjelajahi pedesaan asri nusantara, mengunjungi pos-pos warga desa, dan memahami pengamalan 5 Sila Pancasila lewat aksi nyata langsung.
                       </p>
                     </div>
                     <button
@@ -939,7 +1068,7 @@ export default function AdaptiveEduGameModal({
                       }}
                       className="bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-base sm:text-lg py-4 px-10 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition border-4 border-white flex items-center gap-3 cursor-pointer"
                     >
-                      <span>▶️ MULAI MAIN 3D (DENGAN MUSIK 🎵)</span>
+                      <span>▶️ MULAI JELAJAH DESA (DENGAN MUSIK 🎵)</span>
                     </button>
                   </div>
                 )}
