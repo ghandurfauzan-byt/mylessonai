@@ -77,12 +77,18 @@ interface OnlineStudent {
   costumeName: string;
   shirtColor: string;
   pantsColor: string;
+  hatType: "pramuka_beret" | "hair_black" | "sport_hair" | "hair_ribbon";
   x: number;
   z: number;
   speed: number;
   dir: number;
   isOnline: boolean;
   mesh?: THREE.Group;
+  leftArm?: THREE.Group;
+  rightArm?: THREE.Group;
+  leftLeg?: THREE.Group;
+  rightLeg?: THREE.Group;
+  walkAnim?: number;
   lastGreeting?: string;
 }
 
@@ -184,7 +190,7 @@ export default function AdaptiveEduGameModal({
   }, []);
 
   // --------------------------------------------------------------------------
-  // DATA 5 SUKU NUSANTARA
+  // DATA 5 SUKU NUSANTARA (JAWABAN DIACAK: B, A, C, B, C)
   // --------------------------------------------------------------------------
   const sukuList: SukuAdat[] = useMemo(() => [
     {
@@ -200,9 +206,9 @@ export default function AdaptiveEduGameModal({
       warnaKhas: "#38bdf8",
       pertanyaan: "Di desa, ada teman berbeda keyakinan yang sedang menjalankan ibadah doa. Nilai Sila ke-1 mengajarkan kita untuk:",
       opsi: [
-        { id: "A", teks: "Menjaga ketenangan dan menghormati ibadahnya dengan ramah.", benar: true, penjelasan: "Sangat bijak! Sila 1 mengajarkan toleransi dan kerukunan antarumat beragama." },
-        { id: "B", teks: "Menyuruhnya berhenti karena berbeda cara berdoanya.", benar: false, penjelasan: "Keliru. Kita tidak boleh memaksakan keyakinan kepada orang lain." },
-        { id: "C", teks: "Bermain petasan di dekat tempat ibadah.", benar: false, penjelasan: "Tidak sopan. Tempat ibadah harus dijaga kesucian dan ketenangannya." },
+        { id: "A", teks: "Bermain petasan di dekat tempat ibadah agar ramai.", benar: false, penjelasan: "Tidak sopan. Tempat ibadah harus dijaga kesucian dan ketenangannya." },
+        { id: "B", teks: "Menjaga ketenangan dan menghormati ibadahnya dengan ramah.", benar: true, penjelasan: "Sangat bijak! Sila 1 mengajarkan toleransi dan kerukunan antarumat beragama." },
+        { id: "C", teks: "Menyuruhnya berhenti karena berbeda cara berdoanya.", benar: false, penjelasan: "Keliru. Kita tidak boleh memaksakan keyakinan kepada orang lain." },
       ],
     },
     {
@@ -236,9 +242,9 @@ export default function AdaptiveEduGameModal({
       warnaKhas: "#4ade80",
       pertanyaan: "Ada kawan baru yang berasal dari pulau seberang dan logat bicaranya berbeda. Nilai Persatuan Indonesia mengajarkan:",
       opsi: [
-        { id: "A", teks: "Menyambutnya hangat, mengajaknya bermain rukun: Bhinneka Tunggal Ika!", benar: true, penjelasan: "Bhinneka Tunggal Ika! Perbedaan suku adalah kekayaan pemersatu bangsa." },
-        { id: "B", teks: "Menjauhinya dan membentuk kelompok yang hanya dari satu suku saja.", benar: false, penjelasan: "Sikap eksklusif memecah belah persatuan bangsa." },
-        { id: "C", teks: "Mengejek logat dan pakaian adat daerah asalnya.", benar: false, penjelasan: "Mengejek budaya daerah kawan melanggar persatuan nasional." },
+        { id: "A", teks: "Menjauhinya dan membentuk kelompok yang hanya dari satu suku saja.", benar: false, penjelasan: "Sikap eksklusif memecah belah persatuan bangsa." },
+        { id: "B", teks: "Mengejek logat dan pakaian adat daerah asalnya.", benar: false, penjelasan: "Mengejek budaya daerah kawan melanggar persatuan nasional." },
+        { id: "C", teks: "Menyambutnya hangat, mengajaknya bermain rukun: Bhinneka Tunggal Ika!", benar: true, penjelasan: "Bhinneka Tunggal Ika! Perbedaan suku adalah kekayaan pemersatu bangsa." },
       ],
     },
     {
@@ -254,8 +260,8 @@ export default function AdaptiveEduGameModal({
       warnaKhas: "#f87171",
       pertanyaan: "Kelasmu sedang menentukan tujuan karya wisata. Banyak usulan yang berbeda-beda. Cara mengambil keputusan terbaik:",
       opsi: [
-        { id: "A", teks: "Musyawarah mufakat, mendengarkan semua usulan, dan mengambil keputusan bersama.", benar: true, penjelasan: "Musyawarah mufakat menjunjung tinggi kebijaksanaan dan kebersamaan." },
-        { id: "B", teks: "Ketua kelas memaksa semua murid mengikuti kemauan pribadinya.", benar: false, penjelasan: "Pemaksaan kehendak melanggar hak demokrasi Sila 4." },
+        { id: "A", teks: "Ketua kelas memaksa semua murid mengikuti kemauan pribadinya.", benar: false, penjelasan: "Pemaksaan kehendak melanggar hak demokrasi Sila 4." },
+        { id: "B", teks: "Musyawarah mufakat, mendengarkan semua usulan, dan mengambil keputusan bersama.", benar: true, penjelasan: "Musyawarah mufakat menjunjung tinggi kebijaksanaan dan kebersamaan." },
         { id: "C", teks: "Ribut bertengkar dan membatalkan kegiatan sama sekali.", benar: false, penjelasan: "Pertengkaran merusak kerukunan yang seharusnya dibangun lewat musyawarah." },
       ],
     },
@@ -272,15 +278,15 @@ export default function AdaptiveEduGameModal({
       warnaKhas: "#facc15",
       pertanyaan: "Hasil panen kebun sekolah sangat melimpah berkat kerja bakti seluruh siswa. Pembagian yang adil adalah:",
       opsi: [
-        { id: "A", teks: "Membagi hasil panen secara merata dan dinikmati bersama seluruh siswa.", benar: true, penjelasan: "Keadilan sosial terwujud nyata! Semua yang bekerja keras berhak menikmati hasil bersama." },
-        { id: "B", teks: "Semua hasil panen dibawa pulang oleh satu orang saja.", benar: false, penjelasan: "Tindakan serakah melanggar keadilan sosial." },
-        { id: "C", teks: "Menjual hasil panen secara diam-diam tanpa izin teman-teman.", benar: false, penjelasan: "Tidak jujur dan melanggar hak bersama." },
+        { id: "A", teks: "Semua hasil panen dibawa pulang oleh satu orang saja.", benar: false, penjelasan: "Tindakan serakah melanggar keadilan sosial." },
+        { id: "B", teks: "Menjual hasil panen secara diam-diam tanpa izin teman-teman.", benar: false, penjelasan: "Tidak jujur dan melanggar hak bersama." },
+        { id: "C", teks: "Membagi hasil panen secara merata dan dinikmati bersama seluruh siswa.", benar: true, penjelasan: "Keadilan sosial terwujud nyata! Semua yang bekerja keras berhak menikmati hasil bersama." },
       ],
     },
   ], []);
 
   // --------------------------------------------------------------------------
-  // SISWA ONLINE (KOSTUM BERBEDA SESUAI BLUEPRINT ONLINE GAME)
+  // SISWA ONLINE (KOSTUM BERBEDA DENGAN MODEL ANATOMI SERAGAM)
   // --------------------------------------------------------------------------
   const [onlineStudents, setOnlineStudents] = useState<OnlineStudent[]>([
     {
@@ -290,6 +296,7 @@ export default function AdaptiveEduGameModal({
       costumeName: "Seragam Pramuka",
       shirtColor: "#78350f", // Cokelat Pramuka
       pantsColor: "#451a03",
+      hatType: "pramuka_beret",
       x: -2.5,
       z: -18,
       speed: 2.2,
@@ -303,6 +310,7 @@ export default function AdaptiveEduGameModal({
       costumeName: "Batik Nusantara Hijau",
       shirtColor: "#15803d", // Batik Hijau
       pantsColor: "#0f172a",
+      hatType: "hair_black",
       x: 2.5,
       z: -70,
       speed: 2.5,
@@ -316,6 +324,7 @@ export default function AdaptiveEduGameModal({
       costumeName: "Baju Olahraga Biru",
       shirtColor: "#0284c7", // Biru Olahraga
       pantsColor: "#1e293b",
+      hatType: "sport_hair",
       x: -2.0,
       z: -130,
       speed: 2.1,
@@ -329,6 +338,7 @@ export default function AdaptiveEduGameModal({
       costumeName: "Batik Nusantara Ungu",
       shirtColor: "#7e22ce", // Ungu Elegan
       pantsColor: "#0f172a",
+      hatType: "hair_ribbon",
       x: 2.2,
       z: -190,
       speed: 2.4,
@@ -501,43 +511,87 @@ export default function AdaptiveEduGameModal({
     scene.add(pathMesh);
 
     // ------------------------------------------------------------------------
-    // GAPURA MASUK MEGAH (Z = +14)
+    // GAPURA MASUK MEGAH (Z = +14) - TULISAN TAJAM & PRESISI
     // ------------------------------------------------------------------------
     const gapuraGroup = new THREE.Group();
-    const pillarMat = new THREE.MeshLambertMaterial({ color: "#b91c1c" });
+    const pillarMat = new THREE.MeshLambertMaterial({ color: "#991b1b" });
     const goldMat = new THREE.MeshLambertMaterial({ color: "#facc15" });
 
     // Pilar Kiri & Kanan
-    const leftPil = new THREE.Mesh(new THREE.BoxGeometry(2.4, 8, 2.4), pillarMat);
-    leftPil.position.set(-6.5, 4, 14);
+    const leftPil = new THREE.Mesh(new THREE.BoxGeometry(2.4, 8.5, 2.4), pillarMat);
+    leftPil.position.set(-6.5, 4.25, 14);
     gapuraGroup.add(leftPil);
 
-    const rightPil = new THREE.Mesh(new THREE.BoxGeometry(2.4, 8, 2.4), pillarMat);
-    rightPil.position.set(6.5, 4, 14);
+    const rightPil = new THREE.Mesh(new THREE.BoxGeometry(2.4, 8.5, 2.4), pillarMat);
+    rightPil.position.set(6.5, 4.25, 14);
     gapuraGroup.add(rightPil);
 
-    const archBeam = new THREE.Mesh(new THREE.BoxGeometry(15, 1.8, 2.2), pillarMat);
-    archBeam.position.set(0, 8.2, 14);
+    // Ornamen Emas pada Pilar
+    const pilGoldL = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.4, 2.6), goldMat);
+    pilGoldL.position.set(-6.5, 7.8, 14);
+    gapuraGroup.add(pilGoldL);
+    const pilGoldR = pilGoldL.clone();
+    pilGoldR.position.x = 6.5;
+    gapuraGroup.add(pilGoldR);
+
+    // Balok Atas Gapura
+    const archBeam = new THREE.Mesh(new THREE.BoxGeometry(15.4, 2.2, 2.4), pillarMat);
+    archBeam.position.set(0, 8.6, 14);
     gapuraGroup.add(archBeam);
 
-    // Banner Tulisan Gapura
-    const bannerCanvas = document.createElement("canvas");
-    bannerCanvas.width = 512;
-    bannerCanvas.height = 128;
-    const bCtx = bannerCanvas.getContext("2d")!;
-    bCtx.fillStyle = "#facc15";
-    bCtx.fillRect(0, 0, 512, 128);
-    bCtx.fillStyle = "#1e1b4b";
-    bCtx.font = "bold 36px sans-serif";
-    bCtx.textAlign = "center";
-    bCtx.fillText("DESA PANCASILA NUSANTARA", 256, 75);
+    const archRoof = new THREE.Mesh(new THREE.BoxGeometry(16.2, 0.5, 2.8), goldMat);
+    archRoof.position.set(0, 9.85, 14);
+    gapuraGroup.add(archRoof);
 
-    const bannerMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(12, 2.4),
-      new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(bannerCanvas) })
+    // Banner Tulisan Gapura Resolusi Tinggi (1024x256)
+    const bannerCanvas = document.createElement("canvas");
+    bannerCanvas.width = 1024;
+    bannerCanvas.height = 256;
+    const bCtx = bannerCanvas.getContext("2d")!;
+
+    // Background Mewah Merah Marun & Border Emas
+    bCtx.fillStyle = "#7f1d1d";
+    bCtx.fillRect(0, 0, 1024, 256);
+    bCtx.strokeStyle = "#facc15";
+    bCtx.lineWidth = 14;
+    bCtx.strokeRect(7, 7, 1010, 242);
+    bCtx.strokeStyle = "#ffffff";
+    bCtx.lineWidth = 3;
+    bCtx.strokeRect(20, 20, 984, 216);
+
+    // Judul Utama Gapura
+    bCtx.fillStyle = "#fef08a";
+    bCtx.font = "bold 52px sans-serif";
+    bCtx.textAlign = "center";
+    bCtx.shadowColor = "#ca8a04";
+    bCtx.shadowBlur = 10;
+    bCtx.fillText("★ DESA PANCASILA NUSANTARA ★", 512, 105);
+
+    // Subjudul Gapura
+    bCtx.fillStyle = "#ffffff";
+    bCtx.font = "bold 30px sans-serif";
+    bCtx.shadowBlur = 0;
+    bCtx.fillText("🇮🇩  NEGERI GARUDA • JELAJAH PENGAMALAN 5 SILA  🇮🇩", 512, 185);
+
+    const bannerTexture = new THREE.CanvasTexture(bannerCanvas);
+    bannerTexture.anisotropy = 8;
+
+    // Banner Sisi Depan
+    const bannerMeshFront = new THREE.Mesh(
+      new THREE.PlaneGeometry(13, 2.2),
+      new THREE.MeshBasicMaterial({ map: bannerTexture })
     );
-    bannerMesh.position.set(0, 8.2, 15.15);
-    gapuraGroup.add(bannerMesh);
+    bannerMeshFront.position.set(0, 8.6, 15.25);
+    gapuraGroup.add(bannerMeshFront);
+
+    // Banner Sisi Belakang (dibalik agar bisa dibaca dari dalam)
+    const bannerMeshBack = new THREE.Mesh(
+      new THREE.PlaneGeometry(13, 2.2),
+      new THREE.MeshBasicMaterial({ map: bannerTexture })
+    );
+    bannerMeshBack.position.set(0, 8.6, 12.75);
+    bannerMeshBack.rotation.y = Math.PI;
+    gapuraGroup.add(bannerMeshBack);
 
     scene.add(gapuraGroup);
 
@@ -587,20 +641,186 @@ export default function AdaptiveEduGameModal({
     scene.add(lbGroup);
 
     // ------------------------------------------------------------------------
+    // BUILDER MODEL ANATOMI HUMANOID SERAGAM (STANDAR KELAS ROBLOX SD)
+    // ------------------------------------------------------------------------
+    const createHumanoid = (config: {
+      shirtColor: string;
+      pantsColor: string;
+      skinColor?: string;
+      hatType: "merah_putih_cap" | "peci_guru" | "pramuka_beret" | "hair_black" | "sport_hair" | "hair_ribbon";
+      hasTie?: boolean;
+      tieColor?: string;
+      hasBackpack?: boolean;
+      backpackColor?: string;
+      hasGlasses?: boolean;
+    }) => {
+      const charGroup = new THREE.Group();
+      const skin = config.skinColor || "#fed7aa";
+      const skinMat = new THREE.MeshLambertMaterial({ color: skin });
+      const shirtMat = new THREE.MeshLambertMaterial({ color: config.shirtColor });
+      const pantsMat = new THREE.MeshLambertMaterial({ color: config.pantsColor });
+      const darkMat = new THREE.MeshLambertMaterial({ color: "#0f172a" });
+
+      // Badan / Torso
+      const torso = new THREE.Mesh(new THREE.BoxGeometry(1.25, 1.45, 0.68), shirtMat);
+      torso.position.y = 2.15;
+      torso.castShadow = true;
+      charGroup.add(torso);
+
+      // Dasi jika ada
+      if (config.hasTie) {
+        const tie = new THREE.Mesh(
+          new THREE.BoxGeometry(0.2, 0.85, 0.08),
+          new THREE.MeshLambertMaterial({ color: config.tieColor || "#dc2626" })
+        );
+        tie.position.set(0, 2.15, 0.38);
+        charGroup.add(tie);
+      }
+
+      // Ransel jika ada
+      if (config.hasBackpack) {
+        const pack = new THREE.Mesh(
+          new THREE.BoxGeometry(1.0, 1.15, 0.42),
+          new THREE.MeshLambertMaterial({ color: config.backpackColor || "#f97316" })
+        );
+        pack.position.set(0, 2.2, -0.45);
+        charGroup.add(pack);
+      }
+
+      // Kepala
+      const head = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.85, 0.85), skinMat);
+      head.position.y = 3.35;
+      head.castShadow = true;
+      charGroup.add(head);
+
+      // Mata Ceria
+      const eyeMat = new THREE.MeshBasicMaterial({ color: "#0f172a" });
+      const leftEye = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.04), eyeMat);
+      leftEye.position.set(-0.2, 3.42, 0.44);
+      charGroup.add(leftEye);
+      const rightEye = leftEye.clone();
+      rightEye.position.x = 0.2;
+      charGroup.add(rightEye);
+
+      // Senyum Ramah
+      const smile = new THREE.Mesh(
+        new THREE.BoxGeometry(0.24, 0.06, 0.04),
+        new THREE.MeshBasicMaterial({ color: "#e11d48" })
+      );
+      smile.position.set(0, 3.22, 0.44);
+      charGroup.add(smile);
+
+      // Kacamata (khusus Pak Guru)
+      if (config.hasGlasses) {
+        const frameMat = new THREE.MeshBasicMaterial({ color: "#d97706" });
+        const gFrame1 = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.2, 0.06), frameMat);
+        gFrame1.position.set(-0.2, 3.42, 0.45);
+        charGroup.add(gFrame1);
+        const gFrame2 = gFrame1.clone();
+        gFrame2.position.x = 0.2;
+        charGroup.add(gFrame2);
+        const gBridge = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.04, 0.05), frameMat);
+        gBridge.position.set(0, 3.42, 0.45);
+        charGroup.add(gBridge);
+      }
+
+      // Aksesoris Kepala / Topi / Rambut
+      if (config.hatType === "merah_putih_cap") {
+        const capTop = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.35, 0.92), new THREE.MeshLambertMaterial({ color: "#dc2626" }));
+        capTop.position.y = 3.92;
+        charGroup.add(capTop);
+        const capVisor = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.08, 0.45), new THREE.MeshLambertMaterial({ color: "#dc2626" }));
+        capVisor.position.set(0, 3.82, 0.55);
+        charGroup.add(capVisor);
+      } else if (config.hatType === "peci_guru") {
+        const peci = new THREE.Mesh(new THREE.BoxGeometry(0.94, 0.44, 0.94), darkMat);
+        peci.position.y = 3.95;
+        charGroup.add(peci);
+      } else if (config.hatType === "pramuka_beret") {
+        const beret = new THREE.Mesh(new THREE.BoxGeometry(0.96, 0.3, 0.96), new THREE.MeshLambertMaterial({ color: "#451a03" }));
+        beret.position.set(0.06, 3.92, 0);
+        charGroup.add(beret);
+      } else if (config.hatType === "hair_black") {
+        const hair = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.32, 0.92), darkMat);
+        hair.position.y = 3.92;
+        charGroup.add(hair);
+      } else if (config.hatType === "sport_hair") {
+        const hair = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.32, 0.92), darkMat);
+        hair.position.y = 3.92;
+        charGroup.add(hair);
+        const band = new THREE.Mesh(new THREE.BoxGeometry(0.94, 0.12, 0.94), new THREE.MeshLambertMaterial({ color: "#ffffff" }));
+        band.position.y = 3.65;
+        charGroup.add(band);
+      } else if (config.hatType === "hair_ribbon") {
+        const hair = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.32, 0.92), darkMat);
+        hair.position.y = 3.92;
+        charGroup.add(hair);
+        const ribbon = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 0.1), new THREE.MeshLambertMaterial({ color: "#ec4899" }));
+        ribbon.position.set(0.48, 3.85, 0.2);
+        charGroup.add(ribbon);
+      }
+
+      // Lengan Kiri (Pivot pada bahu y = 2.15)
+      const leftArm = new THREE.Group();
+      const lSlv = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.55, 0.44), shirtMat);
+      lSlv.position.y = 0.28;
+      const lHnd = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.65, 0.4), skinMat);
+      lHnd.position.y = -0.32;
+      leftArm.add(lSlv);
+      leftArm.add(lHnd);
+      leftArm.position.set(-0.92, 2.15, 0);
+      charGroup.add(leftArm);
+
+      // Lengan Kanan (Pivot pada bahu y = 2.15)
+      const rightArm = new THREE.Group();
+      const rSlv = lSlv.clone();
+      const rHnd = lHnd.clone();
+      rightArm.add(rSlv);
+      rightArm.add(rHnd);
+      rightArm.position.set(0.92, 2.15, 0);
+      charGroup.add(rightArm);
+
+      // Kaki Kiri (Pivot pada pinggul y = 0.72)
+      const leftLeg = new THREE.Group();
+      const lPnt = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.72, 0.5), pantsMat);
+      lPnt.position.y = 0.36;
+      const lShoe = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.35, 0.62), darkMat);
+      lShoe.position.set(0, -0.42, 0.05);
+      leftLeg.add(lPnt);
+      leftLeg.add(lShoe);
+      leftLeg.position.set(-0.34, 0.72, 0);
+      charGroup.add(leftLeg);
+
+      // Kaki Kanan (Pivot pada pinggul y = 0.72)
+      const rightLeg = new THREE.Group();
+      const rPnt = lPnt.clone();
+      const rShoe = lShoe.clone();
+      rightLeg.add(rPnt);
+      rightLeg.add(rShoe);
+      rightLeg.position.set(0.34, 0.72, 0);
+      charGroup.add(rightLeg);
+
+      return {
+        group: charGroup,
+        leftArm,
+        rightArm,
+        leftLeg,
+        rightLeg,
+      };
+    };
+
+    // ------------------------------------------------------------------------
     // PAK GURU VIRTUAL DI AWALAN (DI KIRI GAPURA: X = -4.0, Z = +16)
     // ------------------------------------------------------------------------
-    const guruGroup = new THREE.Group();
-    const guruBody = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.6, 0.8), new THREE.MeshLambertMaterial({ color: "#0284c7" }));
-    guruBody.position.y = 2.2;
-    guruGroup.add(guruBody);
-
-    const guruHead = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.9), new THREE.MeshLambertMaterial({ color: "#fed7aa" }));
-    guruHead.position.y = 3.45;
-    guruGroup.add(guruHead);
-
-    const guruPeci = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.4, 0.95), new THREE.MeshLambertMaterial({ color: "#0f172a" }));
-    guruPeci.position.y = 3.95;
-    guruGroup.add(guruPeci);
+    const guruData = createHumanoid({
+      shirtColor: "#0284c7",
+      pantsColor: "#1e293b",
+      hatType: "peci_guru",
+      hasTie: true,
+      tieColor: "#1e3a8a",
+      hasGlasses: true,
+    });
+    const guruGroup = guruData.group;
 
     // Lingkaran Emas Penanda di Bawah Kaki Pak Guru
     const ringGeo = new THREE.RingGeometry(1.2, 1.6, 32);
@@ -686,11 +906,21 @@ export default function AdaptiveEduGameModal({
     }
 
     // ------------------------------------------------------------------------
-    // 5 RUMAH ADAT SUKU NUSANTARA
+    // 5 RUMAH ADAT SUKU NUSANTARA, PLANG NAMA DI DEPAN & TITIK MISI BERCAHAYA
     // ------------------------------------------------------------------------
+    interface HotspotItem {
+      suku: SukuAdat;
+      x: number;
+      z: number;
+      ringMesh: THREE.Mesh;
+      beaconMesh: THREE.Mesh;
+    }
+    const hotspotList: HotspotItem[] = [];
+
     sukuList.forEach((suku) => {
       const hGroup = new THREE.Group();
 
+      // Dinding Rumah
       const wallMesh = new THREE.Mesh(
         new THREE.BoxGeometry(11, 7.5, 9),
         new THREE.MeshLambertMaterial({ color: suku.warnaKhas })
@@ -699,6 +929,7 @@ export default function AdaptiveEduGameModal({
       wallMesh.castShadow = true;
       hGroup.add(wallMesh);
 
+      // Atap Khas Adat
       let roofMesh: THREE.Mesh;
       if (suku.id === "minang") {
         roofMesh = new THREE.Mesh(new THREE.ConeGeometry(8, 6, 4), new THREE.MeshLambertMaterial({ color: "#78350f" }));
@@ -715,50 +946,142 @@ export default function AdaptiveEduGameModal({
       roofMesh.castShadow = true;
       hGroup.add(roofMesh);
 
-      // Papan Label Rumah Adat
-      const labelCanvas = document.createElement("canvas");
-      labelCanvas.width = 360;
-      labelCanvas.height = 96;
-      const lCtx = labelCanvas.getContext("2d")!;
-      lCtx.fillStyle = "#ffffff";
-      lCtx.fillRect(0, 0, 360, 96);
-      lCtx.fillStyle = "#1e1b4b";
-      lCtx.font = "bold 26px sans-serif";
-      lCtx.textAlign = "center";
-      lCtx.fillText(`${suku.simbolSila} ${suku.namaSuku}`, 180, 42);
-      lCtx.font = "bold 20px sans-serif";
-      lCtx.fillStyle = "#b91c1c";
-      lCtx.fillText("Tekan 'E' untuk Kuis Sila", 180, 76);
-
-      const labelTex = new THREE.CanvasTexture(labelCanvas);
-      const labelSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: labelTex }));
-      labelSprite.position.set(0, 8.5, 6);
-      labelSprite.scale.set(5.5, 1.4, 1);
-      hGroup.add(labelSprite);
+      // Pintu Rumah
+      const doorMesh = new THREE.Mesh(new THREE.BoxGeometry(2.4, 4.2, 0.2), new THREE.MeshLambertMaterial({ color: "#451a03" }));
+      doorMesh.position.set(0, 2.1, suku.xPos > 0 ? -4.51 : 4.51);
+      hGroup.add(doorMesh);
 
       hGroup.position.set(suku.xPos, 0, suku.zPos);
       scene.add(hGroup);
+
+      // ----------------------------------------------------------------------
+      // PLANG PAPAN NAMA DI DEPAN RUMAH (BERDIRI DI TANAH DEKAT JALAN)
+      // ----------------------------------------------------------------------
+      const signX = suku.xPos > 0 ? 8.8 : -8.8;
+      const signZ = suku.zPos + (suku.xPos > 0 ? 3.0 : -3.0);
+      const signGroup = new THREE.Group();
+
+      const signPole1 = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 3.2, 8), new THREE.MeshLambertMaterial({ color: "#78350f" }));
+      signPole1.position.set(-1.2, 1.6, 0);
+      signGroup.add(signPole1);
+
+      const signPole2 = signPole1.clone();
+      signPole2.position.set(1.2, 1.6, 0);
+      signGroup.add(signPole2);
+
+      const signCanvas = document.createElement("canvas");
+      signCanvas.width = 512;
+      signCanvas.height = 256;
+      const sCtx = signCanvas.getContext("2d")!;
+      sCtx.fillStyle = "#1e1b4b";
+      sCtx.fillRect(0, 0, 512, 256);
+      sCtx.strokeStyle = "#facc15";
+      sCtx.lineWidth = 10;
+      sCtx.strokeRect(5, 5, 502, 246);
+
+      sCtx.fillStyle = "#facc15";
+      sCtx.font = "bold 28px sans-serif";
+      sCtx.textAlign = "center";
+      sCtx.fillText(`${suku.simbolSila} SILA KE-${suku.silaKe} PANCASILA`, 256, 50);
+
+      sCtx.fillStyle = "#ffffff";
+      sCtx.font = "bold 34px sans-serif";
+      sCtx.fillText(suku.namaSuku, 256, 110);
+
+      sCtx.fillStyle = "#38bdf8";
+      sCtx.font = "bold 24px sans-serif";
+      sCtx.fillText(suku.rumahAdat, 256, 160);
+
+      sCtx.fillStyle = "#4ade80";
+      sCtx.font = "bold 20px sans-serif";
+      sCtx.fillText("📍 Titik Misi: Berdiri di Lingkaran & Tekan 'E'", 256, 215);
+
+      const signBoard = new THREE.Mesh(
+        new THREE.PlaneGeometry(3.6, 1.8),
+        new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(signCanvas), side: THREE.DoubleSide })
+      );
+      signBoard.position.set(0, 2.2, 0.05);
+      signGroup.add(signBoard);
+
+      signGroup.position.set(signX, 0, signZ);
+      signGroup.rotation.y = suku.xPos > 0 ? -Math.PI / 2 : Math.PI / 2;
+      scene.add(signGroup);
+
+      // ----------------------------------------------------------------------
+      // TITIK MISI BERCAHAYA (CHECKPOINT PAD DI DEPAN RUMAH)
+      // ----------------------------------------------------------------------
+      const hotspotX = suku.xPos > 0 ? 6.5 : -6.5;
+      const hotspotZ = suku.zPos;
+      const spotGroup = new THREE.Group();
+
+      // Cincin Emas Luar
+      const spotRingGeo = new THREE.RingGeometry(1.8, 2.2, 32);
+      const spotRingMat = new THREE.MeshBasicMaterial({ color: "#facc15", side: THREE.DoubleSide });
+      const spotRing = new THREE.Mesh(spotRingGeo, spotRingMat);
+      spotRing.rotation.x = -Math.PI / 2;
+      spotRing.position.y = 0.05;
+      spotGroup.add(spotRing);
+
+      // Lingkaran Dalam Warna Sila
+      const spotDiscGeo = new THREE.CircleGeometry(1.75, 32);
+      const spotDiscMat = new THREE.MeshLambertMaterial({ color: suku.warnaKhas, transparent: true, opacity: 0.85 });
+      const spotDisc = new THREE.Mesh(spotDiscGeo, spotDiscMat);
+      spotDisc.rotation.x = -Math.PI / 2;
+      spotDisc.position.y = 0.04;
+      spotGroup.add(spotDisc);
+
+      // Sorotan Cahaya Vertikal (Light Beacon)
+      const beaconGeo = new THREE.CylinderGeometry(1.5, 1.5, 5, 24, 1, true);
+      const beaconMat = new THREE.MeshBasicMaterial({
+        color: suku.warnaKhas,
+        transparent: true,
+        opacity: 0.35,
+        side: THREE.DoubleSide,
+      });
+      const beaconMesh = new THREE.Mesh(beaconGeo, beaconMat);
+      beaconMesh.position.y = 2.5;
+      spotGroup.add(beaconMesh);
+
+      // Label Petunjuk Melayang di Atas Titik
+      const padCanvas = document.createElement("canvas");
+      padCanvas.width = 380;
+      padCanvas.height = 90;
+      const pdCtx = padCanvas.getContext("2d")!;
+      pdCtx.fillStyle = "#ffffff";
+      pdCtx.font = "bold 26px sans-serif";
+      pdCtx.textAlign = "center";
+      pdCtx.fillText(`🎯 TITIK MISI SILA KE-${suku.silaKe}`, 190, 36);
+      pdCtx.fillStyle = "#facc15";
+      pdCtx.font = "bold 22px sans-serif";
+      pdCtx.fillText("[ Berdiri di Sini & Tekan 'E' ]", 190, 72);
+
+      const padSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(padCanvas) }));
+      padSprite.position.set(0, 3.8, 0);
+      padSprite.scale.set(4.2, 1.0, 1);
+      spotGroup.add(padSprite);
+
+      spotGroup.position.set(hotspotX, 0, hotspotZ);
+      scene.add(spotGroup);
+
+      hotspotList.push({
+        suku,
+        x: hotspotX,
+        z: hotspotZ,
+        ringMesh: spotRing,
+        beaconMesh,
+      });
     });
 
     // ------------------------------------------------------------------------
-    // SISWA ONLINE DENGAN KOSTUM BERBEDA (PRAMUKA, BATIK, OLAHRAGA)
+    // SISWA ONLINE (KOSTUM BERBEDA, MODEL ANATOMI KELAS IDENTIK & KONSISTEN)
     // ------------------------------------------------------------------------
     onlineStudents.forEach((student) => {
-      const stGroup = new THREE.Group();
-
-      // Baju Sesuai Kostum
-      const sBody = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.4, 0.6), new THREE.MeshLambertMaterial({ color: student.shirtColor }));
-      sBody.position.y = 1.8;
-      stGroup.add(sBody);
-
-      // Celana Sesuai Kostum
-      const sPants = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.7, 0.55), new THREE.MeshLambertMaterial({ color: student.pantsColor }));
-      sPants.position.y = 0.7;
-      stGroup.add(sPants);
-
-      const sHead = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), new THREE.MeshLambertMaterial({ color: "#fed7aa" }));
-      sHead.position.y = 2.9;
-      stGroup.add(sHead);
+      const stData = createHumanoid({
+        shirtColor: student.shirtColor,
+        pantsColor: student.pantsColor,
+        hatType: student.hatType,
+      });
+      const stGroup = stData.group;
 
       // Label Nama Siswa & Kostum
       const nameCanvas = document.createElement("canvas");
@@ -774,76 +1097,35 @@ export default function AdaptiveEduGameModal({
       nCtx.fillText(`[${student.costumeName}] (E: Sapa 👋)`, 160, 64);
 
       const nameSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(nameCanvas) }));
-      nameSprite.position.set(0, 4.0, 0);
+      nameSprite.position.set(0, 4.6, 0);
       nameSprite.scale.set(3.5, 0.8, 1);
       stGroup.add(nameSprite);
 
       stGroup.position.set(student.x, 0, student.z);
       scene.add(stGroup);
+
       student.mesh = stGroup;
+      student.leftArm = stData.leftArm;
+      student.rightArm = stData.rightArm;
+      student.leftLeg = stData.leftLeg;
+      student.rightLeg = stData.rightLeg;
+      student.walkAnim = Math.random() * 10;
     });
 
     // ------------------------------------------------------------------------
-    // KARAKTER UTAMA SISWA (MERAH PUTIH)
+    // KARAKTER UTAMA SISWA (MERAH PUTIH - ANATOMI IDENTIK DENGAN KAWAN SEKELAS)
     // ------------------------------------------------------------------------
-    const playerGroup = new THREE.Group();
-
-    const torsoMesh = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.5, 0.7), new THREE.MeshLambertMaterial({ color: "#ffffff" }));
-    torsoMesh.position.y = 2.15;
-    playerGroup.add(torsoMesh);
-
-    const tieMesh = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.9, 0.08), new THREE.MeshLambertMaterial({ color: "#dc2626" }));
-    tieMesh.position.set(0, 2.15, 0.38);
-    playerGroup.add(tieMesh);
-
-    const backpackMesh = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.2, 0.45), new THREE.MeshLambertMaterial({ color: "#f97316" }));
-    backpackMesh.position.set(0, 2.2, -0.45);
-    playerGroup.add(backpackMesh);
-
-    const headMesh = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.85, 0.85), new THREE.MeshLambertMaterial({ color: "#fed7aa" }));
-    headMesh.position.y = 3.35;
-    playerGroup.add(headMesh);
-
-    const capTop = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.35, 0.92), new THREE.MeshLambertMaterial({ color: "#dc2626" }));
-    capTop.position.y = 3.95;
-    playerGroup.add(capTop);
-
-    const capVisor = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.08, 0.45), new THREE.MeshLambertMaterial({ color: "#dc2626" }));
-    capVisor.position.set(0, 3.82, 0.55);
-    playerGroup.add(capVisor);
-
-    // Kaki & Lengan
-    const leftArm = new THREE.Group();
-    const lSlv = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.6, 0.48), new THREE.MeshLambertMaterial({ color: "#ffffff" }));
-    lSlv.position.y = 0.3;
-    const lHnd = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.7, 0.44), new THREE.MeshLambertMaterial({ color: "#fed7aa" }));
-    lHnd.position.y = -0.3;
-    leftArm.add(lSlv);
-    leftArm.add(lHnd);
-    leftArm.position.set(-0.95, 2.15, 0);
-    playerGroup.add(leftArm);
-
-    const rightArm = new THREE.Group();
-    rightArm.add(lSlv.clone());
-    rightArm.add(lHnd.clone());
-    rightArm.position.set(0.95, 2.15, 0);
-    playerGroup.add(rightArm);
-
-    const leftLeg = new THREE.Group();
-    const lPnt = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.75, 0.55), new THREE.MeshLambertMaterial({ color: "#dc2626" }));
-    lPnt.position.y = 0.35;
-    const lSh = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.35, 0.65), new THREE.MeshLambertMaterial({ color: "#0f172a" }));
-    lSh.position.set(0, -0.45, 0.05);
-    leftLeg.add(lPnt);
-    leftLeg.add(lSh);
-    leftLeg.position.set(-0.35, 0.7, 0);
-    playerGroup.add(leftLeg);
-
-    const rightLeg = new THREE.Group();
-    rightLeg.add(lPnt.clone());
-    rightLeg.add(lSh.clone());
-    rightLeg.position.set(0.35, 0.7, 0);
-    playerGroup.add(rightLeg);
+    const playerData = createHumanoid({
+      shirtColor: "#ffffff",
+      pantsColor: "#dc2626",
+      hatType: "merah_putih_cap",
+      hasTie: true,
+      tieColor: "#dc2626",
+      hasBackpack: true,
+      backpackColor: "#f97316",
+    });
+    const playerGroup = playerData.group;
+    const { leftArm, rightArm, leftLeg, rightLeg } = playerData;
 
     // Label Pemain
     const playerNameCanvas = document.createElement("canvas");
@@ -956,10 +1238,19 @@ export default function AdaptiveEduGameModal({
         }
       });
 
-      // Animasi Siswa Online Berjalan
+      // Animasi Siswa Online Berjalan & Ayunkan Tangan/Kaki
       onlineStudents.forEach((student) => {
         if (student.mesh) {
           student.mesh.position.z += student.speed * student.dir * delta;
+          student.mesh.rotation.y = student.dir > 0 ? 0 : Math.PI;
+
+          student.walkAnim = (student.walkAnim || 0) + delta * 9;
+          const sSwing = Math.sin(student.walkAnim) * 0.55;
+          if (student.leftLeg) student.leftLeg.rotation.x = sSwing;
+          if (student.rightLeg) student.rightLeg.rotation.x = -sSwing;
+          if (student.leftArm) student.leftArm.rotation.x = -sSwing;
+          if (student.rightArm) student.rightArm.rotation.x = sSwing;
+
           if (student.mesh.position.z > 5) student.dir = -1;
           if (student.mesh.position.z < -290) student.dir = 1;
         }
@@ -967,6 +1258,12 @@ export default function AdaptiveEduGameModal({
 
       // Animasi Denyut Cincin Emas Pak Guru
       ringMesh.rotation.z += delta * 2;
+
+      // Animasi Denyut Titik Misi Checkpoint Rumah Adat
+      hotspotList.forEach((hp) => {
+        hp.ringMesh.rotation.z += delta * 1.5;
+        hp.beaconMesh.scale.y = 1 + Math.sin(Date.now() * 0.003 + hp.suku.silaKe) * 0.15;
+      });
 
       // Kamera Third-Person
       const camTargetX = playerGroup.position.x;
@@ -1044,18 +1341,18 @@ export default function AdaptiveEduGameModal({
           }
         }
 
-        // 3. Cek Apakah Dekat dengan Salah Satu Rumah Suku
-        for (const suku of sukuList) {
-          const distToSuku = Math.hypot(px - suku.xPos, pz - suku.zPos);
-          if (distToSuku < 12) {
-            setActiveSukuDialog(suku);
+        // 3. Cek Apakah Pemain Berdiri di Titik Misi Salah Satu Rumah Suku
+        for (const hp of hotspotList) {
+          const distToHotspot = Math.hypot(px - hp.x, pz - hp.z);
+          if (distToHotspot < 3.8) {
+            setActiveSukuDialog(hp.suku);
             setSelectedAnswer(null);
             setAnswerFeedback(null);
             return;
           }
         }
 
-        setActiveNotification("💡 Dekati Pak Guru, Teman Sekelas, atau Rumah Suku lalu tekan 'E'!");
+        setActiveNotification("📍 Berdirilah tepat di TITIK MISI bercahaya di depan rumah adat untuk memulai kuis!");
         setTimeout(() => setActiveNotification(null), 3000);
       }
     };
