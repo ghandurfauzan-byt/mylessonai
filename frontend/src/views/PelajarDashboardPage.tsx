@@ -901,11 +901,16 @@ export default function PelajarDashboardPage() {
                 </span>
                 <div className="text-left min-w-0">
                   <div className="text-[10px] font-black uppercase tracking-wider text-yellow-100 flex items-center gap-1.5 flex-wrap">
-                    <span>Game 3D Seru</span>
-                    <span className="bg-white/20 px-1.5 py-0.2 rounded text-[9px] font-bold">Layar Penuh 🎵</span>
+                    <span>Game Edukasi Adaptif 🎮</span>
+                    <span className="bg-white/20 px-1.5 py-0.2 rounded text-[9px] font-bold">4 Mode Game 🌟</span>
                   </div>
                   <div className="text-xs sm:text-sm font-black truncate text-white">
-                    {isJawaCurrent ? "Teka-Teki Menjodohkan 🧩" : "Petualangan Desa Pancasila 🗺️"}
+                    {isJawaCurrent
+                      ? "Petualangan Belajar Basa Jawa 🧩"
+                      : "Petualangan Belajar Interaktif 🗺️"}
+                  </div>
+                  <div className="text-[10px] text-yellow-100/90 font-medium truncate hidden sm:block">
+                    🗺️ Desa 3D • 🧩 Pasangan • 🔤 Tebak Kata • 🎲 Ular Tangga
                   </div>
                 </div>
               </div>
