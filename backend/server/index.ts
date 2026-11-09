@@ -95,7 +95,6 @@ import {
 import { SESSION_COOKIE, USER_ID_COOKIE, isValidRole, type Role } from "./session";
 import { checkChromaHealth } from "./chroma";
 import { checkLocalLlmHealth, queryLocalLlm } from "./local_llm";
-import { generateAdaptiveGameData } from "./gameGenerator";
 
 const PORT = Number(process.env.PORT ?? 4000);
 const isProduction = process.env.NODE_ENV === "production";
@@ -2303,66 +2302,31 @@ router.post("/llm/generate", async (req: Request, res: Response) => {
   return res.json(result);
 });
 
-// Endpoint Generator Game Adaptif Berbasis Materi Kurikulum (Otomatis & Real-Time)
-router.post("/games/generate", async (req: Request, res: Response) => {
-  try {
-    const { chapterId, chapterTitle, subject, learningGoal, ragSummary } = req.body || {};
-    const gamePackage = generateAdaptiveGameData({
-      chapterId,
-      chapterTitle,
-      subject,
-      learningGoal,
-      ragSummary,
-    });
-    return res.json({
-      success: true,
-      message: "Data game edukasi berhasil di-generate sesuai materi kurikulum.",
-      data: gamePackage,
-    });
-  } catch (err: any) {
-    return res.status(500).json({
-      success: false,
-      message: `Gagal generate game data: ${err.message}`,
-    });
-  }
-});
-
-router.get("/games/generate", async (req: Request, res: Response) => {
-  try {
-    const chapterId = String(req.query.chapterId || "");
-    const chapterTitle = String(req.query.chapterTitle || "");
-    const subject = String(req.query.subject || "");
-    const gamePackage = generateAdaptiveGameData({
-      chapterId,
-      chapterTitle,
-      subject,
-    });
-    return res.json({
-      success: true,
-      data: gamePackage,
-    });
-  } catch (err: any) {
-    return res.status(500).json({
-      success: false,
-      message: `Gagal generate game data: ${err.message}`,
-    });
-  }
-});
-
-// Endpoint Otomasi Generator Game Berbasis Materi Kurikulum (Integrasi Manus AI & Game Adaptif)
+// Endpoint Otomasi Generator Game Berbasis Materi Kurikulum (Integrasi Manus AI)
 router.post("/games/manus-generate", async (req: Request, res: Response) => {
   try {
-    const { chapterId, chapterTitle, subject, learningGoal, ragSummary } = req.body || {};
+    const { chapterId, chapterTitle, subject } = req.body || {};
 
-    const adaptiveGame = generateAdaptiveGameData({
-      chapterId,
-      chapterTitle,
-      subject,
-      learningGoal,
-      ragSummary,
-    });
+    const idStr = String(chapterId || "").toLowerCase();
+    const titleStr = String(chapterTitle || "").toLowerCase();
+    const subjStr = String(subject || "").toLowerCase();
 
-    const gameType = adaptiveGame.recommendedMode;
+    // Deteksi cerdas jenis materi:
+    // Jika Basa Jawa / Aksara / Pasangan / Kosakata -> Format Menjodohkan (Matching Puzzle)
+    // Jika PKn / Pancasila / Norma / Gotong Royong -> Format Petualangan Pengamalan (Adventure Quest)
+    const isJawa =
+      subjStr.includes("jawa") ||
+      idStr.includes("bjawa") ||
+      idStr.includes("aksara") ||
+      idStr.includes("unggah") ||
+      idStr.includes("punokawan") ||
+      idStr.includes("pandhawa") ||
+      titleStr.includes("jawa") ||
+      titleStr.includes("aksara") ||
+      titleStr.includes("unggah") ||
+      titleStr.includes("punokawan");
+
+    const gameType: "adventure" | "matching" = isJawa ? "matching" : "adventure";
 
     let gamePrompt = "";
     let detailedSpecs = {};
@@ -2414,7 +2378,6 @@ router.post("/games/manus-generate", async (req: Request, res: Response) => {
       prompt: gamePrompt,
       specs: detailedSpecs,
       manusTask: manusTaskResult,
-      adaptiveGame,
       directLauncherUrl: `https://manus.im/app?prompt=${encodeURIComponent(gamePrompt)}`,
       timestamp: new Date().toISOString()
     });
