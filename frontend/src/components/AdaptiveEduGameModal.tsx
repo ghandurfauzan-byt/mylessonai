@@ -1719,10 +1719,10 @@ export default function AdaptiveEduGameModal({
               {/* Box Pembekalan Materi Soal Basa Jawa (Sesuai Request User) */}
               <div className="bg-slate-800/90 border-2 border-sky-400/50 rounded-2xl p-3 max-w-xl w-full text-left space-y-1.5 shadow-md">
                 <span className="text-[10px] font-black uppercase tracking-wider text-sky-300 bg-sky-950 px-2 py-0.5 rounded border border-sky-500/40">
-                  💡 Pembekalan Materi &amp; Kunci Soal
+                  💡 Pemahaman Konsep Basa Jawa
                 </span>
                 <p className="text-xs text-slate-200 leading-relaxed">
-                  <b>Unggah-Ungguh:</b> Gunakan <i>Basa Ngoko</i> untuk teman sebaya/kanca dolanan, dan <i>Basa Krama Alus</i> untuk orang tua/guru. Tokoh <b>Semar</b> adalah bapak Punokawan yang berwatak sabar dan bijaksana!
+                  <b>Tata Krama Basa:</b> Gunakan <i>Basa Ngoko</i> ketika berbicara dengan kawan sebaya (kanca dolanan), dan gunakan <i>Basa Krama Alus</i> kepada orang tua atau bapak/ibu guru. Tokoh <b>Semar</b> adalah pamomong Punokawan yang berwatak sabar dan bijaksana.
                 </p>
               </div>
             </div>
@@ -1813,11 +1813,11 @@ export default function AdaptiveEduGameModal({
                     AYO PAHAMI MATERI &amp; MISI NEGARA GARUDA! 🇮🇩
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-200 leading-relaxed max-w-xl mx-auto">
-                    Pelajari intisari 5 Sila berikut agar kamu bisa menjawab dengan benar di <b>5 Rumah Adat</b> dan meraih skor tertinggi di <b>Papan Skor Kelas</b>!
+                    Pahami makna luhur 5 Sila Pancasila di bawah ini agar kamu dapat menerapkan nilai budi pekerti dengan bijak saat menjelajahi <b>5 Rumah Adat Nusantara</b>!
                   </p>
                 </div>
 
-                {/* 5 Kartu Kisi-Kisi Soal Per Sila */}
+                {/* 5 Kartu Pemahaman Materi Per Sila */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-60 sm:max-h-72 overflow-y-auto pr-1">
                   <div className="bg-sky-950/60 border-2 border-sky-400/70 p-3 rounded-2xl space-y-1 text-left">
                     <div className="flex items-center gap-2">
@@ -1825,7 +1825,7 @@ export default function AdaptiveEduGameModal({
                       <span className="font-black text-xs text-sky-300 uppercase">Sila 1: Ketuhanan (Pos Jawa)</span>
                     </div>
                     <p className="text-[11px] text-slate-200 leading-snug">
-                      <b>Kunci Jawaban:</b> Menghormati teman yang sedang beribadah doa, menjaga ketenangan tempat ibadah, serta bertoleransi antarumat beragama.
+                      <b>Pemahaman Nilai:</b> Menumbuhkan rasa saling menghormati ketika kawan sedang beribadah, menjaga kesucian dan ketenangan lingkungan tempat ibadah, serta memupuk toleransi beragama.
                     </p>
                   </div>
 
@@ -1835,7 +1835,7 @@ export default function AdaptiveEduGameModal({
                       <span className="font-black text-xs text-amber-300 uppercase">Sila 2: Kemanusiaan (Pos Sunda)</span>
                     </div>
                     <p className="text-[11px] text-slate-200 leading-snug">
-                      <b>Kunci Jawaban:</b> Menolong kawan yang terjatuh terpeleset tanpa pamrih, menyayangi sesama, dan menolak segala bentuk ejekan (anti-bullying).
+                      <b>Pemahaman Nilai:</b> Membiasakan sikap empati dan rasa kemanusiaan, sigap menolong sesama yang sedang kesulitan dengan tulus tanpa pamrih, serta menjauhi perilaku mengejek kawan.
                     </p>
                   </div>
 
@@ -1845,7 +1845,7 @@ export default function AdaptiveEduGameModal({
                       <span className="font-black text-xs text-emerald-300 uppercase">Sila 3: Persatuan (Pos Minang)</span>
                     </div>
                     <p className="text-[11px] text-slate-200 leading-snug">
-                      <b>Kunci Jawaban:</b> Menjaga persatuan Bhinneka Tunggal Ika! Merangkul teman baru dari pulau lain yang berbeda logat dan budaya, serta rukun piket bersama.
+                      <b>Pemahaman Nilai:</b> Menghayati semangat Bhinneka Tunggal Ika, merangkul kawan dari beragam daerah dan logat bahasa, serta menjaga kekompakan gotong royong di lingkungan sekolah.
                     </p>
                   </div>
 
@@ -1855,7 +1855,7 @@ export default function AdaptiveEduGameModal({
                       <span className="font-black text-xs text-rose-300 uppercase">Sila 4: Musyawarah (Pos Dayak)</span>
                     </div>
                     <p className="text-[11px] text-slate-200 leading-snug">
-                      <b>Kunci Jawaban:</b> Mengambil keputusan bersama (seperti tujuan wisata kelas) melalui musyawarah mufakat, menghargai pendapat kawan, tidak memaksa kehendak.
+                      <b>Pemahaman Nilai:</b> Mengutamakan musyawarah mufakat dalam mengambil keputusan bersama, mendengarkan saran teman dengan bijak, serta tidak memaksakan pendapat pribadi.
                     </p>
                   </div>
 
@@ -1865,7 +1865,7 @@ export default function AdaptiveEduGameModal({
                       <span className="font-black text-xs text-yellow-300 uppercase">Sila 5: Keadilan Sosial (Pos Papua)</span>
                     </div>
                     <p className="text-[11px] text-slate-200 leading-snug">
-                      <b>Kunci Jawaban:</b> Membagi hasil kerja bakti/kebun secara adil dan merata, suka bekerja keras bersama, dan tidak bersikap serakah.
+                      <b>Pemahaman Nilai:</b> Menjunjung tinggi keadilan sosial bagi seluruh rakyat, membagi hasil kerja sama kelompok secara berimbang dan merata, serta membiasakan sikap tidak serakah.
                     </p>
                   </div>
                 </div>
@@ -1890,7 +1890,7 @@ export default function AdaptiveEduGameModal({
                         stopGuruVoice();
                       } else {
                         speakGuruVoice(
-                          "Halo anak hebat! Sebelum mulai berpetualang di Desa Pancasila, ingatlah lima nilai luhur ini: Sila satu mengajarkan toleransi dan menghormati teman yang sedang beribadah. Sila dua mengajarkan tolong-menolong kawan yang terjatuh tanpa pamrih. Sila tiga merangkul persatuan Bhinneka Tunggal Ika. Sila empat mengedepankan musyawarah mufakat dalam mengambil keputusan bersama. Dan sila lima membagi hasil kerja secara adil dan merata. Selamat berpetualang dan kumpulkan koin di jalan!"
+                          "Halo anak hebat! Sebelum mulai berpetualang di Desa Pancasila, mari kita pahami nilai lima sila ini: Sila satu mengajarkan toleransi dan menghormati sesama dalam beribadah. Sila dua mengajarkan kepedulian dan keikhlasan menolong orang yang sedang kesulitan. Sila tiga merawat persatuan dalam keberagaman Bhinneka Tunggal Ika. Sila empat meneladankan musyawarah mufakat untuk mencapai kesepakatan bersama. Dan sila lima mengajak kita bersikap adil serta menjunjung kebersamaan. Selamat berpetualang dan kumpulkan koin di jalan!"
                         );
                       }
                     }}
