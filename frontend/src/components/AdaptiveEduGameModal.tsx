@@ -120,6 +120,117 @@ export default function AdaptiveEduGameModal({
   const [guruTab, setGuruTab] = useState<"apa_itu" | "makna_sila" | "cara_main">("apa_itu");
   const [isGuruSpeaking, setIsGuruSpeaking] = useState(false);
 
+  // Deteksi Cerdas 1 Materi = 1 Model Game Spesifik:
+  // Materi Bahasa/Kosakata/Aksara -> Game Menjodohkan Kartu Pasangan
+  // Materi Pancasila/PKn/Gotong Royong/Nilai -> Game Petualangan 3D Desa
+  const isMatchingGame = useMemo(() => {
+    const title = (activeValidatedModule?.title || chapterTitle || chapter || "").toLowerCase();
+    const subj = (activeValidatedModule?.subject || "").toLowerCase();
+    return (
+      subj.includes("jawa") ||
+      title.includes("jawa") ||
+      title.includes("aksara") ||
+      title.includes("pandhawa") ||
+      title.includes("unggah") ||
+      chapter.toLowerCase().includes("bjawa")
+    );
+  }, [activeValidatedModule?.title, activeValidatedModule?.subject, chapterTitle, chapter]);
+
+  // State Game Menjodohkan Kartu (untuk materi Basa Jawa / Kosakata)
+  interface MatchCardItem {
+    uid: string;
+    pairId: string;
+    text: string;
+    category: string;
+    isMatched: boolean;
+  }
+  const [matchingCards, setMatchingCards] = useState<MatchCardItem[]>([]);
+  const [selectedCardIndices, setSelectedCardIndices] = useState<number[]>([]);
+  const [matchingMoves, setMatchingMoves] = useState(0);
+  const [matchingDone, setMatchingDone] = useState(false);
+
+  // Inisialisasi Kartu Menjodohkan
+  useEffect(() => {
+    if (!isOpen || !isMatchingGame) return;
+    const titleLower = resolvedTitle.toLowerCase();
+    let pairs = [
+      { id: "1", term: "Basa Krama Alus", match: "Matur marang Wong Tuwa", category: "Unggah-Ungguh" },
+      { id: "2", term: "Basa Ngoko Lugu", match: "Guneman karo Kanca Sebaya", category: "Unggah-Ungguh" },
+      { id: "3", term: "Rukun Agawe Santosa", match: "Crah Agawe Bubrah", category: "Bebasan" },
+      { id: "4", term: "Subasita & Trapsila", match: "Tata Krama kang Becik", category: "Budi Pekerti" },
+      { id: "5", term: "Tepa Selira", match: "Tenggang Rasa marang Kanca", category: "Budi Pekerti" },
+      { id: "6", term: "Mikul Dhuwur", match: "Ngajeni Asmane Wong Tuwa", category: "Bebasan" },
+    ];
+
+    if (titleLower.includes("aksara")) {
+      pairs = [
+        { id: "1", term: "ꦲ (Ha)", match: "Aksara Jawa Ha", category: "Aksara Legena" },
+        { id: "2", term: "ꦤ (Na)", match: "Aksara Jawa Na", category: "Aksara Legena" },
+        { id: "3", term: "Sandhangan Wulu", match: "Swara 'i' ing Aksara", category: "Sandhangan" },
+        { id: "4", term: "Sandhangan Suku", match: "Swara 'u' ing Aksara", category: "Sandhangan" },
+        { id: "5", term: "Sandhangan Taling", match: "Swara 'é' ing Aksara", category: "Sandhangan" },
+        { id: "6", term: "Aksara Legena", match: "Cacahe Ana 20 Aksara", category: "Dhasar" },
+      ];
+    } else if (titleLower.includes("pandhawa")) {
+      pairs = [
+        { id: "1", term: "Raden Puntadewa", match: "Watak Jujur Ora Tau Goroh", category: "Pandhawa" },
+        { id: "2", term: "Raden Werkudara", match: "Kendel Mbelani Bebener", category: "Pandhawa" },
+        { id: "3", term: "Raden Janaka", match: "Alus Budine lan Sekti", category: "Pandhawa" },
+        { id: "4", term: "Nakula & Sadewa", match: "Setya Tuhu Sedulur Kembar", category: "Pandhawa" },
+        { id: "5", term: "Pandhawa Lima", match: "Putra Prabu Pandu Dewanata", category: "Silsilah" },
+        { id: "6", term: "Perang Baratayuda", match: "Mbelani Kasunyatan lan Adil", category: "Kisah" },
+      ];
+    }
+
+    const cards: MatchCardItem[] = [];
+    pairs.forEach((p, idx) => {
+      cards.push({ uid: `${p.id}-term-${idx}`, pairId: p.id, text: p.term, category: p.category, isMatched: false });
+      cards.push({ uid: `${p.id}-match-${idx}`, pairId: p.id, text: p.match, category: p.category, isMatched: false });
+    });
+    setMatchingCards(cards.sort(() => Math.random() - 0.5));
+    setSelectedCardIndices([]);
+    setMatchingMoves(0);
+    setMatchingDone(false);
+  }, [isOpen, isMatchingGame, resolvedTitle]);
+
+  const handleMatchCardClick = (idx: number) => {
+    if (selectedCardIndices.length >= 2 || selectedCardIndices.includes(idx) || matchingCards[idx].isMatched) return;
+
+    playClickSound();
+    const next = [...selectedCardIndices, idx];
+    setSelectedCardIndices(next);
+
+    if (next.length === 2) {
+      setMatchingMoves((m) => m + 1);
+      const [fIdx, sIdx] = next;
+      const first = matchingCards[fIdx];
+      const second = matchingCards[sIdx];
+
+      if (first.pairId === second.pairId) {
+        playCorrectSound();
+        playCoinSound();
+        setAdventureScore((s) => s + 15);
+        addPoints(15, `Menjodohkan kartu cocok: ${first.text}`);
+
+        setTimeout(() => {
+          setMatchingCards((prev) => {
+            const updated = prev.map((c, i) => (i === fIdx || i === sIdx ? { ...c, isMatched: true } : c));
+            if (updated.every((c) => c.isMatched)) {
+              playBadgeFanfareSound();
+              setMatchingDone(true);
+              addPoints(30, "Menyelesaikan seluruh pasangan kartu!");
+            }
+            return updated;
+          });
+          setSelectedCardIndices([]);
+        }, 500);
+      } else {
+        playOofSound();
+        setTimeout(() => setSelectedCardIndices([]), 1000);
+      }
+    }
+  };
+
   // Dialog Kuis Rumah Suku
   const [activeSukuDialog, setActiveSukuDialog] = useState<SukuAdat | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -442,7 +553,7 @@ export default function AdaptiveEduGameModal({
   // ENGINE 3D THREE.JS: GAPURA, PAK GURU, LEADERBOARD AWAL, JALUR DESA & SISWA
   // --------------------------------------------------------------------------
   useEffect(() => {
-    if (!isOpen || !mountEl) return;
+    if (!isOpen || isMatchingGame || !mountEl) return;
 
     const mount = mountEl;
 
@@ -1063,6 +1174,75 @@ export default function AdaptiveEduGameModal({
       spotGroup.position.set(hotspotX, 0, hotspotZ);
       scene.add(spotGroup);
 
+      // ----------------------------------------------------------------------
+      // TOKOH ADAT 3D: ORANG ASLI DI DEPAN RUMAH DENGAN TULISAN NAMA JELAS
+      // ----------------------------------------------------------------------
+      let npcShirt = "#78350f";
+      let npcPants = "#451a03";
+      let npcHat: "peci_guru" | "merah_putih_cap" | "hair_black" | "sport_hair" | "hair_ribbon" = "hair_black";
+
+      if (suku.id === "jawa") {
+        npcShirt = "#78350f"; // Beskap Cokelat Jawa
+        npcPants = "#451a03";
+        npcHat = "peci_guru";
+      } else if (suku.id === "sunda") {
+        npcShirt = "#1e293b"; // Hitam Pangsi Sunda
+        npcPants = "#0f172a";
+        npcHat = "hair_black";
+      } else if (suku.id === "minang") {
+        npcShirt = "#dc2626"; // Merah Adat Minang
+        npcPants = "#991b1b";
+        npcHat = "merah_putih_cap";
+      } else if (suku.id === "dayak") {
+        npcShirt = "#ca8a04"; // Rompi Dayak Kuning Emas
+        npcPants = "#78350f";
+        npcHat = "hair_black";
+      } else if (suku.id === "papua") {
+        npcShirt = "#d97706"; // Pakaian Khas Papua
+        npcPants = "#78350f";
+        npcHat = "sport_hair";
+      }
+
+      const npcHuman = createHumanoid({
+        shirtColor: npcShirt,
+        pantsColor: npcPants,
+        hatType: npcHat,
+      });
+      const npcGroup = npcHuman.group;
+
+      // Label Nama Tokoh di Atas Kepala Orang di Depan Rumah
+      const npcNameCanvas = document.createElement("canvas");
+      npcNameCanvas.width = 440;
+      npcNameCanvas.height = 100;
+      const npCtx = npcNameCanvas.getContext("2d")!;
+      npCtx.fillStyle = "#1e1b4b";
+      npCtx.fillRect(0, 0, 440, 100);
+      npCtx.strokeStyle = "#facc15";
+      npCtx.lineWidth = 6;
+      npCtx.strokeRect(3, 3, 434, 94);
+
+      npCtx.fillStyle = "#ffffff";
+      npCtx.font = "bold 26px sans-serif";
+      npCtx.textAlign = "center";
+      npCtx.fillText(`${suku.tokohAvatar} ${suku.tokohNama}`, 220, 42);
+
+      npCtx.fillStyle = "#facc15";
+      npCtx.font = "bold 22px sans-serif";
+      npCtx.fillText(`[ ${suku.simbolSila} Sila Ke-${suku.silaKe} • Tekan 'E' ]`, 220, 80);
+
+      const npcSprite = new THREE.Sprite(
+        new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(npcNameCanvas) })
+      );
+      npcSprite.position.set(0, 4.8, 0);
+      npcSprite.scale.set(4.4, 1.0, 1);
+      npcGroup.add(npcSprite);
+
+      // Posisikan Tokoh Orang tepat di depan pintu rumah menghadap ke jalan
+      const npcX = suku.xPos > 0 ? 7.2 : -7.2;
+      npcGroup.position.set(npcX, 0, suku.zPos);
+      npcGroup.rotation.y = suku.xPos > 0 ? -Math.PI / 2 : Math.PI / 2;
+      scene.add(npcGroup);
+
       hotspotList.push({
         suku,
         x: hotspotX,
@@ -1404,47 +1584,58 @@ export default function AdaptiveEduGameModal({
         <header className="h-16 bg-slate-900/90 backdrop-blur-md border-b border-yellow-400/40 text-white px-4 sm:px-6 flex items-center justify-between shrink-0 shadow-xl z-20">
           <div className="flex items-center gap-3 min-w-0">
             <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-2xl shadow-lg shrink-0">
-              🇮🇩
+              {isMatchingGame ? "🧩" : "🇮🇩"}
             </span>
             <div className="min-w-0">
               <h2 id="game-title" className="font-black text-sm sm:text-base text-yellow-300 truncate tracking-wide">
-                PETUALANGAN PANCASILA: JELAJAH DESA NUSANTARA ONLINE
+                {isMatchingGame
+                  ? "TEKA-TEKI MENJODOHKAN BASA JAWA & AKSARA 🧩"
+                  : "PETUALANGAN PANCASILA: JELAJAH DESA NUSANTARA ONLINE"}
               </h2>
               <p className="text-[11px] text-slate-300 truncate">
-                Materi: <b className="text-emerald-400">{resolvedTitle}</b> • Teman Online: <b className="text-emerald-400">4 Siswa 🟢</b>
+                Materi: <b className="text-emerald-400">{resolvedTitle}</b>
+                {!isMatchingGame && (
+                  <> • Teman Online: <b className="text-emerald-400">4 Siswa 🟢</b></>
+                )}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            {/* Papan Skor Kelas */}
-            <button
-              type="button"
-              onClick={() => {
-                playClickSound();
-                setShowLeaderboard(true);
-              }}
-              className="bg-indigo-600/90 hover:bg-indigo-600 text-white font-bold px-3.5 py-2 rounded-2xl text-xs shadow-md transition hover:scale-105 active:scale-95 flex items-center gap-1.5 cursor-pointer border border-indigo-400/40"
-            >
-              <span>🏆</span>
-              <span className="hidden sm:inline">Papan Skor Kelas</span>
-            </button>
+            {/* Papan Skor Kelas (Khusus 3D Petualangan) */}
+            {!isMatchingGame && (
+              <button
+                type="button"
+                onClick={() => {
+                  playClickSound();
+                  setShowLeaderboard(true);
+                }}
+                className="bg-indigo-600/90 hover:bg-indigo-600 text-white font-bold px-3.5 py-2 rounded-2xl text-xs shadow-md transition hover:scale-105 active:scale-95 flex items-center gap-1.5 cursor-pointer border border-indigo-400/40"
+              >
+                <span>🏆</span>
+                <span className="hidden sm:inline">Papan Skor Kelas</span>
+              </button>
+            )}
 
-            {/* Poin Koin di Jalan */}
+            {/* Poin Koin */}
             <div className="flex items-center gap-2 bg-slate-800/90 px-3.5 py-1.5 rounded-2xl border border-yellow-400/50 shadow-inner">
               <span className="text-xs font-black text-yellow-300">
                 🪙 {adventureScore} Poin
               </span>
-              <span className="text-[10px] bg-amber-500/30 text-amber-300 px-2 py-0.5 rounded-full font-bold">
-                ⭐ {coinsCollectedCount} Koin
-              </span>
+              {!isMatchingGame && (
+                <span className="text-[10px] bg-amber-500/30 text-amber-300 px-2 py-0.5 rounded-full font-bold">
+                  ⭐ {coinsCollectedCount} Koin
+                </span>
+              )}
             </div>
 
-            {/* Progres 5 Suku */}
-            <div className="hidden md:flex items-center gap-1 bg-slate-800/90 px-3 py-1.5 rounded-2xl border border-emerald-500/40 text-xs font-bold text-emerald-300">
-              <span>🏠</span>
-              <span>{visitedSukuIds.length}/5 Suku Selesai</span>
-            </div>
+            {/* Progres 5 Suku (Khusus 3D Petualangan) */}
+            {!isMatchingGame && (
+              <div className="hidden md:flex items-center gap-1 bg-slate-800/90 px-3 py-1.5 rounded-2xl border border-emerald-500/40 text-xs font-bold text-emerald-300">
+                <span>🏠</span>
+                <span>{visitedSukuIds.length}/5 Suku Selesai</span>
+              </div>
+            )}
 
             {/* Tombol Musik */}
             <button
@@ -1484,10 +1675,109 @@ export default function AdaptiveEduGameModal({
           </div>
         </header>
 
-        {/* CONTAINER ARENA FULLSCREEN 3D */}
-        <div className="flex-1 w-full relative overflow-hidden flex flex-col items-center justify-center bg-slate-900">
-          {/* THREE.JS CANVAS MOUNT */}
-          <div ref={setMountEl} className="absolute inset-0 w-full h-full block" />
+        {isMatchingGame ? (
+          /* ================================================================ */
+          /* MODEL GAME 2: TEKA-TEKI MENJODOHKAN (UNTUK MATERI BASA JAWA / KOSAKATA) */
+          /* ================================================================ */
+          <div className="flex-1 w-full p-4 sm:p-8 flex flex-col items-center justify-center space-y-6 overflow-y-auto bg-slate-900 select-none">
+            {/* Header Belajar */}
+            <div className="text-center space-y-2 max-w-xl">
+              <span className="text-xs font-black uppercase tracking-wider bg-sky-500/20 text-sky-300 border border-sky-400/40 px-3.5 py-1 rounded-full inline-block">
+                🧩 Mode Game: Menjodohkan Pasangan Kartu Edukasi
+              </span>
+              <h3 className="text-xl sm:text-2xl font-black text-yellow-300">
+                {resolvedTitle}
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                Pilih dan balik 2 kartu yang memiliki arti atau pasangan yang cocok! Dapatkan <b>+15 Poin</b> untuk setiap pasangan cocok!
+              </p>
+              <div className="flex items-center justify-center gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isGuruSpeaking) {
+                      stopGuruVoice();
+                    } else {
+                      speakGuruVoice(
+                        `Halo kawan! Di materi ${resolvedTitle}, ayo cocokkan pasangan kartu aksara dan kata Basa Jawa dengan artinya yang tepat! Selamat bermain!`
+                      );
+                    }
+                  }}
+                  className={`px-4 py-2 rounded-2xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border ${
+                    isGuruSpeaking
+                      ? "bg-rose-600 border-rose-400 text-white animate-pulse"
+                      : "bg-sky-600 hover:bg-sky-500 border-sky-400/60 text-white"
+                  }`}
+                >
+                  <span>{isGuruSpeaking ? "⏹️ Hentikan Suara" : "🔊 Suara Pak Guru"}</span>
+                </button>
+                <div className="bg-slate-800 px-3.5 py-1.5 rounded-2xl border border-slate-700 text-xs font-bold text-slate-200">
+                  Total Langkah: <b className="text-yellow-400">{matchingMoves}</b>
+                </div>
+              </div>
+            </div>
+
+            {/* Grid 12 Kartu (6 Pasang) */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 w-full max-w-3xl">
+              {matchingCards.map((card, idx) => {
+                const isSelected = selectedCardIndices.includes(idx);
+                return (
+                  <button
+                    key={card.uid}
+                    type="button"
+                    disabled={card.isMatched}
+                    onClick={() => handleMatchCardClick(idx)}
+                    className={`p-4 rounded-3xl min-h-[110px] sm:min-h-[120px] flex flex-col items-center justify-center text-center transition-all duration-300 border-2 cursor-pointer ${
+                      card.isMatched
+                        ? "bg-emerald-950/70 border-emerald-400 text-emerald-300 opacity-60 scale-95 shadow-none"
+                        : isSelected
+                        ? "bg-sky-600 border-white text-white scale-105 shadow-2xl ring-2 ring-yellow-400"
+                        : "bg-slate-800 hover:bg-slate-700 border-slate-600 hover:border-yellow-400 text-slate-100 shadow-lg"
+                    }`}
+                  >
+                    <span className="text-[10px] uppercase font-bold text-yellow-400 tracking-wider mb-1.5">
+                      {card.category}
+                    </span>
+                    <span className="text-xs sm:text-sm font-black leading-snug">
+                      {card.text}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Popup Kemenangan Menjodohkan */}
+            {matchingDone && (
+              <div className="p-5 bg-slate-900 border-4 border-yellow-400 rounded-3xl text-center space-y-3 max-w-md animate-in zoom-in shadow-2xl">
+                <div className="text-4xl animate-bounce">🏆</div>
+                <h4 className="font-black text-lg text-yellow-300">
+                  SEMPURNA! SELURUH KARTU TELAH COCOK!
+                </h4>
+                <p className="text-xs text-slate-200">
+                  Kamu berhasil menyelesaikan teka-teki menjodohkan dalam <b>{matchingMoves} langkah</b> dan mendapatkan <b>+30 Poin Prestasi</b>!
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMatchingCards((prev) => [...prev].sort(() => Math.random() - 0.5).map((c) => ({ ...c, isMatched: false })));
+                    setSelectedCardIndices([]);
+                    setMatchingMoves(0);
+                    setMatchingDone(false);
+                  }}
+                  className="w-full bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-orange-500 text-slate-950 font-black py-2.5 rounded-2xl text-xs cursor-pointer shadow-md transition"
+                >
+                  🔄 Mainkan Ulang
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* ================================================================ */
+          /* MODEL GAME 1: PETUALANGAN DESA PANCASILA 3D (ORANG ADAT DI TIAP RUMAH) */
+          /* ================================================================ */
+          <div className="flex-1 w-full relative overflow-hidden flex flex-col items-center justify-center bg-slate-900">
+            {/* THREE.JS CANVAS MOUNT */}
+            <div ref={setMountEl} className="absolute inset-0 w-full h-full block" />
 
           {/* PETUNJUK LAYAR AWAL MENGARAHKAN KE PAK GURU (SESUAI REQUEST) */}
           {!hasTalkedToGuru && gameStarted && (
@@ -1999,7 +2289,8 @@ export default function AdaptiveEduGameModal({
             </div>
           </div>
         </div>
-      </div>
-    </ModalPortal>
-  );
+      )}
+    </div>
+  </ModalPortal>
+);
 }

@@ -101,10 +101,28 @@ export async function logout(): Promise<void> {
 }
 
 export async function fetchProfile(): Promise<UserProfile> {
-  const response = await fetch("/api/profile", { credentials: "same-origin" });
+  const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+  const headers: Record<string, string> = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const response = await fetch("/api/profile", {
+    credentials: "same-origin",
+    headers,
+  });
   const rawData = await response.json().catch(() => null);
-  if (!response.ok) {
+  if (!response.ok || !rawData) {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("user_profile");
+      if (stored) {
+        try {
+          return UserProfileSchema.parse(JSON.parse(stored));
+        } catch {}
+      }
+    }
     throw new Error("Gagal memuat profil pengguna.");
+  }
+  if (typeof window !== "undefined") {
+    localStorage.setItem("user_profile", JSON.stringify(rawData));
   }
   return UserProfileSchema.parse(rawData);
 }

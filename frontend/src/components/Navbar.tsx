@@ -3,6 +3,7 @@ import { SESSION_QUERY_KEY } from "@/hooks/useSession";
 import { fetchProfile, logout } from "@/lib/api/sessionApi";
 import { useUIStore } from "@/lib/store/useUIStore";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 function getInitials(name?: string, fallback = "PL"): string {
@@ -30,7 +31,19 @@ export default function Navbar({ role }: { role: "pelajar" | "pengajar" }) {
   const toggleTheme = useUIStore((s) => s.toggleTheme);
   const openProfileModal = useUIStore((s) => s.openProfileModal);
 
-  const userInitials = getInitials(profile?.name, isTeacher ? "GR" : "PL");
+  const userInitials = useMemo(() => {
+    let name = profile?.name;
+    if (!name && typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("user_profile");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          name = parsed?.name;
+        }
+      } catch {}
+    }
+    return getInitials(name, isTeacher ? "GR" : "PL");
+  }, [profile?.name, isTeacher]);
 
   async function handleLogout() {
     await logout();
