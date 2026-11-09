@@ -1715,6 +1715,16 @@ export default function AdaptiveEduGameModal({
                   Total Langkah: <b className="text-yellow-400">{matchingMoves}</b>
                 </div>
               </div>
+
+              {/* Box Pembekalan Materi Soal Basa Jawa (Sesuai Request User) */}
+              <div className="bg-slate-800/90 border-2 border-sky-400/50 rounded-2xl p-3 max-w-xl w-full text-left space-y-1.5 shadow-md">
+                <span className="text-[10px] font-black uppercase tracking-wider text-sky-300 bg-sky-950 px-2 py-0.5 rounded border border-sky-500/40">
+                  💡 Pembekalan Materi &amp; Kunci Soal
+                </span>
+                <p className="text-xs text-slate-200 leading-relaxed">
+                  <b>Unggah-Ungguh:</b> Gunakan <i>Basa Ngoko</i> untuk teman sebaya/kanca dolanan, dan <i>Basa Krama Alus</i> untuk orang tua/guru. Tokoh <b>Semar</b> adalah bapak Punokawan yang berwatak sabar dan bijaksana!
+                </p>
+              </div>
             </div>
 
             {/* Grid 12 Kartu (6 Pasang) */}
@@ -1789,40 +1799,124 @@ export default function AdaptiveEduGameModal({
             </div>
           )}
 
-          {/* OVERLAY AWAL MULAI MAIN */}
+          {/* OVERLAY BRIEFING & PEMBEKALAN MATERI SEBELUM BERMAIN (SESUAI REQUEST USER) */}
           {!gameStarted && (
-            <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-5 animate-in fade-in">
-              <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-yellow-400 via-amber-500 to-orange-500 flex items-center justify-center text-5xl shadow-2xl border-4 border-white animate-bounce">
-                🎒
-              </div>
-              <div className="space-y-2 max-w-lg">
-                <h3 className="font-black text-2xl sm:text-3xl text-yellow-300 tracking-wide">
-                  AYO MASUK KE DESA PANCASILA! 🇮🇩
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-                  Teman-teman sekelasmu sudah online! Di awal ada <b>Papan Skor Kelas</b> dan <b>Pak Guru Virtual</b> yang siap menjelaskan materi lewat suara. Kumpulkan koin di jalan dan kunjungi 5 rumah suku adat!
-                </p>
-                <div className="bg-slate-900/90 p-3.5 rounded-2xl border border-yellow-400/40 text-xs text-yellow-200 flex flex-wrap items-center justify-center gap-3">
+            <div className="absolute inset-0 z-40 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in">
+              <div className="bg-slate-900/95 border-3 border-yellow-400 rounded-3xl max-w-2xl w-full p-5 sm:p-7 text-white space-y-4 sm:space-y-5 shadow-2xl my-auto">
+                {/* Header Briefing */}
+                <div className="text-center space-y-1.5">
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-yellow-400/20 border border-yellow-400/50 text-yellow-300 font-black text-xs uppercase tracking-wider">
+                    <span>📖</span>
+                    <span>Pembekalan Materi Sebelum Bermain</span>
+                  </div>
+                  <h3 className="font-black text-xl sm:text-2xl text-yellow-300 tracking-wide">
+                    AYO PAHAMI MATERI &amp; MISI NEGARA GARUDA! 🇮🇩
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-200 leading-relaxed max-w-xl mx-auto">
+                    Pelajari intisari 5 Sila berikut agar kamu bisa menjawab dengan benar di <b>5 Rumah Adat</b> dan meraih skor tertinggi di <b>Papan Skor Kelas</b>!
+                  </p>
+                </div>
+
+                {/* 5 Kartu Kisi-Kisi Soal Per Sila */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-60 sm:max-h-72 overflow-y-auto pr-1">
+                  <div className="bg-sky-950/60 border-2 border-sky-400/70 p-3 rounded-2xl space-y-1 text-left">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">⭐</span>
+                      <span className="font-black text-xs text-sky-300 uppercase">Sila 1: Ketuhanan (Pos Jawa)</span>
+                    </div>
+                    <p className="text-[11px] text-slate-200 leading-snug">
+                      <b>Kunci Jawaban:</b> Menghormati teman yang sedang beribadah doa, menjaga ketenangan tempat ibadah, serta bertoleransi antarumat beragama.
+                    </p>
+                  </div>
+
+                  <div className="bg-amber-950/60 border-2 border-amber-400/70 p-3 rounded-2xl space-y-1 text-left">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">⛓️</span>
+                      <span className="font-black text-xs text-amber-300 uppercase">Sila 2: Kemanusiaan (Pos Sunda)</span>
+                    </div>
+                    <p className="text-[11px] text-slate-200 leading-snug">
+                      <b>Kunci Jawaban:</b> Menolong kawan yang terjatuh terpeleset tanpa pamrih, menyayangi sesama, dan menolak segala bentuk ejekan (anti-bullying).
+                    </p>
+                  </div>
+
+                  <div className="bg-emerald-950/60 border-2 border-emerald-400/70 p-3 rounded-2xl space-y-1 text-left">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🌳</span>
+                      <span className="font-black text-xs text-emerald-300 uppercase">Sila 3: Persatuan (Pos Minang)</span>
+                    </div>
+                    <p className="text-[11px] text-slate-200 leading-snug">
+                      <b>Kunci Jawaban:</b> Menjaga persatuan Bhinneka Tunggal Ika! Merangkul teman baru dari pulau lain yang berbeda logat dan budaya, serta rukun piket bersama.
+                    </p>
+                  </div>
+
+                  <div className="bg-rose-950/60 border-2 border-rose-400/70 p-3 rounded-2xl space-y-1 text-left">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🐂</span>
+                      <span className="font-black text-xs text-rose-300 uppercase">Sila 4: Musyawarah (Pos Dayak)</span>
+                    </div>
+                    <p className="text-[11px] text-slate-200 leading-snug">
+                      <b>Kunci Jawaban:</b> Mengambil keputusan bersama (seperti tujuan wisata kelas) melalui musyawarah mufakat, menghargai pendapat kawan, tidak memaksa kehendak.
+                    </p>
+                  </div>
+
+                  <div className="sm:col-span-2 bg-yellow-950/60 border-2 border-yellow-400/70 p-3 rounded-2xl space-y-1 text-left">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🌾</span>
+                      <span className="font-black text-xs text-yellow-300 uppercase">Sila 5: Keadilan Sosial (Pos Papua)</span>
+                    </div>
+                    <p className="text-[11px] text-slate-200 leading-snug">
+                      <b>Kunci Jawaban:</b> Membagi hasil kerja bakti/kebun secara adil dan merata, suka bekerja keras bersama, dan tidak bersikap serakah.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Kontrol Navigasi Keyboard */}
+                <div className="bg-slate-800/80 p-2.5 rounded-2xl border border-slate-700 text-[11px] text-yellow-200 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
                   <span>🎮 <b>WASD / Panah</b>: Jalan</span>
                   <span>•</span>
                   <span>🟡 <b>Spasi</b>: Lompat</span>
                   <span>•</span>
-                  <span>⚡ <b>Shift</b>: Sprint Lari</span>
+                  <span>⚡ <b>Shift</b>: Lari Cepat</span>
                   <span>•</span>
-                  <span>🎯 <b>E</b>: Bicara / Sapa Teman</span>
+                  <span>🎯 <b>E</b>: Dialog Misi &amp; Sapa Teman</span>
+                </div>
+
+                {/* Tombol Aksi: Suara & Mulai */}
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isGuruSpeaking) {
+                        stopGuruVoice();
+                      } else {
+                        speakGuruVoice(
+                          "Halo anak hebat! Sebelum mulai berpetualang di Desa Pancasila, ingatlah lima nilai luhur ini: Sila satu mengajarkan toleransi dan menghormati teman yang sedang beribadah. Sila dua mengajarkan tolong-menolong kawan yang terjatuh tanpa pamrih. Sila tiga merangkul persatuan Bhinneka Tunggal Ika. Sila empat mengedepankan musyawarah mufakat dalam mengambil keputusan bersama. Dan sila lima membagi hasil kerja secara adil dan merata. Selamat berpetualang dan kumpulkan koin di jalan!"
+                        );
+                      }
+                    }}
+                    className={`w-full sm:w-auto px-5 py-3 rounded-2xl font-black text-xs transition border flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-95 ${
+                      isGuruSpeaking
+                        ? "bg-rose-600 border-rose-400 text-white animate-pulse"
+                        : "bg-sky-600 hover:bg-sky-500 border-sky-400 text-white"
+                    }`}
+                  >
+                    <span>{isGuruSpeaking ? "⏹️ Hentikan Suara" : "🔊 Dengarkan Penjelasan Pak Guru"}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playClickSound();
+                      stopGuruVoice();
+                      setGameStarted(true);
+                      startAdventureBgm();
+                    }}
+                    className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-xs sm:text-sm py-3.5 px-7 rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition border-2 border-white flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <span>🚀 SUDAH PAHAM, AYO MULAI PETUALANGAN! 🎵</span>
+                  </button>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  playClickSound();
-                  setGameStarted(true);
-                  startAdventureBgm();
-                }}
-                className="bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-base sm:text-lg py-4 px-10 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition border-4 border-white flex items-center gap-3 cursor-pointer"
-              >
-                <span>▶️ MULAI MASUK DESA (DENGAN MUSIK 🎵)</span>
-              </button>
             </div>
           )}
 
