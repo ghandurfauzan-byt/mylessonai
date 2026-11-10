@@ -63,6 +63,26 @@ export default function RodaPutarEduGame({
 
   // Bank Soal Tantangan Materi
   const questions = useMemo(() => {
+    // 1. Ekstrak Soal dari Modul Baru yang Ditarik dari API Kemendikbud jika ada
+    const quizMap = (activeModule?.quizQuestions as any);
+    if (quizMap && (quizMap[1]?.length || quizMap[2]?.length || quizMap[3]?.length)) {
+      const dyn: Array<{ q: string; opts: string[]; correct: number; exp: string }> = [];
+      [1, 2, 3].forEach((lvl) => {
+        const list = quizMap[lvl] || [];
+        list.forEach((q: any) => {
+          const promptText = q.pertanyaan || q.question;
+          const optionsList = q.opsi || q.options;
+          if (promptText && Array.isArray(optionsList) && optionsList.length >= 2) {
+            const opts = optionsList.map((o: any) => (typeof o === "string" ? o : o.teks || o.text || String(o)));
+            const correct = typeof q.correctOption === "number" ? q.correctOption : 0;
+            const exp = q.hint || "Bagus sekali! Jawabanmu tepat.";
+            dyn.push({ q: promptText, opts, correct, exp });
+          }
+        });
+      });
+      if (dyn.length >= 3) return dyn;
+    }
+
     const raw = (chapterTitle || activeModule?.title || chapter || "").toLowerCase();
     const id = (chapter || activeModule?.id || "").toLowerCase();
 

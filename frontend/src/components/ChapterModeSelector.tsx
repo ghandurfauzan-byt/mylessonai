@@ -90,6 +90,22 @@ export default function ChapterModeSelector({
               <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white mt-1.5 leading-snug">
                 {activeModule.title}
               </h4>
+              <div className="flex items-center gap-1.5 mt-2">
+                <span className="text-[10px] font-black text-indigo-800 dark:text-indigo-200 bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800 px-2 py-0.5 rounded-md flex items-center gap-1">
+                  <span>🎮 Game:</span>
+                  <span className="font-extrabold">
+                    {activeModule.gameType === "matching"
+                      ? "🃏 Menjodohkan Kartu"
+                      : activeModule.gameType === "susunkata"
+                      ? "🔤 Susun Kata"
+                      : activeModule.gameType === "wheel"
+                      ? "🎡 Roda Putar"
+                      : activeModule.gameType === "ulartangga"
+                      ? "🎲 Ular Tangga"
+                      : "🏃 Petualangan 3D"}
+                  </span>
+                </span>
+              </div>
             </div>
           </div>
 

@@ -109,16 +109,31 @@ export default function UlarTanggaEduGame({
       [1, 2, 3].forEach((lvl) => {
         const list = quizMap[lvl] || [];
         list.forEach((q: any, qIdx: number) => {
-          if (q.pertanyaan && q.opsi && Array.isArray(q.opsi) && q.opsi.length >= 2) {
+          const promptText = q.pertanyaan || q.question;
+          const optionsList = q.opsi || q.options;
+          if (promptText && Array.isArray(optionsList) && optionsList.length >= 2) {
             extracted.push({
-              id: `api_quiz_l${lvl}_${qIdx}`,
-              pertanyaan: q.pertanyaan,
-              opsi: q.opsi.map((o: any, oIdx: number) => ({
-                id: String.fromCharCode(65 + oIdx),
-                teks: typeof o === "string" ? o : o.teks || o.text || String(o),
-                benar: o.benar ?? oIdx === 0,
-                penjelasan: o.penjelasan || "Bagus sekali! Pemahaman materimu sangat tepat.",
-              })),
+              id: q.id || `api_quiz_l${lvl}_${qIdx}`,
+              pertanyaan: promptText,
+              opsi: optionsList.map((o: any, oIdx: number) => {
+                const optText = typeof o === "string" ? o : o.teks || o.text || String(o);
+                const isCorrect =
+                  typeof o === "object" && typeof o.benar === "boolean"
+                    ? o.benar
+                    : typeof q.correctOption === "number"
+                    ? oIdx === q.correctOption
+                    : oIdx === 0;
+                const explanation =
+                  typeof o === "object" && o.penjelasan
+                    ? o.penjelasan
+                    : q.hint || "Bagus sekali! Pemahaman materimu sangat tepat.";
+                return {
+                  id: String.fromCharCode(65 + oIdx),
+                  teks: optText,
+                  benar: isCorrect,
+                  penjelasan: explanation,
+                };
+              }),
             });
           }
         });

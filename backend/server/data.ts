@@ -535,6 +535,7 @@ export interface CurriculumModuleRecord {
   ragSummary?: string[];
   generatedQuizPreview?: string[];
   quizQuestions?: Record<number, Question[]>;
+  gameType?: "matching" | "adventure" | "ulartangga" | "susunkata" | "wheel";
 }
 
 const INITIAL_MODULES_DB: CurriculumModuleRecord[] = [
@@ -915,6 +916,7 @@ export async function saveCurriculumModule(
     ragSummary: mod.ragSummary || [],
     generatedQuizPreview: mod.generatedQuizPreview || [],
     quizQuestions: mod.quizQuestions,
+    gameType: mod.gameType,
   };
 
   if (existingIdx >= 0) {

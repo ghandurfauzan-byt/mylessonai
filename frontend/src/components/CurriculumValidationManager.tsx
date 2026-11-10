@@ -579,7 +579,15 @@ export default function CurriculumValidationManager() {
       clearTimeout(stepTimer1);
       clearTimeout(stepTimer2);
       setFetchProgressStep(3);
-      setGeneratedModule({ ...apiModule, grade: selectedGrade });
+      const gameType =
+        apiModule.gameType ||
+        resolveGameTypeForModule(
+          apiModule.title,
+          apiModule.subject,
+          apiModule.id,
+          apiModule.ragSummary
+        );
+      setGeneratedModule({ ...apiModule, grade: selectedGrade, gameType });
       setModalStage("validated_preview");
       playCorrectSound();
     } catch {
@@ -588,6 +596,12 @@ export default function CurriculumValidationManager() {
       clearTimeout(stepTimer2);
       const matchedPreset = PRESET_TOPICS.find((p) =>
         p.title.toLowerCase().includes(topicTitle.toLowerCase().slice(0, 10))
+      );
+      const fallbackGameType = resolveGameTypeForModule(
+        topicTitle.trim(),
+        selectedSubject,
+        `mod-${selectedSubject}-${Date.now()}`,
+        matchedPreset?.summary
       );
       const fallbackResult: CurriculumModule = {
           id: `mod-${selectedSubject}-${Date.now()}`,
@@ -606,6 +620,7 @@ export default function CurriculumValidationManager() {
           learningGoal: learningGoal.trim() || "Siswa memahami konsep esensial materi.",
           isValidated: false,
           isActiveToday: false,
+          gameType: fallbackGameType,
           ragSummary: matchedPreset?.summary || [
             `Intisari Pembelajaran: "${topicTitle.trim()}" disarikan secara adaptif untuk anak SD.`,
             "Pengamalan di Sekolah: Kerja sama dan saling menghargai sesama teman.",

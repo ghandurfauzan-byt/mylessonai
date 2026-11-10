@@ -2197,14 +2197,32 @@ Hasilkan HANYA format JSON valid berikut (tanpa markdown backtick):
     }
   }
 
+  // Otomatis tentukan model game dan siapkan spesifikasi Manus AI sesuai materi yang ditarik
+  const tailoredGame = createTailoredManusGamePayload({
+    chapterId: generatedModule.id,
+    chapterTitle: generatedModule.title,
+    subject: generatedModule.subject,
+    grade: generatedModule.grade,
+    learningGoal: generatedModule.learningGoal,
+    ragSummary: Array.isArray(generatedModule.ragSummary) ? generatedModule.ragSummary.join(" ") : "",
+    quizQuestions: defaultEduContent.quizQuestions,
+  });
+
+  (generatedModule as any).gameType = tailoredGame.gameType;
+  (generatedModule as any).manusPrompt = tailoredGame.prompt;
+  (generatedModule as any).manusSpecs = tailoredGame.specs;
+
   // Simpan materi yang baru ditarik langsung ke database kurikulum agar tidak hilang saat refresh
   await saveCurriculumModule(generatedModule);
 
   return res.json({
     success: true,
-    message: `Materi berhasil ditarik dan disintesis oleh mesin ${aiEngineUsed}.`,
+    message: `Materi berhasil ditarik dan disintesis oleh mesin ${aiEngineUsed}. Format game otomatis disesuaikan ke: ${tailoredGame.gameType}.`,
     engine: aiEngineUsed,
     data: generatedModule,
+    gameType: tailoredGame.gameType,
+    manusPrompt: tailoredGame.prompt,
+    manusSpecs: tailoredGame.specs,
   });
 });
 
@@ -2369,12 +2387,15 @@ function createTailoredManusGamePayload(params: {
   grade?: string;
   learningGoal?: string;
   ragSummary?: string;
-  quizQuestions?: any[];
+  quizQuestions?: any[] | Record<number, any[]>;
   gameType?: string;
 }) {
   const idStr = String(params.chapterId || "").toLowerCase();
   const titleStr = String(params.chapterTitle || "").toLowerCase();
   const subjStr = String(params.subject || "").toLowerCase();
+  const summaryStr = String(params.ragSummary || "").toLowerCase();
+  const goalStr = String(params.learningGoal || "").toLowerCase();
+  const combinedText = `${idStr} ${titleStr} ${subjStr} ${goalStr} ${summaryStr}`;
   const targetGrade = params.grade || "Kelas 4";
   const title = params.chapterTitle || "Pendidikan Karakter & Budaya Nusantara";
 
@@ -2382,72 +2403,81 @@ function createTailoredManusGamePayload(params: {
   let prompt = "";
   let specs: any = {};
 
-  // 1. CEK RUTE MENJODOHKAN (MATCHING): AKSARA, ANAK KEWAN, UNGGAH-UNGGUH
-  const isMatching =
-    params.gameType === "matching" ||
-    (!params.gameType &&
-      (idStr.includes("kewan") ||
-        titleStr.includes("kewan") ||
-        idStr.includes("aksara") ||
-        titleStr.includes("aksara") ||
-        idStr.includes("sandhangan") ||
-        titleStr.includes("sandhangan") ||
-        idStr.includes("unggah") ||
-        titleStr.includes("unggah") ||
-        titleStr.includes("tata krama") ||
-        idStr.includes("punokawan") ||
-        titleStr.includes("punokawan") ||
-        titleStr.includes("jodoh") ||
-        titleStr.includes("pasang")));
+  const directText = `${idStr} ${titleStr}`;
 
-  // 2. CEK RUTE SUSUN KATA (WORD SCRAMBLE / ANAGRAM / GEGURITAN PUISI)
+  // TAHAP 1: PRIORITAS TINGGI BERDASARKAN JUDUL & ID BAB LANGSUNG
+  // A. Susun Kata / Geguritan Puisi
   const isSusunKata =
     params.gameType === "susunkata" ||
-    (!params.gameType &&
-      !isMatching &&
-      (idStr.includes("geguritan") ||
-        titleStr.includes("geguritan") ||
-        idStr.includes("puisi") ||
-        titleStr.includes("puisi") ||
-        idStr.includes("susun") ||
-        titleStr.includes("susun") ||
-        titleStr.includes("ejaan") ||
-        titleStr.includes("rangkai") ||
-        titleStr.includes("kata misteri") ||
-        titleStr.includes("anagram") ||
-        titleStr.includes("tebak kata") ||
-        titleStr.includes("kosakata") ||
-        titleStr.includes("kosa kata")));
+    directText.includes("geguritan") ||
+    directText.includes("puisi") ||
+    directText.includes("pantun") ||
+    directText.includes("syair") ||
+    directText.includes("sastra") ||
+    directText.includes("susun") ||
+    directText.includes("ejaan") ||
+    directText.includes("rangkai") ||
+    directText.includes("kata misteri") ||
+    directText.includes("anagram") ||
+    directText.includes("tebak kata") ||
+    directText.includes("diksi") ||
+    directText.includes("purwakanthi") ||
+    (!params.gameType && (summaryStr.includes("geguritan") || summaryStr.includes("puisi")));
 
-  // 3. CEK RUTE RODA PUTAR (SPIN THE WHEEL)
+  // B. Menjodohkan Kartu (Matching): Anak Kewan, Aksara Jawa, Sandhangan, Tata Krama / Krama Alus, Wayang
+  const isMatching =
+    params.gameType === "matching" ||
+    (!isSusunKata &&
+      (directText.includes("kewan") ||
+        directText.includes("aksara") ||
+        directText.includes("sandhangan") ||
+        directText.includes("unggah") ||
+        directText.includes("krama") ||
+        directText.includes("tata krama") ||
+        directText.includes("punokawan") ||
+        directText.includes("pandhawa") ||
+        directText.includes("wayang") ||
+        directText.includes("jodoh") ||
+        directText.includes("pasang") ||
+        directText.includes("padanan") ||
+        directText.includes("sinonim") ||
+        directText.includes("antonim") ||
+        directText.includes("matching") ||
+        (!params.gameType &&
+          (summaryStr.includes("anak kewan") ||
+            summaryStr.includes("aksara jawa") ||
+            summaryStr.includes("sandhangan") ||
+            summaryStr.includes("basa krama")))));
+
+  // C. Roda Putar Cerdas & Tantangan Kilat (Spin the Wheel)
   const isWheel =
     params.gameType === "wheel" ||
-    (!params.gameType &&
-      !isMatching &&
+    (!isMatching &&
       !isSusunKata &&
-      (idStr.includes("roda") ||
-        titleStr.includes("roda") ||
-        idStr.includes("wheel") ||
-        titleStr.includes("wheel") ||
-        titleStr.includes("putar") ||
-        titleStr.includes("tantangan kilat")));
+      (directText.includes("roda") ||
+        directText.includes("wheel") ||
+        directText.includes("putar") ||
+        directText.includes("spin") ||
+        directText.includes("tantangan kilat")));
 
-  // 4. CEK RUTE ULAR TANGGA (EVALUASI / SOAL / KUIS / SAINS)
+  // D. Papan Ular Tangga Edukasi: Evaluasi, Ujian, Latihan Soal, Sains/IPA/Matematika
   const isUlarTangga =
     params.gameType === "ulartangga" ||
-    (!params.gameType &&
-      !isMatching &&
+    (!isMatching &&
       !isSusunKata &&
       !isWheel &&
-      (idStr.includes("kuis") ||
-        titleStr.includes("kuis") ||
-        idStr.includes("evaluasi") ||
-        titleStr.includes("evaluasi") ||
-        titleStr.includes("latihan") ||
-        titleStr.includes("sains") ||
-        titleStr.includes("ipa") ||
-        titleStr.includes("matematika") ||
-        /\b(tes|soal|ujian)\b/i.test(titleStr)));
+      (directText.includes("kuis") ||
+        directText.includes("evaluasi") ||
+        directText.includes("latihan") ||
+        directText.includes("sains") ||
+        directText.includes("ipa") ||
+        directText.includes("matematika") ||
+        directText.includes("hitung") ||
+        directText.includes("siklus") ||
+        directText.includes("cbt") ||
+        /\b(tes|soal|ujian)\b/i.test(directText) ||
+        summaryStr.includes("evaluasi pemahaman") ||
+        summaryStr.includes("latihan soal")));
 
   if (isMatching) {
     gameType = "matching";

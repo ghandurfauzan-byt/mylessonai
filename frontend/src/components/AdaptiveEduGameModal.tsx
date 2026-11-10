@@ -344,6 +344,46 @@ export default function AdaptiveEduGameModal({
         { id: "p7", a: "Jodhipati", b: "Kraton Bima", subA: "Ksatryan", subB: "Ksatria", icon: "🏰" },
         { id: "p8", a: "Madukara", b: "Ksatryan Arjuna", subA: "Ksatryan", subB: "Ksatria", icon: "🌸" },
       ];
+    } else if (currentModule?.quizQuestions) {
+      // Modul Baru Dinamis yang Ditarik dari API Kemendikbud / AI: Buat kartu dari bank soal materi
+      const dynPairs: Array<{ id: string; a: string; b: string; subA?: string; subB?: string; icon: string }> = [];
+      const levels = [1, 2, 3];
+      let pIdx = 1;
+      for (const lvl of levels) {
+        const qList = (currentModule.quizQuestions as any)[lvl];
+        if (Array.isArray(qList)) {
+          for (const q of qList) {
+            if (q.question && Array.isArray(q.options) && q.options[q.correctOption] !== undefined) {
+              const shortQ = q.question.length > 42 ? q.question.slice(0, 39) + "..." : q.question;
+              dynPairs.push({
+                id: `p${pIdx}`,
+                a: shortQ,
+                b: String(q.options[q.correctOption]),
+                subA: `Soal Lv ${lvl}`,
+                subB: "Jawaban Tepat",
+                icon: "💡",
+              });
+              pIdx++;
+              if (dynPairs.length >= 8) break;
+            }
+          }
+        }
+        if (dynPairs.length >= 8) break;
+      }
+      if (dynPairs.length >= 4) {
+        rawPairs = dynPairs;
+      } else {
+        rawPairs = [
+          { id: "p1", a: "Bintang Emas", b: "Sila 1: Ketuhanan YME", subA: "Simbol Garuda", subB: "Sila Pancasila", icon: "⭐" },
+          { id: "p2", a: "Rantai Emas", b: "Sila 2: Kemanusiaan Adil", subA: "Simbol Garuda", subB: "Sila Pancasila", icon: "🔗" },
+          { id: "p3", a: "Pohon Beringin", b: "Sila 3: Persatuan Indonesia", subA: "Simbol Garuda", subB: "Sila Pancasila", icon: "🌳" },
+          { id: "p4", a: "Kepala Banteng", b: "Sila 4: Musyawarah Mufakat", subA: "Simbol Garuda", subB: "Sila Pancasila", icon: "🐂" },
+          { id: "p5", a: "Padi dan Kapas", b: "Sila 5: Keadilan Sosial", subA: "Simbol Garuda", subB: "Sila Pancasila", icon: "🌾" },
+          { id: "p6", a: "Gotong Royong", b: "Berat Sama Dipikul", subA: "Nilai Luhur", subB: "Semboyan", icon: "🤝" },
+          { id: "p7", a: "Bhinneka Tunggal Ika", b: "Berbeda Tetap Satu", subA: "Semboyan Bangsa", subB: "Arti Luhur", icon: "🇮🇩" },
+          { id: "p8", a: "Norma Kesopanan", b: "Tata Krama & Hormat Guru", subA: "Aturan Hidup", subB: "Penerapan", icon: "💡" },
+        ];
+      }
     } else {
       // Materi PKn: Gotong Royong / Norma / Bhinneka / Pancasila
       rawPairs = [

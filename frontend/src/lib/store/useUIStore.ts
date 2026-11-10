@@ -117,80 +117,90 @@ export function resolveGameTypeForModule(
   ragSummary?: string[] | string
 ): GameType {
   const t = title.toLowerCase();
-  const s = subject.toLowerCase();
   const i = id.toLowerCase();
-  const r = (Array.isArray(ragSummary) ? ragSummary.join(" ") : String(ragSummary || "")).toLowerCase();
+  const directText = `${t} ${i}`;
 
-  // 1. Prioritas Menjodohkan Kartu (Matching): Anak Kewan, Aksara Jawa, Sandhangan, Tata Krama / Unggah-Ungguh
+  // TAHAP 1: PRIORITAS TINGGI BERDASARKAN JUDUL & ID BAB SECARA LANGSUNG
+  // A. Susun Huruf & Kata Misteri / Geguritan Puisi Jawa
   if (
-    i.includes("kewan") ||
-    t.includes("kewan") ||
-    r.includes("anak kewan") ||
-    i.includes("aksara") ||
-    t.includes("aksara") ||
-    i.includes("sandhangan") ||
-    t.includes("sandhangan") ||
-    i.includes("unggah") ||
-    t.includes("unggah") ||
-    t.includes("tata krama") ||
-    t.includes("jodoh") ||
-    t.includes("pasangan") ||
-    i.includes("punokawan") ||
-    t.includes("punokawan")
-  ) {
-    return "matching";
-  }
-
-  // 2. Prioritas Susun Kata & Huruf Misteri (Susun Kata / Anagram / Geguritan Puisi)
-  if (
-    i.includes("geguritan") ||
-    t.includes("geguritan") ||
-    r.includes("geguritan") ||
-    t.includes("puisi") ||
-    i.includes("susun") ||
-    t.includes("susun") ||
-    t.includes("ejaan") ||
-    t.includes("rangkai kata") ||
-    t.includes("kata misteri") ||
-    t.includes("anagram") ||
-    t.includes("tebak kata") ||
-    t.includes("kosakata") ||
-    t.includes("kosa kata")
+    directText.includes("geguritan") ||
+    directText.includes("puisi") ||
+    directText.includes("pantun") ||
+    directText.includes("syair") ||
+    directText.includes("sastra") ||
+    directText.includes("susun") ||
+    directText.includes("ejaan") ||
+    directText.includes("rangkai") ||
+    directText.includes("kata misteri") ||
+    directText.includes("anagram") ||
+    directText.includes("tebak kata") ||
+    directText.includes("diksi") ||
+    directText.includes("purwakanthi")
   ) {
     return "susunkata";
   }
 
-  // 3. Prioritas Roda Putar Cerdas (Spin the Wheel): Tantangan Cepat & Kuis Variasi
+  // B. Menjodohkan Kartu (Matching): Anak Kewan, Aksara Jawa, Sandhangan, Tata Krama / Krama Alus, Wayang
   if (
-    i.includes("roda") ||
-    t.includes("roda") ||
-    i.includes("wheel") ||
-    t.includes("wheel") ||
-    t.includes("putar") ||
-    t.includes("tantangan kilat")
+    directText.includes("kewan") ||
+    directText.includes("aksara") ||
+    directText.includes("sandhangan") ||
+    directText.includes("unggah") ||
+    directText.includes("krama") ||
+    directText.includes("tata krama") ||
+    directText.includes("punokawan") ||
+    directText.includes("pandhawa") ||
+    directText.includes("wayang") ||
+    directText.includes("jodoh") ||
+    directText.includes("pasang") ||
+    directText.includes("padanan") ||
+    directText.includes("sinonim") ||
+    directText.includes("antonim") ||
+    directText.includes("matching")
+  ) {
+    return "matching";
+  }
+
+  // C. Roda Putar Cerdas & Tantangan Kilat (Spin the Wheel)
+  if (
+    directText.includes("roda") ||
+    directText.includes("wheel") ||
+    directText.includes("putar") ||
+    directText.includes("spin") ||
+    directText.includes("tantangan kilat")
   ) {
     return "wheel";
   }
 
-  // 4. Prioritas Papan Ular Tangga Edukasi: Evaluasi, Ujian, Latihan Soal, Sains/IPA/Matematika
+  // D. Papan Ular Tangga Edukasi: Evaluasi, Ujian, Latihan Soal, Sains/IPA/Matematika
   if (
-    i.includes("kuis") ||
-    t.includes("kuis") ||
-    i.includes("evaluasi") ||
-    t.includes("evaluasi") ||
-    t.includes("latihan soal") ||
-    t.includes("ujian") ||
-    t.includes("sains") ||
-    t.includes("ipa") ||
-    t.includes("matematika") ||
-    t.includes("siklus") ||
-    r.includes("evaluasi pemahaman") ||
-    /\b(tes|soal)\b/i.test(t)
+    directText.includes("kuis") ||
+    directText.includes("evaluasi") ||
+    directText.includes("latihan") ||
+    directText.includes("sains") ||
+    directText.includes("ipa") ||
+    directText.includes("matematika") ||
+    directText.includes("hitung") ||
+    directText.includes("siklus") ||
+    directText.includes("cbt") ||
+    /\b(tes|soal|ujian)\b/i.test(directText)
   ) {
     return "ulartangga";
   }
 
-  // 5. Default: Petualangan 3D Jelajah Desa (Pengamalan Budi Pekerti, Sikap Ksatria, Pancasila, Gotong Royong, Norma)
+  // TAHAP 2: JIKA JUDUL UMUM, EVALUASI DARI INTISARI RAG SUMMARY
+  const r = (Array.isArray(ragSummary) ? ragSummary.join(" ") : String(ragSummary || "")).toLowerCase();
+  if (r.includes("geguritan") || r.includes("puisi") || r.includes("susun kata")) {
+    return "susunkata";
+  }
+  if (r.includes("anak kewan") || r.includes("aksara jawa") || r.includes("sandhangan") || r.includes("basa krama") || r.includes("punokawan")) {
+    return "matching";
+  }
+  if (r.includes("evaluasi pemahaman") || r.includes("latihan soal") || r.includes("tes pemahaman")) {
+    return "ulartangga";
+  }
+
+  // TAHAP 3: DEFAULT UNTUK PENGAMALAN NILAI, BUDI PEKERTI, GOTONG ROYONG, PANCASILA, NORMA
   return "adventure";
 }
 

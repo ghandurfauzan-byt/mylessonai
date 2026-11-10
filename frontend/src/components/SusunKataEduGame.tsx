@@ -119,6 +119,37 @@ export default function SusunKataEduGame({
       ];
     }
 
+    // 6. MODUL DINAMIS YANG DITARIK DARI API KEMENDIKBUD (Jika ada kuis)
+    const quizMap = (activeModule?.quizQuestions as any);
+    if (quizMap && (quizMap[1]?.length || quizMap[2]?.length || quizMap[3]?.length)) {
+      const dynPuzzles: WordPuzzle[] = [];
+      [1, 2, 3].forEach((lvl) => {
+        const list = quizMap[lvl] || [];
+        list.forEach((q: any) => {
+          const promptText = q.pertanyaan || q.question;
+          const optionsList = q.opsi || q.options;
+          const correctIdx = typeof q.correctOption === "number" ? q.correctOption : 0;
+          if (promptText && Array.isArray(optionsList) && optionsList[correctIdx]) {
+            const rawAns =
+              typeof optionsList[correctIdx] === "string"
+                ? optionsList[correctIdx]
+                : optionsList[correctIdx]?.teks || optionsList[correctIdx]?.text || "";
+            const cleanWord = rawAns.toUpperCase().replace(/[^A-Z]/g, "");
+            if (cleanWord.length >= 3 && cleanWord.length <= 10) {
+              dynPuzzles.push({
+                id: `w_dyn_${dynPuzzles.length + 1}`,
+                word: cleanWord,
+                clue: promptText.length > 55 ? promptText.slice(0, 52) + "..." : promptText,
+                category: "Kosa Kata Esensial",
+                icon: "✨",
+              });
+            }
+          }
+        });
+      });
+      if (dynPuzzles.length >= 3) return dynPuzzles;
+    }
+
     // 4. TOPIK PANCASILA & GOTONG ROYONG (DEFAULT)
     return [
       { id: "w1", word: "PERSATUAN", clue: "Bunyi sila ke-3 Pancasila adalah: ... Indonesia", category: "Pancasila", icon: "🌳" },
@@ -128,7 +159,7 @@ export default function SusunKataEduGame({
       { id: "w5", word: "BHINNEKA", clue: "Semboyan keragaman bangsa: ... Tunggal Ika", category: "Wawasan Kebangsaan", icon: "🇮🇩" },
       { id: "w6", word: "TOLERANSI", clue: "Sikap saling menghormati perbedaan suku dan agama...", category: "Karakter", icon: "⭐" },
     ];
-  }, [chapterTitle, chapter, activeModule?.title, activeModule?.id]);
+  }, [chapterTitle, chapter, activeModule?.title, activeModule?.id, activeModule?.quizQuestions]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentPuzzle: WordPuzzle = puzzles[currentIndex] ?? puzzles[0] ?? DEFAULT_PUZZLE;
