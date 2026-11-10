@@ -51,186 +51,6 @@ interface PosTematik {
   }[];
 }
 
-// Helper: Membuat Karakter 3D Humanoid Warga Adat / Tetua Desa yang Cantik & Ramah Anak
-function createVillageNPC(suku: PosTematik, isRightSide: boolean): THREE.Group {
-  const npcGroup = new THREE.Group();
-
-  // Shadow Disk di Tanah
-  const shadow = new THREE.Mesh(
-    new THREE.CircleGeometry(0.65, 16),
-    new THREE.MeshBasicMaterial({ color: "#000000", transparent: true, opacity: 0.35 })
-  );
-  shadow.rotation.x = -Math.PI / 2;
-  shadow.position.y = 0.02;
-  npcGroup.add(shadow);
-
-  // Sepatu Tradisional
-  const shoeMat = new THREE.MeshLambertMaterial({ color: "#3e2723" });
-  const leftShoe = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.14, 0.3), shoeMat);
-  leftShoe.position.set(-0.16, 0.07, 0.04);
-  npcGroup.add(leftShoe);
-  const rightShoe = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.14, 0.3), shoeMat);
-  rightShoe.position.set(0.16, 0.07, 0.04);
-  npcGroup.add(rightShoe);
-
-  // Kaki / Sarung Adat
-  const legMat = new THREE.MeshLambertMaterial({ color: "#1e293b" });
-  const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.65, 0.22), legMat);
-  leftLeg.position.set(-0.16, 0.42, 0);
-  leftLeg.castShadow = true;
-  npcGroup.add(leftLeg);
-  const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.65, 0.22), legMat);
-  rightLeg.position.set(0.16, 0.42, 0);
-  rightLeg.castShadow = true;
-  npcGroup.add(rightLeg);
-
-  // Tubuh / Baju Adat Nusantara (Warna Khas Suku)
-  const torsoMat = new THREE.MeshLambertMaterial({ color: suku.warnaKhas || "#3b82f6" });
-  const torso = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.78, 0.38), torsoMat);
-  torso.position.set(0, 1.1, 0);
-  torso.castShadow = true;
-  npcGroup.add(torso);
-
-  // Sabuk Emas Tradisional
-  const beltMat = new THREE.MeshLambertMaterial({ color: "#f59e0b" });
-  const belt = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.14, 0.42), beltMat);
-  belt.position.set(0, 0.8, 0);
-  npcGroup.add(belt);
-
-  // Selempang Tradisional
-  const sashMat = new THREE.MeshLambertMaterial({ color: "#fef08a" });
-  const sash = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.8, 0.42), sashMat);
-  sash.position.set(0.08, 1.1, 0.02);
-  sash.rotation.z = -0.3;
-  npcGroup.add(sash);
-
-  // Lengan Kiri (Sikap Santun)
-  const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.6, 0.18), torsoMat);
-  leftArm.position.set(-0.44, 1.05, 0);
-  leftArm.castShadow = true;
-  npcGroup.add(leftArm);
-  const leftHand = new THREE.Mesh(
-    new THREE.SphereGeometry(0.09, 12, 12),
-    new THREE.MeshLambertMaterial({ color: "#fed7aa" })
-  );
-  leftHand.position.set(-0.44, 0.7, 0);
-  npcGroup.add(leftHand);
-
-  // Lengan Kanan (Melambaikan Tangan Ramah Menyapa Pemain)
-  const rightArmGroup = new THREE.Group();
-  rightArmGroup.position.set(0.44, 1.3, 0);
-  rightArmGroup.rotation.z = -0.65;
-  rightArmGroup.rotation.x = -0.28;
-  const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.55, 0.18), torsoMat);
-  rightArm.position.set(0, -0.25, 0);
-  rightArm.castShadow = true;
-  rightArmGroup.add(rightArm);
-  const rightHand = new THREE.Mesh(
-    new THREE.SphereGeometry(0.11, 12, 12),
-    new THREE.MeshLambertMaterial({ color: "#fed7aa" })
-  );
-  rightHand.position.set(0, -0.55, 0);
-  rightArmGroup.add(rightHand);
-  npcGroup.add(rightArmGroup);
-
-  // Kepala Humanoid Ramah Anak
-  const skinMat = new THREE.MeshLambertMaterial({ color: "#fed7aa" });
-  const head = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.52, 0.46), skinMat);
-  head.position.set(0, 1.74, 0);
-  head.castShadow = true;
-  npcGroup.add(head);
-
-  // Rambut Stylized
-  const hairMat = new THREE.MeshLambertMaterial({ color: "#1c1917" });
-  const hairTop = new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.14, 0.48), hairMat);
-  hairTop.position.set(0, 1.98, -0.02);
-  npcGroup.add(hairTop);
-  const hairBack = new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.45, 0.14), hairMat);
-  hairBack.position.set(0, 1.76, -0.22);
-  npcGroup.add(hairBack);
-
-  // Mata Kartun Cerah & Binar Cahaya
-  const eyeMat = new THREE.MeshBasicMaterial({ color: "#0f172a" });
-  const shineMat = new THREE.MeshBasicMaterial({ color: "#ffffff" });
-
-  const leftEye = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 8), eyeMat);
-  leftEye.position.set(-0.13, 1.76, 0.24);
-  npcGroup.add(leftEye);
-  const leftShine = new THREE.Mesh(new THREE.SphereGeometry(0.02, 6, 6), shineMat);
-  leftShine.position.set(-0.12, 1.78, 0.27);
-  npcGroup.add(leftShine);
-
-  const rightEye = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 8), eyeMat);
-  rightEye.position.set(0.13, 1.76, 0.24);
-  npcGroup.add(rightEye);
-  const rightShine = new THREE.Mesh(new THREE.SphereGeometry(0.02, 6, 6), shineMat);
-  rightShine.position.set(0.14, 1.78, 0.27);
-  npcGroup.add(rightShine);
-
-  // Pipi Merona & Senyum Ramah
-  const cheekMat = new THREE.MeshBasicMaterial({ color: "#f472b6" });
-  const leftCheek = new THREE.Mesh(new THREE.CircleGeometry(0.05, 12), cheekMat);
-  leftCheek.position.set(-0.18, 1.66, 0.24);
-  npcGroup.add(leftCheek);
-  const rightCheek = new THREE.Mesh(new THREE.CircleGeometry(0.05, 12), cheekMat);
-  rightCheek.position.set(0.18, 1.66, 0.24);
-  npcGroup.add(rightCheek);
-
-  const mouth = new THREE.Mesh(
-    new THREE.BoxGeometry(0.14, 0.05, 0.02),
-    new THREE.MeshBasicMaterial({ color: "#be123c" })
-  );
-  mouth.position.set(0, 1.63, 0.24);
-  npcGroup.add(mouth);
-
-  // Topi Caping Bambu Nusantara yang Khas
-  const hatMat = new THREE.MeshLambertMaterial({ color: "#d97706" });
-  const caping = new THREE.Mesh(new THREE.ConeGeometry(0.68, 0.26, 20), hatMat);
-  caping.position.set(0, 2.12, 0);
-  caping.castShadow = true;
-  npcGroup.add(caping);
-  const capingBrim = new THREE.Mesh(
-    new THREE.TorusGeometry(0.68, 0.03, 8, 24),
-    new THREE.MeshLambertMaterial({ color: "#92400e" })
-  );
-  capingBrim.rotation.x = Math.PI / 2;
-  capingBrim.position.set(0, 2.0, 0);
-  npcGroup.add(capingBrim);
-
-  // Papan Nama 3D Floating Pill di Atas Kepala
-  const labelCanvas = document.createElement("canvas");
-  labelCanvas.width = 512;
-  labelCanvas.height = 140;
-  const lctx = labelCanvas.getContext("2d");
-  if (lctx) {
-    lctx.fillStyle = "#ffffff";
-    lctx.roundRect ? lctx.roundRect(10, 10, 492, 120, 28) : lctx.fillRect(10, 10, 492, 120);
-    lctx.fill();
-    lctx.strokeStyle = suku.warnaKhas || "#0284c7";
-    lctx.lineWidth = 10;
-    lctx.stroke();
-
-    lctx.fillStyle = "#0f172a";
-    lctx.font = "bold 38px sans-serif";
-    lctx.textAlign = "center";
-    lctx.textBaseline = "middle";
-    lctx.fillText(`${suku.tokohAvatar} ${suku.tokohNama}`, 256, 52);
-
-    lctx.fillStyle = "#059669";
-    lctx.font = "bold 26px sans-serif";
-    lctx.fillText("👋 Halo! Mampir ke Pos Kami", 256, 98);
-  }
-  const labelTex = new THREE.CanvasTexture(labelCanvas);
-  const labelMesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(2.8, 0.8),
-    new THREE.MeshBasicMaterial({ map: labelTex, transparent: true })
-  );
-  labelMesh.position.set(0, 2.65, 0);
-  npcGroup.add(labelMesh);
-
-  return npcGroup;
-}
-
 // Model Koin di Jalan
 interface RoadCoin {
   id: number;
@@ -335,148 +155,6 @@ export default function AdaptiveEduGameModal({
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [allSukuCompleted, setAllSukuCompleted] = useState(false);
 
-  // Papan Skor Real-Time Siswa Online di Depan Gapura
-  const boardCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const boardTexRef = useRef<THREE.CanvasTexture | null>(null);
-  const [realStudents, setRealStudents] = useState<Array<{ id: string; name: string; points: number }>>([]);
-  const [currentUserName, setCurrentUserName] = useState("Kamu (Pelajar)");
-
-  useEffect(() => {
-    if (!isOpen) return;
-    try {
-      const stored = localStorage.getItem("user_profile");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed?.name) setCurrentUserName(parsed.name);
-      }
-    } catch {}
-
-    fetch("/api/students")
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setRealStudents(
-            data.map((s: any) => ({
-              id: s.id,
-              name: s.name,
-              points: s.points ?? 0,
-            }))
-          );
-        }
-      })
-      .catch(() => {});
-  }, [isOpen]);
-
-  const drawLeaderboardBoard = useCallback(
-    (
-      canvas: HTMLCanvasElement,
-      students: Array<{ id: string; name: string; points: number }>,
-      currentScore: number,
-      userName: string
-    ) => {
-      const bctx = canvas.getContext("2d");
-      if (!bctx) return;
-
-      bctx.fillStyle = "#0f172a";
-      bctx.fillRect(0, 0, 1024, 1024);
-      bctx.strokeStyle = "#eab308";
-      bctx.lineWidth = 18;
-      bctx.strokeRect(12, 12, 1000, 1000);
-
-      bctx.fillStyle = "#eab308";
-      bctx.fillRect(16, 16, 992, 140);
-      bctx.fillStyle = "#0f172a";
-      bctx.font = "bold 50px sans-serif";
-      bctx.textAlign = "center";
-      bctx.textBaseline = "middle";
-      bctx.fillText("🏆 PAPAN SKOR KELAS ONLINE 🏆", 512, 85);
-
-      const totalOnline = Math.max(students.length, 5);
-      bctx.fillStyle = "#38bdf8";
-      bctx.font = "bold 32px sans-serif";
-      bctx.fillText(`🟢 ${totalOnline} Siswa Aktif di Ruang Belajar Online`, 512, 205);
-
-      const costumeList = [
-        "Pramuka Cokelat",
-        "Batik Nusantara Hijau",
-        "Seragam Merah Putih",
-        "Baju Olahraga Biru",
-        "Batik Nusantara Ungu",
-        "Baju Adat Jawa",
-        "Batik Merah",
-      ];
-
-      let list = students.map((s, idx) => {
-        const isMe = s.name.toLowerCase().includes(userName.toLowerCase().slice(0, 5));
-        return {
-          id: s.id,
-          name: isMe ? `${s.name} ⭐` : s.name,
-          points: isMe && currentScore > 0 ? Math.max(s.points, currentScore) : s.points,
-          costume: costumeList[idx % costumeList.length],
-          isMe,
-        };
-      });
-
-      if (list.length === 0) {
-        list = [
-          { id: "1", name: "Siti Rahma", points: 145, costume: "Pramuka Cokelat", isMe: false },
-          { id: "2", name: "Budi Santoso", points: 130, costume: "Batik Nusantara Hijau", isMe: false },
-          { id: "3", name: `${userName} ⭐ (Kamu)`, points: currentScore > 0 ? currentScore : 200, costume: "Seragam Merah Putih", isMe: true },
-          { id: "4", name: "Edo Pratama", points: 95, costume: "Baju Olahraga Biru", isMe: false },
-          { id: "5", name: "Dayu Kemala", points: 80, costume: "Batik Nusantara Ungu", isMe: false },
-        ];
-      } else if (!list.some((s) => s.isMe)) {
-        list.push({
-          id: "me",
-          name: `${userName} ⭐ (Kamu)`,
-          points: currentScore > 0 ? currentScore : 200,
-          costume: "Seragam Merah Putih",
-          isMe: true,
-        });
-      }
-
-      list.sort((a, b) => b.points - a.points);
-      const top5 = list.slice(0, 5);
-
-      top5.forEach((st, idx) => {
-        const y = 300 + idx * 115;
-        bctx.fillStyle = st.isMe ? "rgba(56, 189, 248, 0.22)" : "rgba(30, 41, 59, 0.9)";
-        bctx.roundRect ? bctx.roundRect(40, y - 45, 944, 90, 18) : bctx.fillRect(40, y - 45, 944, 90);
-        bctx.fill();
-        bctx.strokeStyle = st.isMe ? "#38bdf8" : "#475569";
-        bctx.lineWidth = st.isMe ? 6 : 3;
-        bctx.stroke();
-
-        bctx.textAlign = "left";
-        bctx.fillStyle = st.isMe ? "#38bdf8" : "#f8fafc";
-        bctx.font = "bold 38px sans-serif";
-        bctx.fillText(`🟢 #${idx + 1} ${st.name}`, 65, y + 12);
-
-        bctx.fillStyle = "#94a3b8";
-        bctx.font = "bold 26px sans-serif";
-        bctx.fillText(`(${st.costume})`, 540, y + 12);
-
-        bctx.textAlign = "right";
-        bctx.fillStyle = "#facc15";
-        bctx.font = "bold 38px sans-serif";
-        bctx.fillText(`${st.points} Poin`, 955, y + 12);
-      });
-
-      bctx.textAlign = "center";
-      bctx.fillStyle = "#4ade80";
-      bctx.font = "bold 32px sans-serif";
-      bctx.fillText("👉 Dekati Pak Guru & Masuk Gapura untuk Mulai Jelajah!", 512, 925);
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (boardCanvasRef.current && boardTexRef.current) {
-      drawLeaderboardBoard(boardCanvasRef.current, realStudents, adventureScore, currentUserName);
-      boardTexRef.current.needsUpdate = true;
-    }
-  }, [realStudents, adventureScore, currentUserName, drawLeaderboardBoard]);
-
   // Status Panduan Pak Guru
   const [hasTalkedToGuru, setHasTalkedToGuru] = useState(false);
   const [showGuruDialog, setShowGuruDialog] = useState(false);
@@ -529,11 +207,11 @@ export default function AdaptiveEduGameModal({
         topicName: "Gotong Royong di Sekolah",
         tabTitleIntisari: "Nilai Kerja Sama",
         apaItuText:
-          "Gotong royong adalah bekerja sama dan tolong-menolong dengan ikhlas dan gembira!",
+          "Gotong royong adalah bekerja sama dan saling menolong dengan ikhlas agar pekerjaan terasa ringan dan gembira!",
         intisariText:
-          "• Piket Bersama: Kelas cepat bersih dan rapi\n• Tolong Teman: Bantu kawan yang kesusahan\n• Rukun Kompak: Tugas berat terasa ringan",
+          "• Piket Kelas: Ruang belajar bersih bersama\n• Tolong Teman: Bantu kawan yang butuh bantuan\n• Semboyan: Berat sama dipikul, ringan dijinjing\n• Musyawarah: Bagi tugas dengan rukun dan adil\n• Jaga Sekolah: Rawat fasilitas agar tetap asri",
         caraMainText:
-          "Jalan dengan tombol panah/WASD, ambil koin di jalan, dan injak titik bercahaya di depan tiap pos!",
+          "Jalan dengan tombol WASD atau panah, ambil koin di jalan, dan injak titik bercahaya di depan tiap pos!",
       };
     }
 
@@ -541,13 +219,13 @@ export default function AdaptiveEduGameModal({
     if (idLower.includes("norma") || rawTitle.includes("norma") || rawTitle.includes("aturan")) {
       return {
         topicName: "Norma & Aturan Sekolah",
-        tabTitleIntisari: "Aturan Sekolah",
+        tabTitleIntisari: "5 Norma Sekolah",
         apaItuText:
-          "Norma sekolah adalah tata tertib agar kita belajar tertib, aman, dan saling menghormati!",
+          "Norma sekolah adalah tata tertib bersama agar suasana belajar aman, tertib, disiplin, dan saling menghormati!",
         intisariText:
-          "• Disiplin Waktu: Hadir sebelum bel masuk\n• Tertib Antre: Sabar giliran di kantin\n• Budaya 5S: Senyum, salam, sapa, sopan, santun",
+          "• Disiplin: Datang tepat waktu ke sekolah\n• Seragam: Berpakaian rapi lengkap atribut\n• Budaya 5S: Senyum, Salam, Sapa, Sopan, Santun\n• Tertib Antre: Sabar menunggu giliran di kantin\n• Jaga Fasilitas: Rawat buku dan kebersihan kelas",
         caraMainText:
-          "Kendalikan karaktermu, pungut koin emas, dan selesaikan kuis di tiap pos!",
+          "Gunakan tombol WASD atau panah keyboard, pungut koin emas, dan selesaikan tantangan di depan pos!",
       };
     }
 
@@ -555,13 +233,13 @@ export default function AdaptiveEduGameModal({
     if (idLower.includes("bhinneka") || rawTitle.includes("bhinneka") || rawTitle.includes("keragaman")) {
       return {
         topicName: "Bhinneka Tunggal Ika",
-        tabTitleIntisari: "Keragaman Budaya",
+        tabTitleIntisari: "5 Keragaman Nusantara",
         apaItuText:
-          "Bhinneka Tunggal Ika artinya berbeda-beda tetapi kita tetap satu keluarga Indonesia!",
+          "Bhinneka Tunggal Ika artinya berbeda-beda tetapi kita tetap satu keluarga besar bangsa Indonesia!",
         intisariText:
-          "• Rukun Beda Suku: Dari Sabang sampai Merauke\n• Cinta Budaya: Bangga pakaian & lagu daerah\n• Sikap Toleransi: Hormati ibadah teman",
+          "• Ragam Suku: Rukun berteman dari Sabang sampai Merauke\n• Bahasa Daerah: Bangga bahasa daerah dan bahasa persatuan\n• Rumah & Baju Adat: Cintai kekayaan budaya Nusantara\n• Toleransi Budaya: Saling menghormati perayaan adat teman\n• Sumpah Pemuda: Satu nusa, satu bangsa, dan satu bahasa",
         caraMainText:
-          "Jelajahi desa, kumpulkan koin emas, dan sapa kawan-kawan dari berbagai suku bangsa!",
+          "Kendalikan karaktermu melintasi desa, pungut koin emas, dan dekati tiap pos budaya untuk menjawab tantangan!",
       };
     }
 
@@ -576,17 +254,17 @@ export default function AdaptiveEduGameModal({
       const summaryClean = summaryRaw
         .map((s: string) => s.trim().replace(/^\d+\.\s*/, "").replace(/^[•\-*]\s*/, ""))
         .filter(Boolean)
-        .slice(0, 3)
-        .map((s: string) => "• " + (s.length > 45 ? s.slice(0, 42) + "..." : s))
+        .slice(0, 4)
+        .map((s: string) => "• " + (s.length > 55 ? s.slice(0, 52) + "..." : s))
         .join("\n");
 
       return {
         topicName: activeValidatedModule.title,
         tabTitleIntisari: "Intisari Materi",
-        apaItuText: `Materi "${activeValidatedModule.title}" mengajak kita membiasakan perbuatan baik setiap hari!`,
-        intisariText: summaryClean || "• Pahami materi inti\n• Terapkan sikap terpuji\n• Rukun dengan kawan",
+        apaItuText: `Materi "${activeValidatedModule.title}" mengajak kita belajar nilai-nilai luhur dengan seru dan ceria!`,
+        intisariText: summaryClean || "• Pahami materi inti\n• Terapkan sikap terpuji\n• Kerja sama dengan kawan",
         caraMainText:
-          "Pungut koin emas di jalan dan injak titik bercahaya di depan tiap pos untuk tantangan kuis!",
+          "Kumpulkan koin emas di jalan dan dekati titik bercahaya di depan tiap pos untuk menyelesaikan tantangan!",
       };
     }
 
@@ -595,11 +273,11 @@ export default function AdaptiveEduGameModal({
       topicName: "Pancasila & Nilai Luhur Bangsa",
       tabTitleIntisari: "Makna 5 Sila",
       apaItuText:
-        "Pancasila adalah lima pedoman hidup luhur agar kita selalu rukun, damai, dan adil!",
+        "Pancasila adalah lima pedoman hidup luhur bangsa Indonesia agar kita selalu hidup rukun, damai, dan adil!",
       intisariText:
-        "• Saling Menghormati Agama & Ibadah Kawan\n• Rukun Berbeda Suku & Suka Menolong\n• Musyawarah Bersama & Berlaku Adil",
+        "• Sila 1: Hormati kawan beribadah\n• Sila 2: Tolong teman yang kesusahan\n• Sila 3: Rukun berbeda suku bangsa\n• Sila 4: Musyawarah untuk mufakat\n• Sila 5: Bersikap adil dan suka berbagi",
       caraMainText:
-        "Jalan dengan WASD, ambil koin di jalan, dan injak lingkaran bercahaya di tiap rumah suku!",
+        "Jalan dengan WASD atau panah, ambil koin di jalan, dan injak lingkaran bercahaya di depan tiap rumah suku!",
     };
   }, [resolvedTitle, activeValidatedModule, chapter]);
 
@@ -1382,47 +1060,18 @@ export default function AdaptiveEduGameModal({
     },
   ]);
 
-  // Leaderboard Kelas Real-Time Menggunakan Data Siswa Riil
-  const classLeaderboard = useMemo(() => {
-    const avatarList = ["👧", "👦", "🧒", "👧", "🧑", "🧕"];
-    const costumeList = ["Pramuka", "Batik Hijau", "Seragam Merah Putih", "Olahraga Biru", "Batik Ungu", "Baju Adat Jawa"];
-
-    let list = realStudents.map((s, idx) => {
-      const isPlayer = s.name.toLowerCase().includes(currentUserName.toLowerCase().slice(0, 5));
-      return {
-        rank: 0,
-        name: isPlayer ? `${s.name} (Kamu)` : s.name,
-        points: isPlayer && adventureScore > 0 ? Math.max(s.points, adventureScore) : s.points,
-        avatar: isPlayer ? "🎒" : avatarList[idx % avatarList.length],
-        costume: costumeList[idx % costumeList.length],
-        status: "Online 🟢",
-        isPlayer,
-      };
-    });
-
-    if (list.length === 0) {
-      list = [
-        { rank: 1, name: "Siti Rahma", points: 145, avatar: "👧", costume: "Pramuka", status: "Online 🟢", isPlayer: false },
-        { rank: 2, name: "Budi Santoso", points: 130, avatar: "👦", costume: "Batik Hijau", status: "Online 🟢", isPlayer: false },
-        { rank: 3, name: currentUserName ? `${currentUserName} (Kamu)` : "Kamu (Pelajar)", points: adventureScore > 0 ? adventureScore : 200, avatar: "🎒", costume: "Merah Putih", status: "Online 🟢", isPlayer: true },
-        { rank: 4, name: "Edo Pratama", points: 95, avatar: "🧒", costume: "Olahraga Biru", status: "Online 🟢", isPlayer: false },
-        { rank: 5, name: "Dayu Kemala", points: 80, avatar: "👧", costume: "Batik Ungu", status: "Online 🟢", isPlayer: false },
-      ];
-    } else if (!list.some((s) => s.isPlayer)) {
-      list.push({
-        rank: 0,
-        name: `${currentUserName} (Kamu)`,
-        points: adventureScore > 0 ? adventureScore : 200,
-        avatar: "🎒",
-        costume: "Merah Putih",
-        status: "Online 🟢",
-        isPlayer: true,
-      });
-    }
-
-    list.sort((a, b) => b.points - a.points);
-    return list.map((item, idx) => ({ ...item, rank: idx + 1 }));
-  }, [realStudents, currentUserName, adventureScore]);
+  // Leaderboard Kelas Real-Time
+  const classLeaderboard = useMemo(
+    () =>
+      [
+        { rank: 1, name: "Siti Rahma", points: 145, avatar: "👧", costume: "Pramuka", status: "Online 🟢" },
+        { rank: 2, name: "Budi Santoso", points: 130, avatar: "👦", costume: "Batik Hijau", status: "Online 🟢" },
+        { rank: 3, name: "Kamu (Pelajar)", points: adventureScore, avatar: "🎒", costume: "Merah Putih", status: "Online 🟢", isPlayer: true },
+        { rank: 4, name: "Edo Pratama", points: 95, avatar: "🧒", costume: "Olahraga Biru", status: "Online 🟢" },
+        { rank: 5, name: "Dayu Kemala", points: 80, avatar: "👧", costume: "Batik Ungu", status: "Online 🟢" },
+      ].sort((a, b) => b.points - a.points),
+    [adventureScore]
+  );
 
   // Reset Saat Modal Buka
   useEffect(() => {
@@ -1741,12 +1390,64 @@ export default function AdaptiveEduGameModal({
     const boardCanvas = document.createElement("canvas");
     boardCanvas.width = 1024;
     boardCanvas.height = 1024;
-    boardCanvasRef.current = boardCanvas;
+    const bctx = boardCanvas.getContext("2d");
+    if (bctx) {
+      bctx.fillStyle = "#0f172a";
+      bctx.fillRect(0, 0, 1024, 1024);
+      bctx.strokeStyle = "#eab308";
+      bctx.lineWidth = 18;
+      bctx.strokeRect(12, 12, 1000, 1000);
 
-    drawLeaderboardBoard(boardCanvas, realStudents, adventureScore, currentUserName);
+      bctx.fillStyle = "#eab308";
+      bctx.fillRect(16, 16, 992, 140);
+      bctx.fillStyle = "#0f172a";
+      bctx.font = "bold 52px sans-serif";
+      bctx.textAlign = "center";
+      bctx.textBaseline = "middle";
+      bctx.fillText("🏆 PAPAN SKOR & SISWA MASUK 🏆", 512, 85);
 
+      bctx.fillStyle = "#38bdf8";
+      bctx.font = "bold 34px sans-serif";
+      bctx.fillText("🟢 5 Siswa Bergabung di Ruang Belajar Online", 512, 205);
+
+      const studentRanks = [
+        { rank: "1", name: "Siti Rahma", costume: "Pramuka Cokelat", pts: "145 Poin", isMe: false },
+        { rank: "2", name: "Budi Santoso", costume: "Batik Nusantara Hijau", pts: "130 Poin", isMe: false },
+        { rank: "3", name: "Kamu (Pelajar)", costume: "Seragam Merah Putih", pts: adventureScore > 0 ? `${adventureScore} Poin` : "Siap Main ⭐", isMe: true },
+        { rank: "4", name: "Edo Pratama", costume: "Baju Olahraga Biru", pts: "95 Poin", isMe: false },
+        { rank: "5", name: "Dayu Kemala", costume: "Batik Nusantara Ungu", pts: "80 Poin", isMe: false },
+      ];
+
+      studentRanks.forEach((st, idx) => {
+        const y = 300 + idx * 115;
+        bctx.fillStyle = st.isMe ? "rgba(56, 189, 248, 0.22)" : "rgba(30, 41, 59, 0.9)";
+        bctx.roundRect ? bctx.roundRect(40, y - 45, 944, 90, 18) : bctx.fillRect(40, y - 45, 944, 90);
+        bctx.fill();
+        bctx.strokeStyle = st.isMe ? "#38bdf8" : "#475569";
+        bctx.lineWidth = st.isMe ? 6 : 3;
+        bctx.stroke();
+
+        bctx.textAlign = "left";
+        bctx.fillStyle = st.isMe ? "#38bdf8" : "#f8fafc";
+        bctx.font = "bold 40px sans-serif";
+        bctx.fillText(`🟢 #${st.rank} ${st.name}`, 65, y + 12);
+
+        bctx.fillStyle = "#94a3b8";
+        bctx.font = "bold 28px sans-serif";
+        bctx.fillText(`(${st.costume})`, 520, y + 12);
+
+        bctx.textAlign = "right";
+        bctx.fillStyle = "#facc15";
+        bctx.font = "bold 38px sans-serif";
+        bctx.fillText(st.pts, 955, y + 12);
+      });
+
+      bctx.textAlign = "center";
+      bctx.fillStyle = "#4ade80";
+      bctx.font = "bold 34px sans-serif";
+      bctx.fillText("👉 Dekati Pak Guru & Masuk Gapura untuk Mulai Jelajah!", 512, 925);
+    }
     const boardTex = new THREE.CanvasTexture(boardCanvas);
-    boardTexRef.current = boardTex;
     const boardMesh = new THREE.Mesh(new THREE.PlaneGeometry(4.4, 4.4), new THREE.MeshBasicMaterial({ map: boardTex }));
     boardMesh.position.set(0, 2.7, 0.18);
     boardGroup.add(boardMesh);
@@ -1784,7 +1485,7 @@ export default function AdaptiveEduGameModal({
     const rightLegMesh = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.6, 0.24), pantsMat);
     rightLegMesh.position.y = -0.3;
     rightLegMesh.castShadow = true;
-    rightLegGroup.add(rightLegGroup);
+    rightLegGroup.add(rightLegMesh);
     playerGroup.add(rightLegGroup);
 
     const armMat = new THREE.MeshLambertMaterial({ color: "#ffffff" });
@@ -1862,12 +1563,11 @@ export default function AdaptiveEduGameModal({
       door.position.set(suku.xPos, 1.3, doorZ);
       hGroup.add(door);
 
-      // Papan Nama Pos di Halaman Depan (Jauh dari dinding rumah, menghadap jalan batu)
+      // Papan Nama di Depan Rumah (Dekat Jalan)
       const signGroup = new THREE.Group();
-      const signX = suku.xPos > 0 ? 6.2 : -6.2;
-      const signZ = suku.zPos - 1.8;
+      const signX = suku.xPos > 0 ? suku.xPos - 4.5 : suku.xPos + 4.5;
+      const signZ = suku.zPos;
       signGroup.position.set(signX, 0, signZ);
-      signGroup.rotation.y = suku.xPos > 0 ? -0.35 : 0.35;
 
       const post1 = new THREE.Mesh(new THREE.BoxGeometry(0.18, 2.4, 0.18), new THREE.MeshLambertMaterial({ color: "#5c2c16" }));
       post1.position.set(-1.2, 1.2, 0);
@@ -1908,16 +1608,35 @@ export default function AdaptiveEduGameModal({
       signGroup.add(signBoard);
       hGroup.add(signGroup);
 
-      // Tokoh Warga Adat 3D Lengkap & Ramah Anak (Berdiri di Halaman Depan)
-      const npcX = suku.xPos > 0 ? 6.6 : -6.6;
+      // Tokoh NPC 3D Berdiri di Depan Rumah
+      const npcX = suku.xPos > 0 ? suku.xPos - 5.5 : suku.xPos + 5.5;
       const npcZ = suku.zPos + 1.2;
-      const npcGroup = createVillageNPC(suku, suku.xPos > 0);
-      npcGroup.position.set(npcX, 0, npcZ);
-      npcGroup.rotation.y = suku.xPos > 0 ? -Math.PI / 2 + 0.25 : Math.PI / 2 - 0.25;
-      hGroup.add(npcGroup);
 
-      // Titik Misi Bercahaya di Depan Rumah (Dekat jalan batu)
-      const spotX = suku.xPos > 0 ? 5.2 : -5.2;
+      const npcBody = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.4, 0.45, 1.3, 16),
+        new THREE.MeshLambertMaterial({ color: suku.warnaKhas })
+      );
+      npcBody.position.set(npcX, 0.9, npcZ);
+      npcBody.castShadow = true;
+      hGroup.add(npcBody);
+
+      const npcHead = new THREE.Mesh(
+        new THREE.SphereGeometry(0.35, 16, 16),
+        new THREE.MeshLambertMaterial({ color: "#fed7aa" })
+      );
+      npcHead.position.set(npcX, 1.85, npcZ);
+      npcHead.castShadow = true;
+      hGroup.add(npcHead);
+
+      const npcHat = new THREE.Mesh(
+        new THREE.ConeGeometry(0.45, 0.3, 16),
+        new THREE.MeshLambertMaterial({ color: "#eab308" })
+      );
+      npcHat.position.set(npcX, 2.15, npcZ);
+      hGroup.add(npcHat);
+
+      // Titik Misi Bercahaya di Depan Rumah
+      const spotX = suku.xPos > 0 ? suku.xPos - 6.5 : suku.xPos + 6.5;
       const spotZ = suku.zPos;
 
       const missionCircle = new THREE.Mesh(
@@ -1941,7 +1660,7 @@ export default function AdaptiveEduGameModal({
         id: suku.id,
         x: spotX,
         z: spotZ,
-        radius: 3.5,
+        radius: 3.2,
         label: suku.namaSuku,
         sukuData: suku,
       });
