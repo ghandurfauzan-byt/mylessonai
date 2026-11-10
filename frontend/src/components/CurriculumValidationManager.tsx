@@ -39,7 +39,7 @@ const INITIAL_MODULES: CurriculumModule[] = [
     id: "mod-pkn-sila3",
     subject: "pkn",
     subjectLabel: "Pendidikan Pancasila & PKn",
-    grade: "Kelas 4 SD (Fase B)",
+    grade: "Kelas 4",
     title: "Makna Lambang Sila Ke-3: Persatuan Indonesia di Sekolah & Rumah",
     chapterCode: "Bab 1",
     source: "API SIBI Kemdikbudristek RI (Katalog Buku Teks Utama)",
@@ -72,7 +72,7 @@ const INITIAL_MODULES: CurriculumModule[] = [
     id: "mod-pkn-gotongroyong",
     subject: "pkn",
     subjectLabel: "Pendidikan Pancasila & PKn",
-    grade: "Kelas 4 SD (Fase B)",
+    grade: "Kelas 4",
     title: "Gotong Royong & Kerja Sama: Berat Sama Dipikul Ringan Sama Dijinjing",
     chapterCode: "Bab 2",
     source: "API SIBI Kemdikbudristek RI (Buku Panduan Guru & Siswa)",
@@ -99,7 +99,7 @@ const INITIAL_MODULES: CurriculumModule[] = [
     id: "mod-bjawa-unggahungguh",
     subject: "bjawa",
     subjectLabel: "Basa Jawa (Muatan Lokal)",
-    grade: "Kelas 4 SD (Fase B)",
+    grade: "Kelas 4",
     title: "Trap-Trapan Unggah-Ungguh Basa marang Bapak/Ibu Guru & Tiyang Sepuh",
     chapterCode: "Bab 1",
     source: "Repositori Mulok Disdikbud Provinsi (Buku Wursita Basa)",
@@ -127,7 +127,7 @@ const INITIAL_MODULES: CurriculumModule[] = [
     id: "mod-bjawa-punokawan",
     subject: "bjawa",
     subjectLabel: "Basa Jawa (Muatan Lokal)",
-    grade: "Kelas 4 SD (Fase B)",
+    grade: "Kelas 4",
     title: "Mengenal Watak Luhur Tokoh Pewayangan Punokawan (Semar, Gareng, Petruk, Bagong)",
     chapterCode: "Bab 2",
     source: "Repositori Mulok Disdikbud Provinsi (Buku Sastri Basa)",
@@ -154,7 +154,7 @@ const INITIAL_MODULES: CurriculumModule[] = [
     id: "mod-pkn-norma",
     subject: "pkn",
     subjectLabel: "Pendidikan Pancasila & PKn",
-    grade: "Kelas 4 SD (Fase B)",
+    grade: "Kelas 4",
     title: "Norma, Aturan Sekolah & Tertib Hukum Sehari-hari (UUD 1945)",
     chapterCode: "Bab 3",
     source: "API SIBI Kemdikbudristek (Kurikulum Merdeka 2024)",
@@ -182,7 +182,7 @@ const INITIAL_MODULES: CurriculumModule[] = [
     id: "mod-pkn-bhinneka",
     subject: "pkn",
     subjectLabel: "Pendidikan Pancasila & PKn",
-    grade: "Kelas 4 SD (Fase B)",
+    grade: "Kelas 4",
     title: "Bhinneka Tunggal Ika: Mengenal Keragaman Suku, Rumah Adat & Toleransi Beragama",
     chapterCode: "Bab 4",
     source: "API SIBI Kemdikbudristek (Buku Teks Siswa)",
@@ -210,7 +210,7 @@ const INITIAL_MODULES: CurriculumModule[] = [
     id: "mod-bjawa-pandhawa",
     subject: "bjawa",
     subjectLabel: "Basa Jawa (Muatan Lokal)",
-    grade: "Kelas 4 SD (Fase B)",
+    grade: "Kelas 4",
     title: "Kisah Kepahlawanan & Silsilah Pandhawa Lima ing Perang Baratayuda",
     chapterCode: "Bab 3",
     source: "Repositori Mulok Disdikbud Provinsi (Buku Kirtya Basa)",
@@ -234,7 +234,7 @@ const INITIAL_MODULES: CurriculumModule[] = [
     id: "mod-bjawa-aksara",
     subject: "bjawa",
     subjectLabel: "Basa Jawa (Muatan Lokal)",
-    grade: "Kelas 4 SD (Fase B)",
+    grade: "Kelas 4",
     title: "Maca lan Nulis Aksara Jawa Legena (20 Aksara) sarta Sandhangan Swara",
     chapterCode: "Bab 4",
     source: "Repositori Mulok Disdikbud Provinsi (Buku Wursita Basa)",
@@ -258,7 +258,7 @@ const INITIAL_MODULES: CurriculumModule[] = [
     id: "mod-pkn-nasionalisme",
     subject: "pkn",
     subjectLabel: "Pendidikan Pancasila & PKn",
-    grade: "Kelas 4 SD (Fase B)",
+    grade: "Kelas 4",
     title: "Cinta Tanah Air & Nasionalisme: Bangga Menjadi Anak Indonesia",
     chapterCode: "Bab 5",
     source: "API SIBI Kemdikbudristek RI (Katalog Buku Teks Utama)",
@@ -436,7 +436,7 @@ export default function CurriculumValidationManager() {
 
   // Form input
   const [selectedSubject, setSelectedSubject] = useState<"pkn" | "bjawa">("pkn");
-  const [selectedGrade, setSelectedGrade] = useState<string>("Kelas 4 SD (Fase B)");
+  const [selectedGrade, setSelectedGrade] = useState<string>("Kelas 4");
   const [chapterCode, setChapterCode] = useState("Bab 3");
   const [topicTitle, setTopicTitle] = useState("");
   const [learningGoal, setLearningGoal] = useState("");
@@ -445,13 +445,12 @@ export default function CurriculumValidationManager() {
   // Penampung data hasil respon API yang siap divalidasi
   const [generatedModule, setGeneratedModule] = useState<CurriculumModule | null>(null);
 
-  const [filterGrade, setFilterGrade] = useState<"all" | "kelas4" | "kelas5">("all");
+  const [filterGrade, setFilterGrade] = useState<string>("all");
 
   const filteredModules = modules.filter((m) => {
     if (filterSubject !== "all" && m.subject !== filterSubject) return false;
     const g = (m.grade || "").toLowerCase();
-    if (filterGrade === "kelas4" && !(g.includes("4") || g.includes("semua"))) return false;
-    if (filterGrade === "kelas5" && !(g.includes("5") || g.includes("semua"))) return false;
+    if (filterGrade !== "all" && !(g.includes(filterGrade.toLowerCase()) || g.includes("semua"))) return false;
     return true;
   });
 
@@ -836,48 +835,23 @@ export default function CurriculumValidationManager() {
 
         <div className="flex flex-wrap items-center gap-1.5 bg-white dark:bg-slate-900 p-1.5 rounded-2xl border-2 border-amber-200 dark:border-slate-800 shadow-xs">
           <span className="text-[11px] font-bold text-slate-500 px-1">Filter Kelas:</span>
-          <button
-            type="button"
-            onClick={() => {
-              playClickSound();
-              setFilterGrade("all");
-            }}
-            className={`px-2.5 py-1 rounded-xl text-xs font-black transition cursor-pointer ${
-              filterGrade === "all"
-                ? "bg-amber-400 text-amber-950 shadow-xs"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-            }`}
-          >
-            Semua Kelas
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              playClickSound();
-              setFilterGrade("kelas4");
-            }}
-            className={`px-2.5 py-1 rounded-xl text-xs font-black transition cursor-pointer ${
-              filterGrade === "kelas4"
-                ? "bg-amber-400 text-amber-950 shadow-xs"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-            }`}
-          >
-            Kelas 4 SD
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              playClickSound();
-              setFilterGrade("kelas5");
-            }}
-            className={`px-2.5 py-1 rounded-xl text-xs font-black transition cursor-pointer ${
-              filterGrade === "kelas5"
-                ? "bg-amber-400 text-amber-950 shadow-xs"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-            }`}
-          >
-            Kelas 5 SD
-          </button>
+          {(["all", "Kelas 1", "Kelas 2", "Kelas 3", "Kelas 4", "Kelas 5", "Kelas 6"] as const).map((g) => (
+            <button
+              key={g}
+              type="button"
+              onClick={() => {
+                playClickSound();
+                setFilterGrade(g);
+              }}
+              className={`px-2.5 py-1 rounded-xl text-xs font-black transition cursor-pointer ${
+                filterGrade === g
+                  ? "bg-amber-400 text-amber-950 shadow-xs"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              {g === "all" ? "Semua Kelas" : g}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -1099,9 +1073,13 @@ export default function CurriculumValidationManager() {
                         onChange={(e) => setSelectedGrade(e.target.value)}
                         className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-bold cursor-pointer"
                       >
-                        <option value="Kelas 4 SD (Fase B)">Kelas 4 SD (Fase B)</option>
-                        <option value="Kelas 5 SD (Fase C)">Kelas 5 SD (Fase C)</option>
-                        <option value="Semua Kelas">Semua Kelas (Kelas 4 &amp; 5)</option>
+                        <option value="Kelas 1">Kelas 1</option>
+                        <option value="Kelas 2">Kelas 2</option>
+                        <option value="Kelas 3">Kelas 3</option>
+                        <option value="Kelas 4">Kelas 4</option>
+                        <option value="Kelas 5">Kelas 5</option>
+                        <option value="Kelas 6">Kelas 6</option>
+                        <option value="Semua Kelas">Semua Kelas</option>
                       </select>
                     </div>
 

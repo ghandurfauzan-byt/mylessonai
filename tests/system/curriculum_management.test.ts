@@ -22,7 +22,7 @@ describe("Curriculum Modules Persistence, Deletion & Punokawan Content Verificat
       chapterCode: "Bab 4",
       subject: "bjawa" as const,
       subjectLabel: "Basa Jawa (Muatan Lokal)",
-      grade: "Kelas 4 SD (Fase B)",
+      grade: "Kelas 4",
       source: "API SIBI Kemdikbudristek",
       sourceType: "kemdikbud" as const,
       pageCount: 20,

@@ -28,7 +28,7 @@ export interface StudentAccount {
 export default function StudentAccountsManager() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterKelas, setFilterKelas] = useState<"all" | "Kelas 4" | "Kelas 5">("all");
+  const [filterKelas, setFilterKelas] = useState<string>("all");
 
   // Modal State: Tambah Siswa Baru
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -232,7 +232,7 @@ export default function StudentAccountsManager() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-amber-50/60 dark:bg-slate-800/50 p-3 rounded-2xl border border-amber-200/80 dark:border-slate-700">
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-bold text-slate-600 dark:text-slate-400 mr-1">Kelas:</span>
-          {(["all", "Kelas 4", "Kelas 5"] as const).map((k) => (
+          {(["all", "Kelas 1", "Kelas 2", "Kelas 3", "Kelas 4", "Kelas 5", "Kelas 6"] as const).map((k) => (
             <button
               key={k}
               type="button"
@@ -444,8 +444,12 @@ export default function StudentAccountsManager() {
                       onChange={(e) => setNewKelas(e.target.value)}
                       className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-bold"
                     >
-                      <option value="Kelas 4">Kelas 4 SD (Fase B)</option>
-                      <option value="Kelas 5">Kelas 5 SD (Fase C)</option>
+                      <option value="Kelas 1">Kelas 1</option>
+                      <option value="Kelas 2">Kelas 2</option>
+                      <option value="Kelas 3">Kelas 3</option>
+                      <option value="Kelas 4">Kelas 4</option>
+                      <option value="Kelas 5">Kelas 5</option>
+                      <option value="Kelas 6">Kelas 6</option>
                     </select>
                   </div>
                   <div>
@@ -579,8 +583,12 @@ export default function StudentAccountsManager() {
                       onChange={(e) => setEditKelas(e.target.value)}
                       className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-bold"
                     >
-                      <option value="Kelas 4">Kelas 4 SD (Fase B)</option>
-                      <option value="Kelas 5">Kelas 5 SD (Fase C)</option>
+                      <option value="Kelas 1">Kelas 1</option>
+                      <option value="Kelas 2">Kelas 2</option>
+                      <option value="Kelas 3">Kelas 3</option>
+                      <option value="Kelas 4">Kelas 4</option>
+                      <option value="Kelas 5">Kelas 5</option>
+                      <option value="Kelas 6">Kelas 6</option>
                     </select>
                   </div>
                   <div>

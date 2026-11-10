@@ -502,7 +502,7 @@ const INITIAL_MODULES_DB: CurriculumModuleRecord[] = [
     id: "mod-pkn-sila3",
     subject: "pkn",
     subjectLabel: "Pendidikan Pancasila & PKn",
-    grade: "Kelas 4 SD (Fase B)",
+    grade: "Kelas 4",
     title: "Makna Lambang Sila Ke-3: Persatuan Indonesia di Sekolah & Rumah",
     chapterCode: "Bab 1",
     source: "API SIBI Kemdikbudristek RI (Katalog Buku Teks Utama)",
@@ -535,7 +535,7 @@ const INITIAL_MODULES_DB: CurriculumModuleRecord[] = [
     id: "mod-pkn-gotongroyong",
     subject: "pkn",
     subjectLabel: "Pendidikan Pancasila & PKn",
-    grade: "Kelas 4 SD (Fase B)",
+    grade: "Kelas 4",
     title: "Gotong Royong & Kerja Sama: Berat Sama Dipikul Ringan Sama Dijinjing",
     chapterCode: "Bab 2",
     source: "API SIBI Kemdikbudristek RI (Buku Panduan Guru & Siswa)",
@@ -562,7 +562,7 @@ const INITIAL_MODULES_DB: CurriculumModuleRecord[] = [
     id: "mod-bjawa-unggahungguh",
     subject: "bjawa",
     subjectLabel: "Basa Jawa (Muatan Lokal)",
-    grade: "Kelas 4 SD (Fase B)",
+    grade: "Kelas 4",
     title: "Trap-Trapan Unggah-Ungguh Basa marang Bapak/Ibu Guru & Tiyang Sepuh",
     chapterCode: "Bab 1",
     source: "Repositori Mulok Disdikbud Provinsi (Buku Wursita Basa)",
@@ -590,7 +590,7 @@ const INITIAL_MODULES_DB: CurriculumModuleRecord[] = [
     id: "mod-bjawa-punokawan",
     subject: "bjawa",
     subjectLabel: "Basa Jawa (Muatan Lokal)",
-    grade: "Kelas 4 SD (Fase B)",
+    grade: "Kelas 4",
     title: "Mengenal Watak Luhur Tokoh Pewayangan Punokawan (Semar, Gareng, Petruk, Bagong)",
     chapterCode: "Bab 2",
     source: "Repositori Mulok Disdikbud Provinsi (Buku Sastri Basa)",
@@ -617,7 +617,7 @@ const INITIAL_MODULES_DB: CurriculumModuleRecord[] = [
     id: "mod-pkn-norma",
     subject: "pkn",
     subjectLabel: "Pendidikan Pancasila & PKn",
-    grade: "Kelas 4 SD (Fase B)",
+    grade: "Kelas 4",
     title: "Norma, Aturan Sekolah & Tertib Hukum Sehari-hari (UUD 1945)",
     chapterCode: "Bab 3",
     source: "API SIBI Kemdikbudristek (Kurikulum Merdeka 2024)",
@@ -645,7 +645,7 @@ const INITIAL_MODULES_DB: CurriculumModuleRecord[] = [
     id: "mod-pkn-bhinneka",
     subject: "pkn",
     subjectLabel: "Pendidikan Pancasila & PKn",
-    grade: "Kelas 4 SD (Fase B)",
+    grade: "Kelas 4",
     title: "Bhinneka Tunggal Ika: Mengenal Keragaman Suku, Rumah Adat & Toleransi Beragama",
     chapterCode: "Bab 4",
     source: "API SIBI Kemdikbudristek (Buku Teks Siswa)",
@@ -673,7 +673,7 @@ const INITIAL_MODULES_DB: CurriculumModuleRecord[] = [
     id: "mod-bjawa-pandhawa",
     subject: "bjawa",
     subjectLabel: "Basa Jawa (Muatan Lokal)",
-    grade: "Kelas 4 SD (Fase B)",
+    grade: "Kelas 4",
     title: "Kisah Kepahlawanan & Silsilah Pandhawa Lima ing Perang Baratayuda",
     chapterCode: "Bab 3",
     source: "Repositori Mulok Disdikbud Provinsi (Buku Kirtya Basa)",
@@ -697,7 +697,7 @@ const INITIAL_MODULES_DB: CurriculumModuleRecord[] = [
     id: "mod-bjawa-aksara",
     subject: "bjawa",
     subjectLabel: "Basa Jawa (Muatan Lokal)",
-    grade: "Kelas 4 SD (Fase B)",
+    grade: "Kelas 4",
     title: "Maca lan Nulis Aksara Jawa Legena (20 Aksara) sarta Sandhangan Swara",
     chapterCode: "Bab 4",
     source: "Repositori Mulok Disdikbud Provinsi (Buku Wursita Basa)",
@@ -721,7 +721,7 @@ const INITIAL_MODULES_DB: CurriculumModuleRecord[] = [
     id: "mod-pkn-nasionalisme",
     subject: "pkn",
     subjectLabel: "Pendidikan Pancasila & PKn",
-    grade: "Kelas 4 SD (Fase B)",
+    grade: "Kelas 4",
     title: "Cinta Tanah Air & Nasionalisme: Bangga Menjadi Anak Indonesia",
     chapterCode: "Bab 5",
     source: "API SIBI Kemdikbudristek RI (Katalog Buku Teks Utama)",
@@ -835,7 +835,7 @@ let activeCurriculumState: ActiveCurriculumState | null = {
   title: "Makna Lambang Sila Ke-3: Persatuan Indonesia di Sekolah & Rumah",
   chapterCode: "Bab 1",
   subject: "pkn",
-  grade: "Kelas 4 SD (Fase B)",
+  grade: "Kelas 4",
   ragSummary: INITIAL_MODULES_DB[0]?.ragSummary,
 };
 
@@ -860,7 +860,7 @@ export async function saveCurriculumModule(
     subjectLabel:
       mod.subjectLabel ||
       (mod.subject === "bjawa" ? "Basa Jawa (Muatan Lokal)" : "Pendidikan Pancasila & PKn"),
-    grade: mod.grade || "Kelas 4 SD (Fase B)",
+    grade: mod.grade || "Kelas 4",
     title: mod.title,
     chapterCode: mod.chapterCode || "Bab Pelajaran",
     source: mod.source || "API SIBI Kemdikbudristek RI (Buku Teks Kurikulum Merdeka)",
@@ -1172,7 +1172,7 @@ export async function buildClassReportCsv() {
   const rows: (string | number)[][] = [];
   rows.push(["LAPORAN REKAPITULASI HASIL EVALUASI BELAJAR SISWA"]);
   rows.push(["Satuan Pendidikan", "SD Negeri 1 Madiun"]);
-  rows.push(["Kelas / Fase", "Kelas 4A / Fase B (Tahun Ajaran 2025/2026)"]);
+  rows.push(["Kelas", "Kelas 4 (Tahun Ajaran 2025/2026)"]);
   rows.push(["Mata Pelajaran", "Pendidikan Pancasila (PKn) & Bahasa Jawa (Muatan Lokal)"]);
   rows.push(["Guru Kelas", "Bpk. Darmawan, S.Pd.SD (NIP. 198506122010011012)"]);
   rows.push(["Integrasi Materi", "API SIBI Kemdikbudristek & Repositori Mulok Disdikbud"]);
@@ -2072,9 +2072,9 @@ export async function buildClassReportHtml(): Promise<{ fileName: string; conten
       <td>SD Negeri 1 Madiun</td>
     </tr>
     <tr>
-      <td style="font-weight: bold;">Kelas / Fase</td>
+      <td style="font-weight: bold;">Kelas</td>
       <td>:</td>
-      <td>Kelas 4A / Fase B (Sekolah Penggerak)</td>
+      <td>Kelas 4</td>
     </tr>
     <tr>
       <td style="font-weight: bold;">Mata Pelajaran</td>

@@ -205,8 +205,12 @@ export default function ProfileModal() {
                     onChange={(e) => setKelas(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                   >
-                    <option value="Kelas 4">Kelas 4 SD (Fase B)</option>
-                    <option value="Kelas 5">Kelas 5 SD (Fase C)</option>
+                    <option value="Kelas 1">Kelas 1</option>
+                    <option value="Kelas 2">Kelas 2</option>
+                    <option value="Kelas 3">Kelas 3</option>
+                    <option value="Kelas 4">Kelas 4</option>
+                    <option value="Kelas 5">Kelas 5</option>
+                    <option value="Kelas 6">Kelas 6</option>
                   </select>
                 </div>
                 <div>

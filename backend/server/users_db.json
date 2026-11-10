@@ -3,11 +3,11 @@
     "id": "usr_1",
     "name": "Ghandur Fauzan Ngauf Hisam",
     "email": "ghandur@gmail.com",
-    "passwordHash": "$2b$10$w5jVbZcn8hpV9tr3Z.psXuHbXjuZJllWoMjhPSkN19Uwpa4dWvt6W",
+    "passwordHash": "$2b$10$jxpm8Sjp7OU25E3S9WlW4OB96oMkRndTedOO1zclg0wNcE2xe/iZO",
     "role": "pelajar",
-    "nimNip": "V3925024",
+    "nimNip": "SD-Kelas4-07",
     "institution": "SD Negeri 1 Madiun",
-    "points": 3250,
+    "points": 10,
     "weakness": {
       "chapterId": "pkn-sila3",
       "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
@@ -19,7 +19,7 @@
     },
     "kelas": "Kelas 4",
     "noAbsen": "07",
-    "gamePoints": 120
+    "gamePoints": 0
   },
   {
     "id": "usr_2",
@@ -41,7 +41,7 @@
     },
     "kelas": "Kelas 4",
     "noAbsen": "15",
-    "gamePoints": 95
+    "gamePoints": 0
   },
   {
     "id": "usr_4",
@@ -63,7 +63,7 @@
     },
     "kelas": "Kelas 4",
     "noAbsen": "03",
-    "gamePoints": 80
+    "gamePoints": 0
   },
   {
     "id": "usr_5",
@@ -85,7 +85,7 @@
     },
     "kelas": "Kelas 5",
     "noAbsen": "21",
-    "gamePoints": 70
+    "gamePoints": 0
   },
   {
     "id": "usr_6",
@@ -107,7 +107,7 @@
     },
     "kelas": "Kelas 5",
     "noAbsen": "02",
-    "gamePoints": 50
+    "gamePoints": 0
   },
   {
     "id": "usr_3",
@@ -900,7 +900,7 @@
     "role": "pelajar",
     "nimNip": "V3925xxx",
     "institution": "SD Negeri 1 Madiun",
-    "points": 200,
+    "points": 0,
     "weakness": {
       "chapterId": "pkn-sila3",
       "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
@@ -931,7 +931,7 @@
     "role": "pelajar",
     "nimNip": "V3925xxx",
     "institution": "SD Negeri 1 Madiun",
-    "points": 200,
+    "points": 0,
     "weakness": {
       "chapterId": "pkn-sila3",
       "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
