@@ -218,18 +218,37 @@ const aiContentLibrary: Record<string, Record<AiMode, { title: string; body: str
   },
   "bjawa-aksara": {
     cerita: {
-      title: "Ringkasan Modul & Piwulang Maca Nulis Aksara Jawa Legena & Sandhangan",
+      title: "Pemaparan Materi & Sinau 20 Aksara Jawa Legena sarta Sandhangan Swara",
       body: [
-        "Aksara Jawa Legena: Cacahe ana rong puluh (20) aksara wutuh wiwit saka Ha, Na, Ca, Ra, Ka nganti Nga, kang nduweni filosofi utusaning urip kang padha dene setya lan sekti.",
-        "Sandhangan Swara: Sandhangan kang ngowahi swara dhasar 'a' dadi: Wulu (swara i), Suku (swara u), Pepet (swara e), Taling (swara é), lan Taling Tarung (swara o).",
-        "Sandhangan Panyigeging Wanda: Wignyan (sigeg h), Layar (sigeg r), Cecak (sigeg ng), lan Pangkon (kanggo mateni aksara ing pungkasan ukara).",
-        "Piweling Luhur: Sinau maca lan nulis aksara Jawa mujudake rasa tresna lan mongkog marang warisan kabudayan adiluhung tanah Jawa.",
+        "Sejarah Singkat & Asal-Usul Aksara Jawa: Aksara Jawa diciptakake dening Prabu Aji Saka nalika rawuh ing Tanah Jawa (Kraton Medang Kamulan). Carita iki kawiwitan saka lelakone abdi loro kang setya tuhu yaiku Dora lan Sembada kang padha-padha ngugemi dhawuh njaga keris pusaka ing Pulo Majethi nganti sakarone pralaya amarga setya ing janji.",
+        "Pemaparan 20 Aksara Jawa Legena (Carakan): Cacahe ana rong puluh (20) aksara wutuh tanpa sandhangan: Baris 1 [ꦲ ꦤ ꦕ ꦫ ꦏ] Ha-Na-Ca-Ra-Ka (tegese ana utusan), Baris 2 [ꦢ ꦠ ꦱ ꦮ ꦭ] Da-Ta-Sa-Wa-La (padha padudon ngugemi amanah), Baris 3 [ꦥ ꦝ ꦗ ꦪ ꦚ] Pa-Dha-Ja-Ya-Nya (padha dene sektine), Baris 4 [ꦩ ꦒ ꦧ ꦛ ꦔ] Ma-Ga-Ba-Tha-Nga (padha dadi bathange/gugur bebarengan).",
+        "Sandhangan Swara Pangowah Vokal: Sandhangan kang ngowahi swara dhasar 'a' dadi vokal liyane: 1) Wulu (ꦶ) ngowahi dadi swara 'i' tuladha ꦲꦶ (Hi), 2) Suku (ꦸ) ngowahi dadi swara 'u' tuladha ꦲꦸ (Hu), 3) Pepet (ꦼ) ngowahi dadi swara 'e' (kaya sega), 4) Taling (ꦺ) ngowahi dadi swara 'é' (kaya saté), lan 5) Taling Tarung (ꦺ...ꦴ) ngowahi dadi swara 'o' tuladha ꦠꦺꦴ (To).",
+        "Sandhangan Panyigeg Wanda (Konsonan Mati): Kanggo mateni wanda: 1) Wignyan (ꦃ) kanggo sigeg 'h', 2) Layar (ꦂ) kanggo sigeg 'r', 3) Cecak (ꦁ) kanggo sigeg 'ng', lan 4) Pangkon (꧀) kanggo mateni aksara ing pungkasan ukara.",
+        "Pituduh Maca lan Nulis Prasaja: Nalika nulis aksara Jawa, tulisen nggantung ing garis buku tulis. Aksara legena diwaca nganggo vokal 'a' wutuh sadurunge kawuwuhan sandhangan swara.",
       ],
     },
     kuis_tantangan: {
       title: "Kuis Tantangan Seru: Aksara Jawa",
       body: [
         "Ayo gladhen nulis lan maca aksara Jawa kanthi mangsuli pitakon Robot Pintar!",
+      ],
+    },
+  },
+  "bjawa-anakkewan": {
+    cerita: {
+      title: "Pemaparan Materi & Kawruh Basa Jawa: Jeneng Arane Anak Kewan",
+      body: [
+        "Pangertosan Arane Anak Kewan: Ing basa Jawa, saben jinis kewan nduweni jeneng sesebutan khusus kanggo anake. Iki dadi bukti kasugihan basa Jawa sarta tresnane leluhur marang alam lan sato kewan ing sakiwa tengene.",
+        "Jeneng Anak Kewan Ingon-Ingon (Rumah & Ternak): Anak Bebek arane Meri, Anak Sapi arane Pedhet, Anak Kucing arane Cemeng, Anak Pitik arane Kuthuk, Anak Wedhus arane Cempe, Anak Kebo arane Gudel, lan Anak Menthok arane Minthi.",
+        "Jeneng Anak Kewan Liar & Alam: Anak Gajah arane Bledug, Anak Kodhok arane Precel / Cebong, Anak Jaran arane Belo, Anak Macan arane Gogor, Anak Baya arane Rete, lan Anak Iwak arane Beyes / Burayak.",
+        "Tuladha Panganggone ing Ukara: 1) 'Bapak nuntun pedhet anyar menyang kandhang mburi omah', 2) 'Meri-meri padha cucuk-cucukan golek pangan bareng biyunge', 3) 'Kucing anggora kae duwe cemeng cacah telu kang lucu banget'.",
+        "Kawruh Tambahan: Jeneng anak kewan iki kerep digunakake ing dolanan tradisional, tembang dolanan bocah, sarta parikan basa Jawa.",
+      ],
+    },
+    kuis_tantangan: {
+      title: "Kuis Tantangan Seru: Arane Anak Kewan",
+      body: [
+        "Ayo tebak jeneng anak kewan basa Jawa bebarengan karo Robot Pintar!",
       ],
     },
   },

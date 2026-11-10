@@ -12,7 +12,7 @@ import {
   playRobotAwakeSound,
 } from "@/lib/soundEffects";
 import ModalPortal from "@/components/ModalPortal";
-import { useUIStore, resolveGameTypeForModule } from "@/lib/store/useUIStore";
+import { useUIStore, resolveGameTypeForModule, type GameType } from "@/lib/store/useUIStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
@@ -32,7 +32,7 @@ export interface CurriculumModule {
   validatedAt?: string;
   ragSummary?: string[];
   generatedQuizPreview?: string[];
-  gameType?: "adventure" | "matching" | "ulartangga";
+  gameType?: GameType;
 }
 
 const INITIAL_MODULES: CurriculumModule[] = [
@@ -254,6 +254,35 @@ const INITIAL_MODULES: CurriculumModule[] = [
       "Level 1: Jumlah aksara Jawa legena dhasar (+10 Poin)",
       "Level 2: Sandhangan kang ngowahi swara dadi 'u' (+20 Poin)",
     ],
+    gameType: "matching",
+  },
+  {
+    id: "mod-bjawa-anakkewan",
+    subject: "bjawa",
+    subjectLabel: "Basa Jawa (Muatan Lokal)",
+    grade: "Kelas 4",
+    title: "Kawruh Basa Jawa: Mengenal Jeneng Arane Anak Kewan (Bebek-Meri, Sapi-Pedhet, dll.)",
+    chapterCode: "Bab 5",
+    source: "Repositori Mulok Disdikbud Provinsi (Buku Sastri Basa)",
+    sourceType: "disdik",
+    pageCount: 18,
+    learningGoal:
+      "Peserta didik saged nyebutaken arane anak kewan ing padintenan (meri, pedhet, cemeng, kuthuk, cempe, bledug) kanthi leres.",
+    isValidated: true,
+    isActiveToday: false,
+    validatedAt: "Hari ini, 09:15 WIB",
+    ragSummary: [
+      "Pangertosan Arane Anak Kewan: Ing basa Jawa, jeneng anak kewan iku nduweni sesebutan dhewe-dhewe minangka kasugihan basa lan bukti celake manungsa karo alam sakupenge.",
+      "Arane Anak Unggas & Kewan Ingon-Ingon: Anak bebek arane meri, anak pitik arane kuthuk, anak menthok arane minthi, anak manuk arane piyik.",
+      "Arane Anak Kewan Mamalia & Rumput: Anak sapi arane pedhet, anak wedhus arane cempe, anak kebo arane gudel, anak jaran arane belo.",
+      "Arane Anak Kewan Galak & Liar: Anak gajah arane bledug, anak macan arane gogor, anak boyo arane rete, anak kodhok arane precel/cebong.",
+      "Tuladha ing Ukara Basa Jawa: 'Bapak mundhut pedhet cacahe loro ing pasar kewan' sarta 'Meri-meri padha nglangi bebarengan ing blumbang'.",
+    ],
+    generatedQuizPreview: [
+      "Level 1: Arane anak bebek yaiku meri (+10 Poin)",
+      "Level 2: Anak sapi diarani pedhet (+20 Poin)",
+    ],
+    gameType: "matching",
   },
   {
     id: "mod-pkn-nasionalisme",
@@ -1321,12 +1350,20 @@ export default function CurriculumValidationManager() {
                   const formatLabel =
                     targetGameType === "matching"
                       ? "Menjodohkan Kartu Pasangan"
+                      : targetGameType === "susunkata"
+                      ? "Susun Huruf & Kata Misteri"
+                      : targetGameType === "wheel"
+                      ? "Roda Putar Cerdas & Tantangan Bintang"
                       : targetGameType === "ulartangga"
                       ? "Papan Ular Tangga Edukasi"
                       : "Petualangan Jelajah Desa 3D";
                   const promptText =
                     targetGameType === "matching"
                       ? `Buat game web edukasi interaktif anak SD bertema: "${generatedModule.title}". Genre: Menjodohkan Kartu Pasangan (Memory/Matching Puzzle) dengan timer 60 detik, kombo bintang emas, dan suara riang saat cocok.`
+                      : targetGameType === "susunkata"
+                      ? `Buat game web edukasi teka-teki susun huruf & kata misteri ramah anak SD bertema: "${generatedModule.title}". Genre: Word Scramble & Anagram dengan kartu petunjuk makna, tombol bantuan huruf, dan animasi bintang prestasi.`
+                      : targetGameType === "wheel"
+                      ? `Buat game web roda putar cerdas edukasi interaktif anak SD bertema: "${generatedModule.title}". Genre: Spin the Fortune Wheel & Quiz Challenge dengan roda fisika 8 warna dan tantangan kuis materi berhadiah poin x2.`
                       : targetGameType === "ulartangga"
                       ? `Buat game web interaktif anak SD bertema: "${generatedModule.title}". Genre: Papan Ular Tangga Edukasi (Interactive Board Game Quiz 36 Kotak) dengan dadu putar 1-6, tangga prestasi (+poin), ular koreksi pemahaman, dan tantangan kuis materi.`
                       : `Buat game web petualangan interaktif anak SD bertema: "${generatedModule.title}". Genre: 3D/2D Adventure Quest dengan 5 pos misi perbuatan baik, pengumpulan koin emas, dan dialog edukasi moral anak.`;

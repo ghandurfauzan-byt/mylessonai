@@ -44,7 +44,7 @@ export default function AiContentPanel({
   const content = useMemo(() => {
     if (isViewingActiveModule && activeValidatedModule?.ragSummary?.length) {
       return {
-        title: `Ringkasan Modul & Pengamalan: ${activeValidatedModule.chapterCode} - ${activeValidatedModule.title}`,
+        title: `Pemaparan Materi: ${activeValidatedModule.chapterCode} - ${activeValidatedModule.title}`,
         body: activeValidatedModule.ragSummary,
       };
     }
@@ -225,13 +225,208 @@ export default function AiContentPanel({
 
         <div>
           <h2 className="text-xl sm:text-2xl font-black text-sky-900 dark:text-sky-300 tracking-tight">
-            {stripEmojis(content.title).replace(/^Ringkasan Modul & Pengamalan:\s*/i, "Materi Pembelajaran: ")}
+            {stripEmojis(content.title)
+              .replace(/^Ringkasan Modul & (?:Pengamalan|Trap-Trapan|Tuladha Budi Pekerti)?:?\s*/i, "Pemaparan Materi: ")
+              .replace(/^Pemaparan Materi:\s*Pemaparan Materi:\s*/i, "Pemaparan Materi: ")}
           </h2>
           <p className="text-xs sm:text-sm font-bold text-sky-600 dark:text-sky-400 mt-0.5">
-            Rangkuman materi seru dan contoh perbuatan baik sehari-hari untuk anak hebat 🌟
+            Pemaparan materi lengkap, sejarah singkat, dan konsep pemahaman untuk anak hebat 🌟
           </p>
         </div>
       </div>
+
+      {/* Visual Interaktif Khusus Aksara Jawa */}
+      {(() => {
+        const rawT = (content.title + " " + chapterId).toLowerCase();
+        if (!rawT.includes("aksara") && !rawT.includes("sandhangan")) return null;
+
+        const aksaraRows = [
+          {
+            label: "Baris 1 (Ana Utusan)",
+            meaning: "Ada dua orang utusan setia",
+            items: [
+              { glyph: "ꦲ", latin: "Ha", sound: "Ha" },
+              { glyph: "ꦤ", latin: "Na", sound: "Na" },
+              { glyph: "ꦕ", latin: "Ca", sound: "Ca" },
+              { glyph: "ꦫ", latin: "Ra", sound: "Ra" },
+              { glyph: "ꦏ", latin: "Ka", sound: "Ka" },
+            ],
+          },
+          {
+            label: "Baris 2 (Padha Padudon)",
+            meaning: "Saling berselisih memegang teguh amanah",
+            items: [
+              { glyph: "ꦢ", latin: "Da", sound: "Da" },
+              { glyph: "ꦠ", latin: "Ta", sound: "Ta" },
+              { glyph: "ꦱ", latin: "Sa", sound: "Sa" },
+              { glyph: "ꦮ", latin: "Wa", sound: "Wa" },
+              { glyph: "ꦭ", latin: "La", sound: "La" },
+            ],
+          },
+          {
+            label: "Baris 3 (Padha Jayanya)",
+            meaning: "Keduanya sama-sama sakti mandraguna",
+            items: [
+              { glyph: "ꦥ", latin: "Pa", sound: "Pa" },
+              { glyph: "ꦝ", latin: "Dha", sound: "Dha" },
+              { glyph: "ꦗ", latin: "Ja", sound: "Ja" },
+              { glyph: "ꦪ", latin: "Ya", sound: "Ya" },
+              { glyph: "ꦚ", latin: "Nya", sound: "Nya" },
+            ],
+          },
+          {
+            label: "Baris 4 (Maga Bathanga)",
+            meaning: "Sama-sama gugur memenuhi sumpah setia",
+            items: [
+              { glyph: "ꦩ", latin: "Ma", sound: "Ma" },
+              { glyph: "ꦒ", latin: "Ga", sound: "Ga" },
+              { glyph: "ꦧ", latin: "Ba", sound: "Ba" },
+              { glyph: "ꦛ", latin: "Tha", sound: "Tha" },
+              { glyph: "ꦔ", latin: "Nga", sound: "Nga" },
+            ],
+          },
+        ];
+
+        return (
+          <div className="bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-yellow-500/10 dark:from-amber-950/40 dark:to-slate-900 border-3 border-amber-400 dark:border-amber-600 rounded-3xl p-4 sm:p-5 space-y-4 shadow-lg shadow-amber-500/10">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-300 dark:border-amber-800 pb-3">
+              <div>
+                <h3 className="text-base sm:text-lg font-black text-amber-950 dark:text-amber-200 flex items-center gap-2">
+                  <span>📜</span>
+                  <span>Papan Visual 20 Aksara Jawa Legena (Carakan)</span>
+                </h3>
+                <p className="text-xs font-bold text-amber-800 dark:text-amber-400">
+                  Klik tiap huruf untuk mendengarkan lafal pengucapannya! 🔊
+                </p>
+              </div>
+              <span className="text-[11px] font-black bg-amber-400 text-amber-950 px-3 py-1 rounded-full self-start sm:self-auto shadow-xs">
+                20 Aksara Wutuh
+              </span>
+            </div>
+
+            {/* Grid 4 Baris Aksara */}
+            <div className="space-y-3">
+              {aksaraRows.map((row) => (
+                <div key={row.label} className="bg-white/80 dark:bg-slate-800/80 rounded-2xl p-3 border border-amber-200 dark:border-slate-700 space-y-2">
+                  <div className="flex items-center justify-between text-xs font-black text-amber-900 dark:text-amber-300">
+                    <span>{row.label}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 italic">({row.meaning})</span>
+                  </div>
+                  <div className="grid grid-cols-5 gap-2">
+                    {row.items.map((it) => (
+                      <button
+                        key={it.latin}
+                        type="button"
+                        onClick={() => {
+                          playClickSound();
+                          startSpeaking({ text: `Aksara Jawa ${it.sound}`, rate: 0.9, pitch: 1.1 });
+                        }}
+                        className="bg-gradient-to-b from-amber-50 to-yellow-100 dark:from-slate-700 dark:to-slate-800 hover:from-amber-100 hover:to-yellow-200 border-2 border-amber-300 dark:border-amber-700/60 rounded-xl p-2 sm:p-2.5 text-center transition-all hover:scale-105 active:scale-95 shadow-xs cursor-pointer group"
+                      >
+                        <div className="text-2xl sm:text-3xl font-black text-amber-950 dark:text-yellow-300 group-hover:scale-110 transition-transform">
+                          {it.glyph}
+                        </div>
+                        <div className="text-[11px] font-black text-amber-800 dark:text-amber-400 mt-1">
+                          {it.latin}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Ringkasan Sandhangan Swara & Panyigeg */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+              <div className="bg-white/90 dark:bg-slate-800/90 p-3 rounded-2xl border border-sky-200 dark:border-sky-800 text-xs space-y-1.5">
+                <h4 className="font-black text-sky-900 dark:text-sky-300 flex items-center gap-1.5">
+                  <span>🎵</span>
+                  <span>Sandhangan Swara (Pengubah Bunyi Vokal)</span>
+                </h4>
+                <div className="grid grid-cols-5 gap-1 text-center font-bold text-[11px]">
+                  <div className="p-1.5 rounded-lg bg-sky-50 dark:bg-slate-700">Wulu (i) ꦶ</div>
+                  <div className="p-1.5 rounded-lg bg-sky-50 dark:bg-slate-700">Suku (u) ꦸ</div>
+                  <div className="p-1.5 rounded-lg bg-sky-50 dark:bg-slate-700">Pepet (e) ꦼ</div>
+                  <div className="p-1.5 rounded-lg bg-sky-50 dark:bg-slate-700">Taling (é) ꦺ</div>
+                  <div className="p-1.5 rounded-lg bg-sky-50 dark:bg-slate-700">T.Tarung (o) ꦺꦴ</div>
+                </div>
+              </div>
+
+              <div className="bg-white/90 dark:bg-slate-800/90 p-3 rounded-2xl border border-emerald-200 dark:border-emerald-800 text-xs space-y-1.5">
+                <h4 className="font-black text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
+                  <span>🔇</span>
+                  <span>Sandhangan Panyigeg (Konsonan Mati)</span>
+                </h4>
+                <div className="grid grid-cols-4 gap-1 text-center font-bold text-[11px]">
+                  <div className="p-1.5 rounded-lg bg-emerald-50 dark:bg-slate-700">Layar (r) ꦂ</div>
+                  <div className="p-1.5 rounded-lg bg-emerald-50 dark:bg-slate-700">Cecak (ng) ꦁ</div>
+                  <div className="p-1.5 rounded-lg bg-emerald-50 dark:bg-slate-700">Wignyan (h) ꦃ</div>
+                  <div className="p-1.5 rounded-lg bg-emerald-50 dark:bg-slate-700">Pangkon (mati) ꧀</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Visual Interaktif Khusus Arane Anak Kewan */}
+      {(() => {
+        const rawT = (content.title + " " + chapterId).toLowerCase();
+        if (!rawT.includes("kewan")) return null;
+
+        const animals = [
+          { name: "Bebek", anak: "Meri", icon: "🦆" },
+          { name: "Sapi", anak: "Pedhet", icon: "🐄" },
+          { name: "Kucing", anak: "Cemeng", icon: "🐱" },
+          { name: "Pitik", anak: "Kuthuk", icon: "🐥" },
+          { name: "Wedhus", anak: "Cempe", icon: "🐐" },
+          { name: "Gajah", anak: "Bledug", icon: "🐘" },
+          { name: "Kodhok", anak: "Precel", icon: "🐸" },
+          { name: "Jaran", anak: "Belo", icon: "🐴" },
+          { name: "Macan", anak: "Gogor", icon: "🐯" },
+          { name: "Baya", anak: "Rete", icon: "🐊" },
+        ];
+
+        return (
+          <div className="bg-gradient-to-br from-emerald-500/10 via-teal-500/10 to-green-500/10 dark:from-emerald-950/40 dark:to-slate-900 border-3 border-emerald-400 dark:border-emerald-600 rounded-3xl p-4 sm:p-5 space-y-4 shadow-lg shadow-emerald-500/10">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-300 dark:border-emerald-800 pb-3">
+              <div>
+                <h3 className="text-base sm:text-lg font-black text-emerald-950 dark:text-emerald-200 flex items-center gap-2">
+                  <span>🐾</span>
+                  <span>Papan Kawruh Jeneng Arane Anak Kewan</span>
+                </h3>
+                <p className="text-xs font-bold text-emerald-800 dark:text-emerald-400">
+                  Klik kartu hewan untuk mendengarkan nama anaknya dalam Basa Jawa! 🔊
+                </p>
+              </div>
+              <span className="text-[11px] font-black bg-emerald-400 text-emerald-950 px-3 py-1 rounded-full self-start sm:self-auto shadow-xs">
+                10 Anak Kewan
+              </span>
+            </div>
+
+            {/* Grid 10 Kartu Hewan & Anaknya */}
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+              {animals.map((a) => (
+                <button
+                  key={a.name}
+                  type="button"
+                  onClick={() => {
+                    playClickSound();
+                    startSpeaking({ text: `Anak ${a.name} arane ${a.anak}`, rate: 0.95, pitch: 1.1 });
+                  }}
+                  className="bg-white/90 dark:bg-slate-800/90 hover:bg-emerald-50 dark:hover:bg-slate-700/90 border-2 border-emerald-200 dark:border-emerald-700/60 rounded-2xl p-3 text-center transition-all hover:scale-105 active:scale-95 shadow-xs cursor-pointer group"
+                >
+                  <div className="text-3xl mb-1 group-hover:scale-125 transition-transform">{a.icon}</div>
+                  <div className="text-xs font-bold text-slate-600 dark:text-slate-400">{a.name}</div>
+                  <div className="text-xs sm:text-sm font-black text-emerald-700 dark:text-emerald-300 mt-0.5">
+                    → {a.anak}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Main Content Body */}
       <div className="space-y-3 text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-medium">

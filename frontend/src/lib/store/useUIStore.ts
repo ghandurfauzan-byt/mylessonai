@@ -85,6 +85,8 @@ export interface DailyMissionsState {
   playedGame: boolean;
 }
 
+export type GameType = "adventure" | "matching" | "ulartangga" | "susunkata" | "wheel";
+
 export interface ValidatedModuleSummary {
   id: string;
   chapterCode: string;
@@ -97,65 +99,79 @@ export interface ValidatedModuleSummary {
   learningGoal?: string;
   ragSummary?: string[];
   quizQuestions?: Record<number, Question[]>;
-  gameType?: "adventure" | "matching" | "ulartangga";
+  gameType?: GameType;
 }
 
 /**
  * Otomatis menentukan 1 jenis game resmi yang paling pas untuk suatu materi:
- * - "matching"   : Untuk materi hafalan simbol, aksara Jawa, tokoh wayang, kosakata, tebak kata
- * - "ulartangga" : Untuk materi tes kuis pemahaman, evaluasi, sains, matematika, latihan soal
- * - "adventure"  : Untuk materi penghayatan nilai budi pekerti, gotong royong, norma, bharatayudha, Pancasila
+ * - "adventure"  : Khusus materi yang butuh PENGAMALAN / IMPLEMENTASI BUDI PEKERTI (Pancasila, Gotong Royong, Norma, Toleransi, Bharatayudha Ksatria)
+ * - "matching"   : Khusus materi HAFALAN SIMBOL & PADANAN KATA (Aksara Jawa, Arane Anak Kewan, Unggah-Ungguh Basa, Tokoh Wayang)
+ * - "susunkata"  : Khusus materi PENYUSUNAN KATA & EJAAN (Susun Huruf/Kata Misteri, Anagram, Kosa Kata Basa Jawa/Indonesia)
+ * - "wheel"      : Khusus materi KUIS PUTAR CERDAS & TANTANGAN BINTANG (Variasi Roda Putar Interaktif)
+ * - "ulartangga" : Khusus materi TES & EVALUASI PEMAHAMAN (Papan Ular Tangga, Sains/IPA, Matematika, Latihan Soal)
  */
 export function resolveGameTypeForModule(
   title = "",
   subject = "",
   id = "",
   ragSummary?: string[] | string
-): "adventure" | "matching" | "ulartangga" {
+): GameType {
   const t = title.toLowerCase();
   const s = subject.toLowerCase();
   const i = id.toLowerCase();
   const r = (Array.isArray(ragSummary) ? ragSummary.join(" ") : String(ragSummary || "")).toLowerCase();
 
-  // Prioritas Spesial: Kisah Kepahlawanan / Bharatayudha / Nilai Ksatria -> Petualangan 3D Jelajah Desa / Kraton
+  // 1. Prioritas Menjodohkan Kartu (Matching): Anak Kewan, Aksara Jawa, Sandhangan, Tata Krama / Unggah-Ungguh
   if (
-    t.includes("baratayuda") ||
-    t.includes("barathayuda") ||
-    t.includes("barathayudha") ||
-    t.includes("bharatayudha") ||
-    t.includes("kepahlawanan") ||
-    t.includes("pahlawan") ||
-    t.includes("petualangan")
-  ) {
-    return "adventure";
-  }
-
-  // 1. Tipe Menjodohkan Kartu Pasangan (Matching)
-  if (
+    i.includes("kewan") ||
+    t.includes("kewan") ||
+    r.includes("anak kewan") ||
     i.includes("aksara") ||
     t.includes("aksara") ||
     i.includes("sandhangan") ||
     t.includes("sandhangan") ||
+    i.includes("unggah") ||
+    t.includes("unggah") ||
+    t.includes("tata krama") ||
     t.includes("jodoh") ||
     t.includes("pasangan") ||
     i.includes("punokawan") ||
-    t.includes("punokawan") ||
-    i.includes("pandhawa") ||
-    t.includes("pandhawa") ||
-    t.includes("tebak kata") ||
-    t.includes("kosakata") ||
-    t.includes("kosa kata") ||
-    (s === "bjawa" && (t.includes("huruf") || t.includes("tembung") || t.includes("pasangan")))
+    t.includes("punokawan")
   ) {
     return "matching";
   }
 
-  // 2. Tipe Papan Ular Tangga Edukasi (Kuis / Evaluasi Pemahaman)
+  // 2. Prioritas Susun Kata & Huruf Misteri (Susun Kata / Anagram)
+  if (
+    i.includes("susun") ||
+    t.includes("susun") ||
+    t.includes("ejaan") ||
+    t.includes("rangkai kata") ||
+    t.includes("kata misteri") ||
+    t.includes("anagram") ||
+    t.includes("tebak kata") ||
+    t.includes("kosakata") ||
+    t.includes("kosa kata")
+  ) {
+    return "susunkata";
+  }
+
+  // 3. Prioritas Roda Putar Cerdas (Spin the Wheel): Tantangan Cepat & Kuis Variasi
+  if (
+    i.includes("roda") ||
+    t.includes("roda") ||
+    i.includes("wheel") ||
+    t.includes("wheel") ||
+    t.includes("putar") ||
+    t.includes("tantangan kilat")
+  ) {
+    return "wheel";
+  }
+
+  // 4. Prioritas Papan Ular Tangga Edukasi: Evaluasi, Ujian, Latihan Soal, Sains/IPA/Matematika
   if (
     i.includes("kuis") ||
     t.includes("kuis") ||
-    i.includes("tes") ||
-    t.includes("tes") ||
     i.includes("evaluasi") ||
     t.includes("evaluasi") ||
     t.includes("latihan soal") ||
@@ -164,12 +180,13 @@ export function resolveGameTypeForModule(
     t.includes("ipa") ||
     t.includes("matematika") ||
     t.includes("siklus") ||
-    r.includes("evaluasi pemahaman")
+    r.includes("evaluasi pemahaman") ||
+    /\b(tes|soal)\b/i.test(t)
   ) {
     return "ulartangga";
   }
 
-  // 3. Default: Petualangan 3D Jelajah Desa (Pengamalan Nilai / Moral / Pancasila / Bharatayudha / Gotong Royong)
+  // 5. Default: Petualangan 3D Jelajah Desa (Pengamalan Budi Pekerti, Sikap Ksatria, Pancasila, Gotong Royong, Norma)
   return "adventure";
 }
 

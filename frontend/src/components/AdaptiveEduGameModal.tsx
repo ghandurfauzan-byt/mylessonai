@@ -16,6 +16,8 @@
 
 import ModalPortal from "@/components/ModalPortal";
 import UlarTanggaEduGame from "@/components/UlarTanggaEduGame";
+import SusunKataEduGame from "@/components/SusunKataEduGame";
+import RodaPutarEduGame from "@/components/RodaPutarEduGame";
 import {
   playBadgeFanfareSound,
   playClickSound,
@@ -28,7 +30,7 @@ import {
   startAdventureBgm,
   stopAdventureBgm,
 } from "@/lib/soundEffects";
-import { useUIStore, resolveGameTypeForModule, ValidatedModuleSummary } from "@/lib/store/useUIStore";
+import { useUIStore, resolveGameTypeForModule, ValidatedModuleSummary, GameType } from "@/lib/store/useUIStore";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 
@@ -88,7 +90,7 @@ interface Props {
   chapter: string;
   chapterTitle?: string;
   studentName?: string;
-  forcedGameMode?: "adventure" | "matching" | "ulartangga";
+  forcedGameMode?: GameType;
   activeModule?: ValidatedModuleSummary;
 }
 
@@ -198,7 +200,7 @@ export default function AdaptiveEduGameModal({
 
   // 1 MATERI = 1 JENIS GAME EKSKLUSIF
   // Menentukan secara pasti tipe game resmi untuk topik pembelajaran aktif
-  const officialGameType = useMemo<"adventure" | "matching" | "ulartangga">(() => {
+  const officialGameType = useMemo<GameType>(() => {
     if (forcedGameMode) return forcedGameMode;
     if (currentModule?.gameType) return currentModule.gameType;
     return resolveGameTypeForModule(
@@ -209,7 +211,7 @@ export default function AdaptiveEduGameModal({
     );
   }, [forcedGameMode, currentModule, chapterTitle, chapter]);
 
-  const [gameMode, setGameMode] = useState<"adventure" | "ulartangga" | "matching" | "manus">(officialGameType);
+  const [gameMode, setGameMode] = useState<GameType | "manus">(officialGameType);
 
   // Kunci game mode secara eksklusif ke jenis game materi tersebut
   useEffect(() => {
@@ -260,7 +262,18 @@ export default function AdaptiveEduGameModal({
 
     let rawPairs: Array<{ id: string; a: string; b: string; subA?: string; subB?: string; icon: string }> = [];
 
-    if (id.includes("aksara") || raw.includes("aksara")) {
+    if (id.includes("kewan") || raw.includes("kewan") || raw.includes("anak kewan")) {
+      rawPairs = [
+        { id: "p1", a: "Bebek", b: "Meri", subA: "Induk Hewan", subB: "Arane Anak", icon: "🦆" },
+        { id: "p2", a: "Sapi", b: "Pedhet", subA: "Induk Hewan", subB: "Arane Anak", icon: "🐄" },
+        { id: "p3", a: "Kucing", b: "Cemeng", subA: "Induk Hewan", subB: "Arane Anak", icon: "🐱" },
+        { id: "p4", a: "Pitik", b: "Kuthuk", subA: "Induk Hewan", subB: "Arane Anak", icon: "🐔" },
+        { id: "p5", a: "Wedhus", b: "Cempe", subA: "Induk Hewan", subB: "Arane Anak", icon: "🐐" },
+        { id: "p6", a: "Gajah", b: "Bledug", subA: "Induk Hewan", subB: "Arane Anak", icon: "🐘" },
+        { id: "p7", a: "Kodhok", b: "Precel", subA: "Induk Hewan", subB: "Arane Anak", icon: "🐸" },
+        { id: "p8", a: "Jaran", b: "Belo", subA: "Induk Hewan", subB: "Arane Anak", icon: "🐴" },
+      ];
+    } else if (id.includes("aksara") || raw.includes("aksara")) {
       rawPairs = [
         { id: "p1", a: "ꦲ", b: "Ha", subA: "Aksara", subB: "Huruf Latin", icon: "📜" },
         { id: "p2", a: "ꦤ", b: "Na", subA: "Aksara", subB: "Huruf Latin", icon: "📜" },
@@ -3058,7 +3071,17 @@ export default function AdaptiveEduGameModal({
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-300 truncate">
-                  Materi: <b className="text-emerald-400">{resolvedTitle}</b> • Model: <b className={gameMode === "adventure" ? "text-amber-300" : "text-emerald-300"}>{gameMode === "adventure" ? "🏰 Petualangan 3D" : gameMode === "matching" ? "🧩 Menjodohkan Kartu" : "🎲 Ular Tangga Edukasi"}</b>
+                  Materi: <b className="text-emerald-400">{resolvedTitle}</b> • Model: <b className="text-amber-300">
+                    {gameMode === "adventure"
+                      ? "🏰 Petualangan 3D"
+                      : gameMode === "matching"
+                      ? "🧩 Menjodohkan Kartu"
+                      : gameMode === "susunkata"
+                      ? "🔤 Susun Huruf & Kata"
+                      : gameMode === "wheel"
+                      ? "🎡 Roda Putar Cerdas"
+                      : "🎲 Ular Tangga Edukasi"}
+                  </b>
                 </p>
               </div>
             </div>
@@ -3081,7 +3104,15 @@ export default function AdaptiveEduGameModal({
           {/* BADGE RESMI MODEL GAME MATERI INI (1 MATERI = 1 MODEL GAME EKSKLUSIF) */}
           <div className="flex items-center bg-slate-950/85 px-3 py-1.5 rounded-2xl border border-yellow-400/40 gap-2 shadow-inner">
             <span className="text-base shrink-0">
-              {officialGameType === "matching" ? "🧩" : officialGameType === "ulartangga" ? "🎲" : "🏰"}
+              {officialGameType === "matching"
+                ? "🧩"
+                : officialGameType === "susunkata"
+                ? "🔤"
+                : officialGameType === "wheel"
+                ? "🎡"
+                : officialGameType === "ulartangga"
+                ? "🎲"
+                : "🏰"}
             </span>
             <div className="text-left leading-tight">
               <div className="text-[9px] font-black uppercase tracking-wider text-yellow-300 flex items-center gap-1">
@@ -3093,8 +3124,12 @@ export default function AdaptiveEduGameModal({
               <div className="text-xs font-black text-white truncate max-w-[200px] sm:max-w-[280px]">
                 {officialGameType === "matching"
                   ? "Menjodohkan Kartu (Tes Simbol)"
+                  : officialGameType === "susunkata"
+                  ? "Susun Huruf & Kata (Kosakata)"
+                  : officialGameType === "wheel"
+                  ? "Roda Putar Cerdas (Kuis Kilat)"
                   : officialGameType === "ulartangga"
-                  ? "Papan Ular Tangga (Tes Kuis)"
+                  ? "Papan Ular Tangga (Evaluasi Ceria)"
                   : "Petualangan 3D Jelajah Desa"}
               </div>
             </div>
@@ -3840,6 +3875,34 @@ export default function AdaptiveEduGameModal({
           {/* ============================================================ */}
           {gameMode === "ulartangga" && (
             <UlarTanggaEduGame
+              chapter={chapter}
+              chapterTitle={resolvedTitle}
+              studentName={studentName}
+              activeModule={activeValidatedModule}
+              onSwitchToAdventure={() => setGameMode("adventure")}
+              onSwitchToMatching={() => setGameMode("matching")}
+            />
+          )}
+
+          {/* ============================================================ */}
+          {/* MODE: SUSUN KATA EDUKASI (PERBENDAHARAAN KATA & EJAAN) */}
+          {/* ============================================================ */}
+          {gameMode === "susunkata" && (
+            <SusunKataEduGame
+              chapter={chapter}
+              chapterTitle={resolvedTitle}
+              studentName={studentName}
+              activeModule={activeValidatedModule}
+              onSwitchToAdventure={() => setGameMode("adventure")}
+              onSwitchToMatching={() => setGameMode("matching")}
+            />
+          )}
+
+          {/* ============================================================ */}
+          {/* MODE: RODA PUTAR EDUKASI (KUIS KILAT BERHADIAH) */}
+          {/* ============================================================ */}
+          {gameMode === "wheel" && (
+            <RodaPutarEduGame
               chapter={chapter}
               chapterTitle={resolvedTitle}
               studentName={studentName}

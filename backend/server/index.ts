@@ -2378,16 +2378,20 @@ function createTailoredManusGamePayload(params: {
   const targetGrade = params.grade || "Kelas 4";
   const title = params.chapterTitle || "Pendidikan Karakter & Budaya Nusantara";
 
-  let gameType: "matching" | "adventure" | "ulartangga" = "adventure";
+  let gameType: "matching" | "adventure" | "ulartangga" | "susunkata" | "wheel" = "adventure";
   let prompt = "";
   let specs: any = {};
 
-  // 1. CEK RUTE MENJODOHKAN (MATCHING)
+  // 1. CEK RUTE MENJODOHKAN (MATCHING): AKSARA, ANAK KEWAN, UNGGAH-UNGGUH
   const isMatching =
     params.gameType === "matching" ||
     (!params.gameType &&
-      (idStr.includes("aksara") ||
+      (idStr.includes("kewan") ||
+        titleStr.includes("kewan") ||
+        idStr.includes("aksara") ||
         titleStr.includes("aksara") ||
+        idStr.includes("sandhangan") ||
+        titleStr.includes("sandhangan") ||
         idStr.includes("unggah") ||
         titleStr.includes("unggah") ||
         titleStr.includes("tata krama") ||
@@ -2396,11 +2400,41 @@ function createTailoredManusGamePayload(params: {
         titleStr.includes("jodoh") ||
         titleStr.includes("pasang")));
 
-  // 2. CEK RUTE ULAR TANGGA (EVALUASI / SOAL / KUIS / SAINS)
+  // 2. CEK RUTE SUSUN KATA (WORD SCRAMBLE / ANAGRAM)
+  const isSusunKata =
+    params.gameType === "susunkata" ||
+    (!params.gameType &&
+      !isMatching &&
+      (idStr.includes("susun") ||
+        titleStr.includes("susun") ||
+        titleStr.includes("ejaan") ||
+        titleStr.includes("rangkai") ||
+        titleStr.includes("kata misteri") ||
+        titleStr.includes("anagram") ||
+        titleStr.includes("tebak kata") ||
+        titleStr.includes("kosakata") ||
+        titleStr.includes("kosa kata")));
+
+  // 3. CEK RUTE RODA PUTAR (SPIN THE WHEEL)
+  const isWheel =
+    params.gameType === "wheel" ||
+    (!params.gameType &&
+      !isMatching &&
+      !isSusunKata &&
+      (idStr.includes("roda") ||
+        titleStr.includes("roda") ||
+        idStr.includes("wheel") ||
+        titleStr.includes("wheel") ||
+        titleStr.includes("putar") ||
+        titleStr.includes("tantangan kilat")));
+
+  // 4. CEK RUTE ULAR TANGGA (EVALUASI / SOAL / KUIS / SAINS)
   const isUlarTangga =
     params.gameType === "ulartangga" ||
     (!params.gameType &&
       !isMatching &&
+      !isSusunKata &&
+      !isWheel &&
       (idStr.includes("kuis") ||
         titleStr.includes("kuis") ||
         idStr.includes("evaluasi") ||
@@ -2413,7 +2447,16 @@ function createTailoredManusGamePayload(params: {
 
   if (isMatching) {
     gameType = "matching";
-    if (idStr.includes("aksara") || titleStr.includes("aksara")) {
+    if (idStr.includes("kewan") || titleStr.includes("kewan")) {
+      prompt = `Buat game web edukasi interaktif anak SD (${targetGrade}) bertema: "${title}". Genre: Pasangan Kartu Memori Arane Anak Kewan Basa Jawa (Matching Memory Cards). Pemain mencocokkan kartu nama hewan (Bebek, Sapi, Kucing, Pitik, Wedhus, Gajah, Kodhok, Jaran) dengan nama anaknya (Meri, Pedhet, Cemeng, Kuthuk, Cempe, Bledug, Precel, Belo). Fitur audio tiruan suara hewan riang, kartu kartun lucu warna-warni, kombo bintang emas, dan suara apresiasi santun berbahasa Jawa.`;
+      specs = {
+        genre: "Teka-Teki Pasangan Kartu Arane Anak Kewan (Animal Offspring Match)",
+        targetAudience: `Siswa Sekolah Dasar (${targetGrade})`,
+        recommendedType: "Menjodohkan Kartu Pasangan (Matching Cards)",
+        coreMechanics: "Pencocokan kartu hewan dan anaknya, audio efek suara binatang, kombo skor, bintang prestasi",
+        theme: title,
+      };
+    } else if (idStr.includes("aksara") || titleStr.includes("aksara")) {
       prompt = `Buat game web edukasi interaktif anak SD (${targetGrade}) bertema: "${title}". Genre: Pasangan Kartu Memori & Drag-and-Drop Aksara Jawa (HTML5 Canvas/React). Pemain mencocokkan kartu aksara Jawa legena (ꦲ, ꦤ, ꦕ, ꦫ, ꦏ, ꦢ, ꦠ, ꦱ, ꦮ, ꦭ...) dengan bunyi latin serta sandhangan swara (Wulu, Suku, Taling, Pepet, Taling Tarung). Fitur: Audio pelafalan vokal saat kartu dibuka, visual kartu wayang keemasan, combo multiplier skor koin, timer 90 detik, dan animasi bintang berhamburan saat tuntas. Kontrol ramah sentuhan layar dan mouse.`;
       specs = {
         genre: "Teka-Teki Pasangan Kartu Aksara Jawa & Bunyi Latin (Card Matching Memory)",
@@ -2441,6 +2484,26 @@ function createTailoredManusGamePayload(params: {
         theme: title,
       };
     }
+  } else if (isSusunKata) {
+    gameType = "susunkata";
+    prompt = `Buat game web edukasi teka-teki susun huruf & kata misteri ramah anak SD (${targetGrade}) bertema: "${title}". Genre: Anagram & Word Scramble Puzzle. Karakter anak SD menyusun kosa kata atau istilah materi dari huruf acak beranimasi lucu. Terdapat kartu petunjuk arti kata, tombol bantuan (hint), efek suara tepuk tangan saat kata terangkai benar, dan bonus koin bintang prestasi.`;
+    specs = {
+      genre: "Teka-Teki Susun Huruf & Kata Misteri (Word Scramble)",
+      targetAudience: `Siswa Sekolah Dasar (${targetGrade})`,
+      recommendedType: "Susun Huruf & Kata (Word Puzzle)",
+      coreMechanics: "Penyusunan huruf acak interaktif, kartu petunjuk makna, tombol hint, kombo bintang, papan skor",
+      theme: title,
+    };
+  } else if (isWheel) {
+    gameType = "wheel";
+    prompt = `Buat game web roda putar cerdas edukasi interaktif anak SD (${targetGrade}) bertema: "${title}". Genre: Spin the Fortune Wheel & Quiz Challenge. Pemain memutar roda 8 segmen warna-warni yang menghasilkan tantangan kuis cepat materi, poin ganda x2, atau bonus koin emas. Dilengkapi animasi deselerasi putaran realistis, audio tick riang, dan medali Bintang Cerdas.`;
+    specs = {
+      genre: "Roda Putar Cerdas & Tantangan Bintang (Spin the Wheel Quiz)",
+      targetAudience: `Siswa Sekolah Dasar (${targetGrade})`,
+      recommendedType: "Roda Putar Cerdas (Fortune Wheel Quiz)",
+      coreMechanics: "Roda putar fisika 8 segmen, tantangan kuis cepat, pengganda skor, bonus kejutan",
+      theme: title,
+    };
   } else if (isUlarTangga) {
     gameType = "ulartangga";
     prompt = `Buat game web interaktif anak SD (${targetGrade}) bertema: "${title}". Genre: Papan Ular Tangga Edukasi Interaktif (Interactive Board Game Quiz 36 Kotak) dengan dadu putar 1-6, tangga prestasi (+poin), ular koreksi pemahaman, kuis evaluasi materi, dan adu pintar bersama teman sekelas.`;

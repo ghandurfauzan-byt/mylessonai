@@ -91,6 +91,24 @@ export default function PelajarDashboardPage() {
       };
     }
 
+    if (targetGameType === "susunkata") {
+      return {
+        type: "susunkata",
+        icon: "🔤",
+        badge: "Susun Huruf & Kata",
+        title: `Teka-Teki Kata: ${cleanTitle}`,
+      };
+    }
+
+    if (targetGameType === "wheel") {
+      return {
+        type: "wheel",
+        icon: "🎡",
+        badge: "Roda Putar Cerdas",
+        title: `Roda Tantangan: ${cleanTitle}`,
+      };
+    }
+
     if (targetGameType === "ulartangga") {
       return {
         type: "ulartangga",
@@ -100,7 +118,7 @@ export default function PelajarDashboardPage() {
       };
     }
 
-    // Default: adventure
+    // Default: adventure (pengamalan nilai budi pekerti, gotong royong, bharatayudha)
     return {
       type: "adventure",
       icon: "🏰",
@@ -1525,7 +1543,7 @@ export default function PelajarDashboardPage() {
           chapter
         }
         studentName={currentStudentName}
-        forcedGameMode={activeGameInfo.type as "adventure" | "matching" | "ulartangga"}
+        forcedGameMode={activeGameInfo.type as any}
         activeModule={activeValidatedModule}
       />
     </div>
