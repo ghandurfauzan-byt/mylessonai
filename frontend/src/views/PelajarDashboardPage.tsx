@@ -14,7 +14,7 @@ import {
   speakBadgeMotivation,
   stopBadgeSpeech,
 } from "@/lib/soundEffects";
-import { useUIStore } from "@/lib/store/useUIStore";
+import { useUIStore, resolveGameTypeForModule } from "@/lib/store/useUIStore";
 import { type AiMode, availableChapters } from "@shared/catalog";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
@@ -68,56 +68,53 @@ export default function PelajarDashboardPage() {
 
     // Dynamic Game Mode & Title based on active curriculum / chapter
   const activeGameInfo = useMemo(() => {
-    const rawTitle = activeValidatedModule?.title || availableChapters.find((c) => c.value === chapter)?.label || chapter;
-    const titleLower = rawTitle.toLowerCase();
-    const chLower = (activeValidatedModule?.id || chapter || "").toLowerCase();
-    const subjLower = (activeValidatedModule?.subject || "").toLowerCase();
+    const rawTitle =
+      activeValidatedModule?.title ||
+      availableChapters.find((c) => c.value === chapter)?.label ||
+      chapter;
+    const cleanTitle = rawTitle.replace(/^.*-\s*/, "");
+    const targetGameType =
+      activeValidatedModule?.gameType ||
+      resolveGameTypeForModule(
+        rawTitle,
+        activeValidatedModule?.subject || "",
+        activeValidatedModule?.id || chapter,
+        activeValidatedModule?.ragSummary
+      );
 
-    // 1. Modul Tokoh / Karakter / Kata Pendek (Punokawan, Pandhawa, Tokoh, Pahlawan, dll)
-    if (
-      chLower.includes("punokawan") ||
-      titleLower.includes("punokawan") ||
-      chLower.includes("pandhawa") ||
-      titleLower.includes("pandhawa") ||
-      titleLower.includes("tokoh") ||
-      titleLower.includes("tebak kata") ||
-      titleLower.includes("pahlawan")
-    ) {
-      return {
-        type: "word_guess",
-        icon: "🔤",
-        badge: "Tebak Kata & Tokoh",
-        title: `Tebak Tokoh: ${rawTitle.replace(/^.*-\s*/, "")} 🔤`,
-      };
-    }
-
-    // 2. Modul Pasangan Kata / Aksara / Bahasa (Aksara Jawa, Unggah-Ungguh, Pasangan Kata)
-    if (
-      chLower.includes("aksara") ||
-      titleLower.includes("aksara") ||
-      chLower.includes("unggah") ||
-      titleLower.includes("unggah") ||
-      titleLower.includes("jodoh") ||
-      titleLower.includes("pasangan") ||
-      titleLower.includes("kosakata") ||
-      (subjLower === "bjawa" && !chLower.includes("punokawan") && !chLower.includes("pandhawa"))
-    ) {
+    if (targetGameType === "matching") {
       return {
         type: "matching",
         icon: "🧩",
         badge: "Teka-Teki Pasangan",
-        title: `Menjodohkan: ${rawTitle.replace(/^.*-\s*/, "")} 🧩`,
+        title: `Menjodohkan: ${cleanTitle}`,
       };
     }
 
-    // 3. Modul Petualangan 3D Jelajah Desa (Pancasila, Gotong Royong, Norma, Bhinneka, atau materi baru Kemendikbud)
+    if (targetGameType === "ulartangga") {
+      return {
+        type: "ulartangga",
+        icon: "🎲",
+        badge: "Ular Tangga Edukasi",
+        title: `Ular Tangga Kuis: ${cleanTitle}`,
+      };
+    }
+
+    // Default: adventure
     return {
       type: "adventure",
-      icon: "🗺️",
+      icon: "🏰",
       badge: "Petualangan 3D",
-      title: `Petualangan Desa: ${rawTitle.replace(/^.*-\s*/, "")} 🗺️`,
+      title: `Petualangan Desa: ${cleanTitle}`,
     };
-  }, [activeValidatedModule?.title, activeValidatedModule?.id, activeValidatedModule?.subject, chapter]);
+  }, [
+    activeValidatedModule?.title,
+    activeValidatedModule?.id,
+    activeValidatedModule?.subject,
+    activeValidatedModule?.gameType,
+    activeValidatedModule?.ragSummary,
+    chapter,
+  ]);
 
   const setActiveValidatedModule = useUIStore((s) => s.setActiveValidatedModule);
 
@@ -1528,6 +1525,8 @@ export default function PelajarDashboardPage() {
           chapter
         }
         studentName={currentStudentName}
+        forcedGameMode={activeGameInfo.type as "adventure" | "matching" | "ulartangga"}
+        activeModule={activeValidatedModule}
       />
     </div>
   );

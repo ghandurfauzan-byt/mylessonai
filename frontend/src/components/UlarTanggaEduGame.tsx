@@ -102,6 +102,66 @@ export default function UlarTanggaEduGame({
 
   // Bank Soal Tes Materi Sesuai Topik Aktif
   const questionPool = useMemo<QuestionItem[]>(() => {
+    // 1. Ekstrak Soal Kuis dari Materi Aktif yang Ditarik dari API jika tersedia
+    const quizMap = (activeModule?.quizQuestions as any);
+    if (quizMap && (quizMap[1]?.length || quizMap[2]?.length || quizMap[3]?.length)) {
+      const extracted: QuestionItem[] = [];
+      [1, 2, 3].forEach((lvl) => {
+        const list = quizMap[lvl] || [];
+        list.forEach((q: any, qIdx: number) => {
+          if (q.pertanyaan && q.opsi && Array.isArray(q.opsi) && q.opsi.length >= 2) {
+            extracted.push({
+              id: `api_quiz_l${lvl}_${qIdx}`,
+              pertanyaan: q.pertanyaan,
+              opsi: q.opsi.map((o: any, oIdx: number) => ({
+                id: String.fromCharCode(65 + oIdx),
+                teks: typeof o === "string" ? o : o.teks || o.text || String(o),
+                benar: o.benar ?? oIdx === 0,
+                penjelasan: o.penjelasan || "Bagus sekali! Pemahaman materimu sangat tepat.",
+              })),
+            });
+          }
+        });
+      });
+      if (extracted.length > 0) {
+        return extracted;
+      }
+    }
+
+    // 2. Ekstrak dari Intisari RAG Summary jika materi ditarik dari API
+    const summary = activeModule?.ragSummary || [];
+    if (summary.length >= 2) {
+      return summary.slice(0, 6).map((point, idx) => {
+        const parts = point.split(":");
+        const concept = (parts[0] || `Konsep ${idx + 1}`).trim();
+        const detail = (parts[1] || point).trim();
+        return {
+          id: `api_rag_q_${idx + 1}`,
+          pertanyaan: `Menurut materi '${concept}', apa pernyataan yang paling benar?`,
+          opsi: [
+            {
+              id: "A",
+              teks: detail.slice(0, 90),
+              benar: true,
+              penjelasan: "Tepat sekali! Sesuai dengan intisari buku pelajaran kurikulum.",
+            },
+            {
+              id: "B",
+              teks: "Materi ini tidak penting dan tidak perlu dipahami.",
+              benar: false,
+              penjelasan: "Materi ini sangat bermanfaat untuk pengetahuan kita.",
+            },
+            {
+              id: "C",
+              teks: "Berlawanan dengan aturan hidup rukun dan tertib.",
+              benar: false,
+              penjelasan: "Pilihan ini bertentangan dengan ajaran budi pekerti.",
+            },
+          ],
+        };
+      });
+    }
+
     if (resolvedTitle.toLowerCase().includes("aksara") || chapter.includes("aksara")) {
       return [
         {
@@ -366,7 +426,7 @@ export default function UlarTanggaEduGame({
       if (tile.type === "ladder" && tile.targetNumber) {
         setPendingMoveType("ladder");
         setPendingTargetTile(tile.targetNumber);
-        const randomQ = questionPool[Math.floor(Math.random() * questionPool.length)];
+        const randomQ = questionPool[Math.floor(Math.random() * questionPool.length)] || null;
         setActiveQuestion(randomQ);
         setLogMessage(`🪜 Kamu menemukan ${tile.label}! Jawab kuis tes ini untuk menaiki tangga!`);
         return;
@@ -376,7 +436,7 @@ export default function UlarTanggaEduGame({
       if (tile.type === "snake" && tile.targetNumber) {
         setPendingMoveType("snake");
         setPendingTargetTile(tile.targetNumber);
-        const randomQ = questionPool[Math.floor(Math.random() * questionPool.length)];
+        const randomQ = questionPool[Math.floor(Math.random() * questionPool.length)] || null;
         setActiveQuestion(randomQ);
         setLogMessage(`🐍 Waspada! Ada ${tile.label}! Jawab kuis untuk selamat dari gigitan ular!`);
         return;
@@ -385,7 +445,7 @@ export default function UlarTanggaEduGame({
       // 3. Petak Kuis Biasa
       if (tile.type === "quiz") {
         setPendingMoveType("quiz");
-        const randomQ = questionPool[Math.floor(Math.random() * questionPool.length)];
+        const randomQ = questionPool[Math.floor(Math.random() * questionPool.length)] || null;
         setActiveQuestion(randomQ);
         setLogMessage("❓ Kamu berada di Petak Kuis! Jawab kuis untuk mendapatkan +20 Poin!");
         return;

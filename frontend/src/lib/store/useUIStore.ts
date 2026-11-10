@@ -97,6 +97,80 @@ export interface ValidatedModuleSummary {
   learningGoal?: string;
   ragSummary?: string[];
   quizQuestions?: Record<number, Question[]>;
+  gameType?: "adventure" | "matching" | "ulartangga";
+}
+
+/**
+ * Otomatis menentukan 1 jenis game resmi yang paling pas untuk suatu materi:
+ * - "matching"   : Untuk materi hafalan simbol, aksara Jawa, tokoh wayang, kosakata, tebak kata
+ * - "ulartangga" : Untuk materi tes kuis pemahaman, evaluasi, sains, matematika, latihan soal
+ * - "adventure"  : Untuk materi penghayatan nilai budi pekerti, gotong royong, norma, bharatayudha, Pancasila
+ */
+export function resolveGameTypeForModule(
+  title = "",
+  subject = "",
+  id = "",
+  ragSummary?: string[] | string
+): "adventure" | "matching" | "ulartangga" {
+  const t = title.toLowerCase();
+  const s = subject.toLowerCase();
+  const i = id.toLowerCase();
+  const r = (Array.isArray(ragSummary) ? ragSummary.join(" ") : String(ragSummary || "")).toLowerCase();
+
+  // Prioritas Spesial: Kisah Kepahlawanan / Bharatayudha / Nilai Ksatria -> Petualangan 3D Jelajah Desa / Kraton
+  if (
+    t.includes("baratayuda") ||
+    t.includes("barathayuda") ||
+    t.includes("barathayudha") ||
+    t.includes("bharatayudha") ||
+    t.includes("kepahlawanan") ||
+    t.includes("pahlawan") ||
+    t.includes("petualangan")
+  ) {
+    return "adventure";
+  }
+
+  // 1. Tipe Menjodohkan Kartu Pasangan (Matching)
+  if (
+    i.includes("aksara") ||
+    t.includes("aksara") ||
+    i.includes("sandhangan") ||
+    t.includes("sandhangan") ||
+    t.includes("jodoh") ||
+    t.includes("pasangan") ||
+    i.includes("punokawan") ||
+    t.includes("punokawan") ||
+    i.includes("pandhawa") ||
+    t.includes("pandhawa") ||
+    t.includes("tebak kata") ||
+    t.includes("kosakata") ||
+    t.includes("kosa kata") ||
+    (s === "bjawa" && (t.includes("huruf") || t.includes("tembung") || t.includes("pasangan")))
+  ) {
+    return "matching";
+  }
+
+  // 2. Tipe Papan Ular Tangga Edukasi (Kuis / Evaluasi Pemahaman)
+  if (
+    i.includes("kuis") ||
+    t.includes("kuis") ||
+    i.includes("tes") ||
+    t.includes("tes") ||
+    i.includes("evaluasi") ||
+    t.includes("evaluasi") ||
+    t.includes("latihan soal") ||
+    t.includes("ujian") ||
+    t.includes("sains") ||
+    t.includes("ipa") ||
+    t.includes("matematika") ||
+    t.includes("siklus") ||
+    r.includes("evaluasi pemahaman")
+  ) {
+    return "ulartangga";
+  }
+
+  // 3. Default: Petualangan 3D Jelajah Desa (Pengamalan Nilai / Moral / Pancasila / Bharatayudha / Gotong Royong)
+  return "adventure";
 }
 
 const initialQuizDraft: QuizDraftState = { selectedOption: null, showHint: false };

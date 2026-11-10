@@ -28,7 +28,7 @@ import {
   startAdventureBgm,
   stopAdventureBgm,
 } from "@/lib/soundEffects";
-import { useUIStore } from "@/lib/store/useUIStore";
+import { useUIStore, resolveGameTypeForModule, ValidatedModuleSummary } from "@/lib/store/useUIStore";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 
@@ -88,6 +88,8 @@ interface Props {
   chapter: string;
   chapterTitle?: string;
   studentName?: string;
+  forcedGameMode?: "adventure" | "matching" | "ulartangga";
+  activeModule?: ValidatedModuleSummary;
 }
 
 // Model Suku Adat & Pos Pembelajaran Desa
@@ -154,6 +156,8 @@ export default function AdaptiveEduGameModal({
   chapter,
   chapterTitle,
   studentName = "Ghandur Fauzan (Siswa)",
+  forcedGameMode,
+  activeModule,
 }: Props) {
   const addPoints = useUIStore((s) => s.addPoints);
   const activeValidatedModule = useUIStore((s) => s.activeValidatedModule);
@@ -190,12 +194,27 @@ export default function AdaptiveEduGameModal({
     );
   }, [chapter, chapterTitle, activeValidatedModule]);
 
-  // Tipe Mode Game:
-  // - "adventure"  : Petualangan 3D Desa (Cocok untuk materi yang butuh PENJELASAN & IMPLEMENTASI nilai luhur)
-  // - "ulartangga" : Papan Ular Tangga Edukasi (Cocok untuk materi yang butuh TES PEMAHAMAN & EVALUASI kuis)
-  // - "matching"   : Menjodohkan Kartu Pasangan (Cocok untuk materi yang butuh TES SIMBOL AKSARA / KOSAKATA)
-  // - "manus"      : Generator Game Manus AI Otomatis
-  const [gameMode, setGameMode] = useState<"adventure" | "ulartangga" | "matching" | "manus">("adventure");
+  const currentModule = activeModule || activeValidatedModule;
+
+  // 1 MATERI = 1 JENIS GAME EKSKLUSIF
+  // Menentukan secara pasti tipe game resmi untuk topik pembelajaran aktif
+  const officialGameType = useMemo<"adventure" | "matching" | "ulartangga">(() => {
+    if (forcedGameMode) return forcedGameMode;
+    if (currentModule?.gameType) return currentModule.gameType;
+    return resolveGameTypeForModule(
+      currentModule?.title || chapterTitle || chapter,
+      currentModule?.subject || "",
+      currentModule?.id || chapter,
+      currentModule?.ragSummary
+    );
+  }, [forcedGameMode, currentModule, chapterTitle, chapter]);
+
+  const [gameMode, setGameMode] = useState<"adventure" | "ulartangga" | "matching" | "manus">(officialGameType);
+
+  // Kunci game mode secara eksklusif ke jenis game materi tersebut
+  useEffect(() => {
+    setGameMode(officialGameType);
+  }, [officialGameType]);
 
   // State Integrasi Generator Manus AI
   const [manusGameData, setManusGameData] = useState<{
@@ -205,50 +224,6 @@ export default function AdaptiveEduGameModal({
     directLauncherUrl?: string;
     isLoading?: boolean;
   }>({});
-
-  // Klasifikasi Kebutuhan Model Game Berdasarkan Karakteristik Materi:
-  // 1. "implementasi": Butuh Penjelasan & Pengamalan Nilai (Gotong Royong, Sila Pancasila, Norma Hidup, Toleransi, Budi Pekerti)
-  //    -> Model Game Utama: 🏰 Petualangan 3D (Eksplorasi Desa, Penjelasan Suara Pak Guru, Pos Studi Kasus)
-  // 2. "tes": Butuh Tes / Uji Pemahaman / Evaluasi / Simbol / Kosakata (Aksara Jawa, Kuis Bab, Kosakata Basa Jawa, Latihan Soal)
-  //    -> Model Game Utama: 🎲 Ular Tangga Edukasi & 🧩 Menjodohkan Kartu
-  const materiCategory = useMemo<"implementasi" | "tes">(() => {
-    const raw = (activeValidatedModule?.title || chapterTitle || chapter || "").toLowerCase();
-    const id = (chapter || activeValidatedModule?.id || "").toLowerCase();
-    if (
-      id.includes("aksara") ||
-      raw.includes("aksara") ||
-      id.includes("kuis") ||
-      raw.includes("kuis") ||
-      id.includes("tes") ||
-      raw.includes("tes") ||
-      id.includes("evaluasi") ||
-      raw.includes("evaluasi") ||
-      raw.includes("latihan") ||
-      id.includes("soal") ||
-      raw.includes("soal")
-    ) {
-      return "tes";
-    }
-    return "implementasi";
-  }, [chapter, chapterTitle, activeValidatedModule]);
-
-  const recommendedGameMode = useMemo(() => {
-    if (materiCategory === "tes") {
-      // Materi butuh tes pemahaman / evaluasi
-      return isJawaTopic ? "matching" : "ulartangga";
-    }
-    // Materi butuh penjelasan & implementasi nilai
-    return "adventure";
-  }, [materiCategory, isJawaTopic]);
-
-  // Otomatis arahkan ke model game yang paling pas saat topik berubah
-  useEffect(() => {
-    if (materiCategory === "tes") {
-      setGameMode(isJawaTopic ? "matching" : "ulartangga");
-    } else {
-      setGameMode("adventure");
-    }
-  }, [materiCategory, isJawaTopic]);
 
   // State Game Menjodohkan Kartu Pasangan Interaktif
   interface MatchingCard {
@@ -572,8 +547,133 @@ export default function AdaptiveEduGameModal({
   // TIAP POS MEMILIKI PENUNGGU PAK GURU, NAMA POS, DAN SUB-MATERI TERTENTU
   // --------------------------------------------------------------------------
   const sukuList: SukuAdat[] = useMemo(() => {
-    const rawTitle = (activeValidatedModule?.title || chapterTitle || chapter || "").toLowerCase();
-    const rawChapter = (chapter || activeValidatedModule?.id || "").toLowerCase();
+    const mod = currentModule;
+    const rawTitle = (mod?.title || chapterTitle || chapter || "").toLowerCase();
+    const rawChapter = (chapter || mod?.id || "").toLowerCase();
+
+    // 0. MATERI BASA JAWA / SEJARAH: PERANG BHARATAYUDHA & KISAH KEPAHLAWANAN
+    if (
+      rawChapter.includes("pandhawa") ||
+      rawTitle.includes("pandhawa") ||
+      rawTitle.includes("baratayuda") ||
+      rawTitle.includes("barathayuda") ||
+      rawTitle.includes("barathayudha") ||
+      rawTitle.includes("bharatayudha") ||
+      rawTitle.includes("kepahlawanan")
+    ) {
+      return [
+        {
+          id: "bharata_pos1",
+          namaPos: "Pos 1: Dharma Pandhawa (Netepi Janji)",
+          namaSuku: "Kraton Amarta (Joglo Ageng)",
+          rumahAdat: "Padhepokan Indraprastha",
+          tokohNama: "Prabu Puntadewa (Yudhistira)",
+          tokohAvatar: "👑",
+          guruNama: "Pak Guru Subroto",
+          subMateri: "Watak Jujur & Mbelani Bebener",
+          penjelasanGuru: "Ing Perang Bharatayudha, para Pandhawa berjuang dudu amarga seneng perang, nanging kanggo netepi darma mbelani bebener nglawan angkara murka.",
+          silaKe: 1,
+          simbolSila: "⭐",
+          zPos: -45,
+          xPos: 14,
+          warnaKhas: "#38bdf8",
+          pertanyaan: "Prabu Puntadewa nduweni getih putih kang dadi pralambang watak luhur, yaiku:",
+          opsi: [
+            { id: "A", teks: "Jujur, ora tau goroh, sabar, lan tresna marang katentreman.", benar: true, penjelasan: "Leres sanget! Puntadewa minangka tuladha ksatria sejati kang resik atine." },
+            { id: "B", teks: "Seneng pamer kesaktian marang wong cilik.", benar: false, penjelasan: "Puntadewa ora tau pamer utawa gumede." },
+            { id: "C", teks: "Mung mikirake kamulyane dhewe.", benar: false, penjelasan: "Puntadewa ngayomi kabeh kawula kanthi adil." },
+          ],
+        },
+        {
+          id: "bharata_pos2",
+          namaPos: "Pos 2: Raden Werkudara (Kukuh Bakuh)",
+          namaSuku: "Ksatryan Jodhipati",
+          rumahAdat: "Bale Waja Jodhipati",
+          tokohNama: "Raden Werkudara (Bima)",
+          tokohAvatar: "💪",
+          guruNama: "Pak Guru Darmawan",
+          subMateri: "Ksatria Tangguh & Setya Janji",
+          penjelasanGuru: "Werkudara ora tau cidra ing janji. Senadyan katon atos, atine alus banget lan tansah ngabekti marang ibu lan para gurune.",
+          silaKe: 2,
+          simbolSila: "⚡",
+          zPos: -105,
+          xPos: -14,
+          warnaKhas: "#fb923c",
+          pertanyaan: "Senjata Kuku Pancanaka kagungane Werkudara nglambangake tekad ksatria yaiku:",
+          opsi: [
+            { id: "A", teks: "Kukuh bakuh mbelani bebener lan ora bakal mundur ngadhepi durangkara.", benar: true, penjelasan: "Bener tenan! Werkudara ksatria kang blaka suta lan setya ing bebener." },
+            { id: "B", teks: "Kanggo medeni kanca sakelas.", benar: false, penjelasan: "Senjata ksatria mung digunakake kanggo njaga katentreman." },
+            { id: "C", teks: "Kanggo njupuk barang darbeke liyan.", benar: false, penjelasan: "Werkudara ora tau nindakake piala." },
+          ],
+        },
+        {
+          id: "bharata_pos3",
+          namaPos: "Pos 3: Raden Janaka (Fokus Sinau)",
+          namaSuku: "Ksatryan Madukara",
+          rumahAdat: "Padhepokan Madukara",
+          tokohNama: "Raden Janaka (Arjuna)",
+          tokohAvatar: "🏹",
+          guruNama: "Ibu Guru Rahayu",
+          subMateri: "Gentur Tapane & Tertib Sinau",
+          penjelasanGuru: "Arjuna pinter manah amarga tansah fokus sinau lan ngajeni piwulange Resi Drona. Murid SD kudu tiru semangate Arjuna nalika sinau ing kelas.",
+          silaKe: 3,
+          simbolSila: "🎯",
+          zPos: -165,
+          xPos: 14,
+          warnaKhas: "#4ade80",
+          pertanyaan: "Keahliane Raden Janaka anggone manah kanthi pas ing sasaran menehi piwulang supaya siswa:",
+          opsi: [
+            { id: "A", teks: "Fokus nggatekake wulangan guru lan tlaten latihan tanpa gampang nyerah.", benar: true, penjelasan: "Jos tenan! Konsentrasi lan ketekunan ndadekake murid pinter." },
+            { id: "B", teks: "Mung sinau sedina sadurunge ujian.", benar: false, penjelasan: "Sinau kudu ajeg lan tlaten saben dina." },
+            { id: "C", teks: "Ngganggu kanca sing lagi sinau.", benar: false, penjelasan: "Janaka tansah ngajeni kanca lan gurune." },
+          ],
+        },
+        {
+          id: "bharata_pos4",
+          namaPos: "Pos 4: Nakula & Sadewa (Rukun Sedyani)",
+          namaSuku: "Ksatryan Sawojajar",
+          rumahAdat: "Pondhok Kembar Sawojajar",
+          tokohNama: "Raden Nakula & Sadewa",
+          tokohAvatar: "🧑‍🤝‍🧑",
+          guruNama: "Pak Guru Bambang",
+          subMateri: "Pinter Ngrumat Alam & Guyub Rukun",
+          penjelasanGuru: "Nakula lan Sadewa ksatria kembar kang tansah setya bekti marang sedulur tuwane. Wasis babagan ngrumat kewan, tetuwuhan, lan ilmu lintang.",
+          silaKe: 4,
+          simbolSila: "🌿",
+          zPos: -225,
+          xPos: -14,
+          warnaKhas: "#f87171",
+          pertanyaan: "Piwulang luhur saka paraga kembar Nakula lan Sadewa tumrap siswa yaiku:",
+          opsi: [
+            { id: "A", teks: "Tansah rukun karo sedulur lan kanca, sarta tresna marang lingkungan alam.", benar: true, penjelasan: "Hebat! Kerukunan lan tresna alam dadi kunci katentreman urip." },
+            { id: "B", teks: "Seneng pasulayan amarga rumangsa luwih pinter.", benar: false, penjelasan: "Nakula-Sadewa tansah andhap asor lan rukun." },
+            { id: "C", teks: "Ora gelem mbantu sedulur tuwane.", benar: false, penjelasan: "Klorone bekti banget marang Puntadewa lan ibu Kunthi." },
+          ],
+        },
+        {
+          id: "bharata_pos5",
+          namaPos: "Pos 5: Kemenangan Kebenaran (Sura Dira Jayaningrat)",
+          namaSuku: "Kraton Hastinapura",
+          rumahAdat: "Sasana Astina Luhur",
+          tokohNama: "Prabu Kresna (Pamong Ksatria)",
+          tokohAvatar: "🪷",
+          guruNama: "Pak Guru Wijaya",
+          subMateri: "Kebaikan Ngalahake Angkara Murka",
+          penjelasanGuru: "Falsafah 'Sura Dira Jayaningrat Lebur Dening Pangastuti' ngelingake yen kabeh sifat ala, curang, lan sombong bakal kalah dening sifat becik, jujur, lan sabar.",
+          silaKe: 5,
+          simbolSila: "🏆",
+          zPos: -285,
+          xPos: 14,
+          warnaKhas: "#facc15",
+          pertanyaan: "Pungkasane Perang Bharatayudha menehi piwulang paling wigati yaiku:",
+          opsi: [
+            { id: "A", teks: "Tumindak becik, jujur, lan adil bakal mesthi unggul ngalahake tumindak ala.", benar: true, penjelasan: "Sampurna! Kabecikan lan kejujuran bakal tansah menang ing pungkasan." },
+            { id: "B", teks: "Sapa sing sombong bakal mesthi menang selawase.", benar: false, penjelasan: "Sifat sombong lan culika bakal sirna lebur." },
+            { id: "C", teks: "Ora perlu tumindak becik yen ora diweruhi uwong.", benar: false, penjelasan: "Tumindak becik kudu ditindakake saben wektu." },
+          ],
+        },
+      ];
+    }
 
     // 1. MATERI BASA JAWA: PUNOKAWAN
     if (rawChapter.includes("punokawan") || rawTitle.includes("punokawan")) {
@@ -1269,6 +1369,89 @@ export default function AdaptiveEduGameModal({
           ],
         },
       ];
+    }
+
+    // 6.5. JIKA MATERI DITARIK DARI API DENGAN RAG SUMMARY (DINAMIS 5 POS MATERI API)
+    const summary = mod?.ragSummary || [];
+    if (summary.length >= 3) {
+      const colors = ["#38bdf8", "#fb923c", "#4ade80", "#f87171", "#facc15"];
+      const zPositions = [-45, -105, -165, -225, -285];
+      const xPositions = [14, -14, 14, -14, 14];
+      const guruNames = [
+        "Pak Guru Subroto",
+        "Pak Guru Darmawan",
+        "Ibu Guru Rahayu",
+        "Pak Guru Bambang",
+        "Pak Guru Wijaya",
+      ];
+      const avatars = ["👨‍🏫", "👩‍🏫", "👴", "🧑", "🌟"];
+
+      return zPositions.map((z, idx) => {
+        const rawPoint = summary[idx] || summary[idx % summary.length] || "";
+        const parts = rawPoint.split(":");
+        const subMateri = (parts[0] || `Intisari Materi Bagian ${idx + 1}`).trim();
+        const penjelasanGuru = (parts[1] || rawPoint || "").trim();
+
+        // Ambil kuis dari quizQuestions jika guru/API sudah menyediakannya
+        const qLevel = (idx % 3) + 1;
+        const qList = (mod?.quizQuestions as any)?.[qLevel] || [];
+        const matchedQ = qList[0];
+
+        const pertanyaan =
+          matchedQ?.pertanyaan ||
+          `Berdasarkan intisari materi '${subMateri.slice(0, 45)}', sikap apa yang paling baik kita amalkan?`;
+
+        const opsi =
+          matchedQ?.opsi && Array.isArray(matchedQ.opsi) && matchedQ.opsi.length >= 2
+            ? (matchedQ.opsi as any[]).map((o: any, oIdx: number) => ({
+                id: String.fromCharCode(65 + oIdx),
+                teks: typeof o === "string" ? o : (o?.teks || o?.text || String(o)),
+                benar: Boolean(o?.benar ?? (oIdx === 0)),
+                penjelasan:
+                  String(o?.penjelasan || "Sangat baik dan sesuai dengan pemahaman materi kurikulum!"),
+              }))
+            : [
+                {
+                  id: "A",
+                  teks: `Memahami dan mengamalkan nilai ${subMateri.slice(0, 35)} dengan tulus ikhlas.`,
+                  benar: true,
+                  penjelasan: "Tepat sekali! Membiasakan perbuatan baik sejak dini di sekolah dan rumah.",
+                },
+                {
+                  id: "B",
+                  teks: "Mengabaikan pelajaran dan hanya mementingkan diri sendiri.",
+                  benar: false,
+                  penjelasan: "Kita harus rajin belajar dan peduli kepada sesama teman.",
+                },
+                {
+                  id: "C",
+                  teks: "Meniru perbuatan yang merugikan kawan lain.",
+                  benar: false,
+                  penjelasan: "Perbuatan buruk tidak sesuai dengan karakter Pelajar Pancasila.",
+                },
+              ];
+
+        return {
+          id: `api_dyn_pos_${idx + 1}`,
+          namaPos: `Pos ${idx + 1}: ${subMateri.slice(0, 36)}`,
+          namaSuku: "Pojok Belajar Mandiri",
+          rumahAdat: `Padhepokan ${subMateri.slice(0, 24)}`,
+          tokohNama: `Duta Belajar Pos ${idx + 1}`,
+          tokohAvatar: avatars[idx % avatars.length] || "👨‍🏫",
+          guruNama: guruNames[idx % guruNames.length] || "Pak Guru Subroto",
+          subMateri: subMateri.slice(0, 40),
+          penjelasanGuru:
+            penjelasanGuru.slice(0, 180) ||
+            `Pelajari dan amalkan nilai luhur materi ${resolvedTitle} bersama kawan sekelas!`,
+          silaKe: idx + 1,
+          simbolSila: "⭐",
+          zPos: z,
+          xPos: xPositions[idx] || 0,
+          warnaKhas: colors[idx % colors.length] || "#38bdf8",
+          pertanyaan,
+          opsi,
+        };
+      });
     }
 
     // 7. MATERI DEFAULT: BAB 1 SILA KE-3 & 5 SILA PANCASILA
@@ -2875,7 +3058,7 @@ export default function AdaptiveEduGameModal({
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-300 truncate">
-                  Materi: <b className="text-emerald-400">{resolvedTitle}</b> • Model: <b className={materiCategory === "implementasi" ? "text-amber-300" : "text-emerald-300"}>{materiCategory === "implementasi" ? "📖 Penjelasan & Implementasi" : "🎯 Tes & Evaluasi Pemahaman"}</b>
+                  Materi: <b className="text-emerald-400">{resolvedTitle}</b> • Model: <b className={gameMode === "adventure" ? "text-amber-300" : "text-emerald-300"}>{gameMode === "adventure" ? "🏰 Petualangan 3D" : gameMode === "matching" ? "🧩 Menjodohkan Kartu" : "🎲 Ular Tangga Edukasi"}</b>
                 </p>
               </div>
             </div>
@@ -2895,88 +3078,26 @@ export default function AdaptiveEduGameModal({
             </button>
           </div>
 
-          {/* TAB MODEL GAME (DISINKRONKAN DENGAN KEBUTUHAN MATERI: PENJELASAN/IMPLEMENTASI VS TES) */}
-          <div className="flex items-center bg-slate-950/80 p-1 rounded-2xl border border-yellow-400/30 gap-1 shadow-inner">
-            {/* Model 1: Petualangan 3D (Untuk Penjelasan & Implementasi Nilai) */}
-            <button
-              type="button"
-              onClick={() => {
-                playClickSound();
-                setGameMode("adventure");
-              }}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                gameMode === "adventure"
-                  ? "bg-amber-500 text-slate-950 shadow-md font-black"
-                  : "text-slate-300 hover:text-white"
-              }`}
-              title="Model Game untuk Penjelasan & Implementasi Nilai Luhur"
-            >
-              <span>🏰</span>
-              <span>Petualangan 3D</span>
-              <span className="hidden xl:inline text-[9px] opacity-75 font-normal">
-                (Implementasi)
-              </span>
-            </button>
-
-            {/* Model 2: Ular Tangga Edukasi (Untuk Tes & Evaluasi Pemahaman) */}
-            <button
-              type="button"
-              onClick={() => {
-                playClickSound();
-                setGameMode("ulartangga");
-              }}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                gameMode === "ulartangga"
-                  ? "bg-amber-500 text-slate-950 shadow-md font-black"
-                  : "text-slate-300 hover:text-white"
-              }`}
-              title="Model Game untuk Tes & Evaluasi Pemahaman Materi"
-            >
-              <span>🎲</span>
-              <span>Ular Tangga</span>
-              <span className="hidden xl:inline text-[9px] opacity-75 font-normal">
-                (Tes Kuis)
-              </span>
-            </button>
-
-            {/* Model 3: Menjodohkan Kartu (Untuk Tes Pasangan Simbol / Kata) */}
-            <button
-              type="button"
-              onClick={() => {
-                playClickSound();
-                setGameMode("matching");
-              }}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                gameMode === "matching"
-                  ? "bg-amber-500 text-slate-950 shadow-md font-black"
-                  : "text-slate-300 hover:text-white"
-              }`}
-              title="Model Game untuk Tes Pasangan Simbol & Kosakata"
-            >
-              <span>🧩</span>
-              <span>Menjodohkan</span>
-              <span className="hidden xl:inline text-[9px] opacity-75 font-normal">
-                (Tes Simbol)
-              </span>
-            </button>
-
-            {/* Model 4: Generator Manus AI */}
-            <button
-              type="button"
-              onClick={() => {
-                playClickSound();
-                setGameMode("manus");
-              }}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                gameMode === "manus"
-                  ? "bg-cyan-500 text-slate-950 shadow-md font-black"
-                  : "text-slate-300 hover:text-white"
-              }`}
-              title="Generator Game Otomatis Manus AI"
-            >
-              <span>🤖</span>
-              <span className="hidden md:inline">Manus AI</span>
-            </button>
+          {/* BADGE RESMI MODEL GAME MATERI INI (1 MATERI = 1 MODEL GAME EKSKLUSIF) */}
+          <div className="flex items-center bg-slate-950/85 px-3 py-1.5 rounded-2xl border border-yellow-400/40 gap-2 shadow-inner">
+            <span className="text-base shrink-0">
+              {officialGameType === "matching" ? "🧩" : officialGameType === "ulartangga" ? "🎲" : "🏰"}
+            </span>
+            <div className="text-left leading-tight">
+              <div className="text-[9px] font-black uppercase tracking-wider text-yellow-300 flex items-center gap-1">
+                <span>Game Resmi Materi</span>
+                <span className="bg-yellow-400/20 text-yellow-200 px-1.5 py-0.2 rounded text-[8px] font-bold">
+                  Eksklusif
+                </span>
+              </div>
+              <div className="text-xs font-black text-white truncate max-w-[200px] sm:max-w-[280px]">
+                {officialGameType === "matching"
+                  ? "Menjodohkan Kartu (Tes Simbol)"
+                  : officialGameType === "ulartangga"
+                  ? "Papan Ular Tangga (Tes Kuis)"
+                  : "Petualangan 3D Jelajah Desa"}
+              </div>
+            </div>
           </div>
 
           {/* HUD STATUS & KONTROL KANAN */}
@@ -3521,7 +3642,7 @@ export default function AdaptiveEduGameModal({
                         { rank: 4, name: "Edo Silaban", score: peerScores.edo, avatar: "🧒" },
                         { rank: 5, name: "Dayu Astuti", score: peerScores.dayu, avatar: "👧" },
                       ]
-                        .sort((a, b) => b.score - a.score)
+                        .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
                         .map((item, idx) => (
                           <div
                             key={item.name}
