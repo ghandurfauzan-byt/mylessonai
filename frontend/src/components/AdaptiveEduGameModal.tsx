@@ -38,13 +38,17 @@ interface Props {
   chapterTitle?: string;
 }
 
-// Model Suku Nusantara
+// Model Suku Adat & Pos Pembelajaran Desa
 interface SukuAdat {
   id: string;
+  namaPos: string;
   namaSuku: string;
   rumahAdat: string;
   tokohNama: string;
   tokohAvatar: string;
+  guruNama: string;
+  subMateri: string;
+  penjelasanGuru: string;
   silaKe: number;
   simbolSila: string;
   zPos: number;
@@ -190,100 +194,476 @@ export default function AdaptiveEduGameModal({
   }, []);
 
   // --------------------------------------------------------------------------
-  // DATA 5 SUKU NUSANTARA (JAWABAN DIACAK: B, A, C, B, C)
+  // DATA 5 POS MATERI EDUKASI (DINAMIS MENYESUAIKAN MATERI DASHBOARD SISWA)
+  // TIAP POS MEMILIKI PENUNGGU PAK GURU, NAMA POS, DAN SUB-MATERI TERTENTU
   // --------------------------------------------------------------------------
-  const sukuList: SukuAdat[] = useMemo(() => [
-    {
-      id: "jawa",
-      namaSuku: "Suku Jawa (Rumah Joglo)",
-      rumahAdat: "Rumah Adat Joglo",
-      tokohNama: "Kakek Raden (Tetua Adat)",
-      tokohAvatar: "👴",
-      silaKe: 1,
-      simbolSila: "⭐",
-      zPos: -45,
-      xPos: 14,
-      warnaKhas: "#38bdf8",
-      pertanyaan: "Di desa, ada teman berbeda keyakinan yang sedang menjalankan ibadah doa. Nilai Sila ke-1 mengajarkan kita untuk:",
-      opsi: [
-        { id: "A", teks: "Bermain petasan di dekat tempat ibadah agar ramai.", benar: false, penjelasan: "Tidak sopan. Tempat ibadah harus dijaga kesucian dan ketenangannya." },
-        { id: "B", teks: "Menjaga ketenangan dan menghormati ibadahnya dengan ramah.", benar: true, penjelasan: "Sangat bijak! Sila 1 mengajarkan toleransi dan kerukunan antarumat beragama." },
-        { id: "C", teks: "Menyuruhnya berhenti karena berbeda cara berdoanya.", benar: false, penjelasan: "Keliru. Kita tidak boleh memaksakan keyakinan kepada orang lain." },
-      ],
-    },
-    {
-      id: "sunda",
-      namaSuku: "Suku Sunda (Rumah Panggung)",
-      rumahAdat: "Rumah Panggung Sunda",
-      tokohNama: "Kang Asep (Pemuda Desa)",
-      tokohAvatar: "🧑",
-      silaKe: 2,
-      simbolSila: "⛓️",
-      zPos: -105,
-      xPos: -14,
-      warnaKhas: "#fb923c",
-      pertanyaan: "Kamu melihat seorang kawan jatuh terpeleset di jalan bebatuan dan bukunya berserakan. Sikap kemanusiaanmu:",
-      opsi: [
-        { id: "A", teks: "Segera menolongnya berdiri dan merapikan buku-bukunya dengan ikhlas.", benar: true, penjelasan: "Luar biasa! Sila 2 mengajarkan tolong-menolong dengan kasih sayang." },
-        { id: "B", teks: "Menertawakannya dan membiarkannya menangis sendirian.", benar: false, penjelasan: "Menertawakan kemalangan orang lain bertentangan dengan adab kemanusiaan." },
-        { id: "C", teks: "Meminta uang saku dulu baru bersedia menolong.", benar: false, penjelasan: "Menolong sesama harus didasari niat tulus tanpa pamrih." },
-      ],
-    },
-    {
-      id: "minang",
-      namaSuku: "Suku Minang (Rumah Gadang)",
-      rumahAdat: "Rumah Gadang Gonjong",
-      tokohNama: "Uda Buyung (Datuk Muda)",
-      tokohAvatar: "🤠",
-      silaKe: 3,
-      simbolSila: "🌳",
-      zPos: -165,
-      xPos: 14,
-      warnaKhas: "#4ade80",
-      pertanyaan: "Ada kawan baru yang berasal dari pulau seberang dan logat bicaranya berbeda. Nilai Persatuan Indonesia mengajarkan:",
-      opsi: [
-        { id: "A", teks: "Menjauhinya dan membentuk kelompok yang hanya dari satu suku saja.", benar: false, penjelasan: "Sikap eksklusif memecah belah persatuan bangsa." },
-        { id: "B", teks: "Mengejek logat dan pakaian adat daerah asalnya.", benar: false, penjelasan: "Mengejek budaya daerah kawan melanggar persatuan nasional." },
-        { id: "C", teks: "Menyambutnya hangat, mengajaknya bermain rukun: Bhinneka Tunggal Ika!", benar: true, penjelasan: "Bhinneka Tunggal Ika! Perbedaan suku adalah kekayaan pemersatu bangsa." },
-      ],
-    },
-    {
-      id: "dayak",
-      namaSuku: "Suku Dayak (Rumah Betang)",
-      rumahAdat: "Rumah Betang Panjang",
-      tokohNama: "Kepala Suku Kaian",
-      tokohAvatar: "🧓",
-      silaKe: 4,
-      simbolSila: "🐂",
-      zPos: -225,
-      xPos: -14,
-      warnaKhas: "#f87171",
-      pertanyaan: "Kelasmu sedang menentukan tujuan karya wisata. Banyak usulan yang berbeda-beda. Cara mengambil keputusan terbaik:",
-      opsi: [
-        { id: "A", teks: "Ketua kelas memaksa semua murid mengikuti kemauan pribadinya.", benar: false, penjelasan: "Pemaksaan kehendak melanggar hak demokrasi Sila 4." },
-        { id: "B", teks: "Musyawarah mufakat, mendengarkan semua usulan, dan mengambil keputusan bersama.", benar: true, penjelasan: "Musyawarah mufakat menjunjung tinggi kebijaksanaan dan kebersamaan." },
-        { id: "C", teks: "Ribut bertengkar dan membatalkan kegiatan sama sekali.", benar: false, penjelasan: "Pertengkaran merusak kerukunan yang seharusnya dibangun lewat musyawarah." },
-      ],
-    },
-    {
-      id: "papua",
-      namaSuku: "Suku Papua (Rumah Honai)",
-      rumahAdat: "Rumah Adat Honai",
-      tokohNama: "Kaka Pace (Sahabat Alam)",
-      tokohAvatar: "🧔",
-      silaKe: 5,
-      simbolSila: "🌾",
-      zPos: -285,
-      xPos: 14,
-      warnaKhas: "#facc15",
-      pertanyaan: "Hasil panen kebun sekolah sangat melimpah berkat kerja bakti seluruh siswa. Pembagian yang adil adalah:",
-      opsi: [
-        { id: "A", teks: "Semua hasil panen dibawa pulang oleh satu orang saja.", benar: false, penjelasan: "Tindakan serakah melanggar keadilan sosial." },
-        { id: "B", teks: "Menjual hasil panen secara diam-diam tanpa izin teman-teman.", benar: false, penjelasan: "Tidak jujur dan melanggar hak bersama." },
-        { id: "C", teks: "Membagi hasil panen secara merata dan dinikmati bersama seluruh siswa.", benar: true, penjelasan: "Keadilan sosial terwujud nyata! Semua yang bekerja keras berhak menikmati hasil bersama." },
-      ],
-    },
-  ], []);
+  const sukuList: SukuAdat[] = useMemo(() => {
+    const rawTitle = (activeValidatedModule?.title || chapterTitle || chapter || "").toLowerCase();
+    const rawChapter = (chapter || activeValidatedModule?.id || "").toLowerCase();
+
+    // 1. MATERI BAB 2: GOTONG ROYONG
+    if (rawChapter.includes("gotong") || rawTitle.includes("gotong")) {
+      return [
+        {
+          id: "gotong_pos1",
+          namaPos: "Pos 1: Nilai Luhur Gotong Royong",
+          namaSuku: "Suku Jawa (Rumah Joglo)",
+          rumahAdat: "Rumah Adat Joglo",
+          tokohNama: "Kakek Raden (Tetua Adat)",
+          tokohAvatar: "👴",
+          guruNama: "Pak Guru Subroto",
+          subMateri: "Arti & Nilai Kebersamaan",
+          penjelasanGuru: "Gotong royong adalah tradisi mulia asli bangsa Indonesia di mana semua warga saling bahu-membahu tanpa memandang perbedaan.",
+          silaKe: 1,
+          simbolSila: "🤝",
+          zPos: -45,
+          xPos: 14,
+          warnaKhas: "#38bdf8",
+          pertanyaan: "Gotong royong merupakan warisan budaya asli bangsa Indonesia. Nilai utama dari gotong royong adalah:",
+          opsi: [
+            { id: "A", teks: "Bekerja sendiri-sendiri agar cepat selesai tanpa diganggu.", benar: false, penjelasan: "Gotong royong justru mengutamakan kebersamaan dan kerja sama." },
+            { id: "B", teks: "Bekerja bersama secara sukarela dan saling membantu demi kepentingan bersama.", benar: true, penjelasan: "Hebat! Gotong royong menumbuhkan persaudaraan dan meringankan beban bersama." },
+            { id: "C", teks: "Hanya membantu jika diberi imbalan uang saku yang banyak.", benar: false, penjelasan: "Gotong royong dilakukan dengan tulus ikhlas tanpa pamrih." },
+          ],
+        },
+        {
+          id: "gotong_pos2",
+          namaPos: "Pos 2: Piket Kebersihan Kelas",
+          namaSuku: "Suku Sunda (Rumah Panggung)",
+          rumahAdat: "Rumah Panggung Sunda",
+          tokohNama: "Kang Asep (Pemuda Desa)",
+          tokohAvatar: "🧑",
+          guruNama: "Pak Guru Rahman",
+          subMateri: "Kerja Sama di Sekolah",
+          penjelasanGuru: "Di sekolah, gotong royong terwujud lewat regu piket kelas. Membersihkan papan tulis, menyapu, dan merapikan meja bersama.",
+          silaKe: 2,
+          simbolSila: "🧹",
+          zPos: -105,
+          xPos: -14,
+          warnaKhas: "#fb923c",
+          pertanyaan: "Saat jam pulang sekolah, giliran kelompokmu yang bertugas piket kebersihan kelas. Sikap gotong royong yang tepat:",
+          opsi: [
+            { id: "A", teks: "Membagi tugas dengan adil (ada yang menyapu, mengepel, membuang sampah) dan bekerja kompak.", benar: true, penjelasan: "Tepat sekali! Pembagian tugas yang adil membuat piket kelas selesai lebih cepat dan bersih." },
+            { id: "B", teks: "Langsung lari pulang diam-diam dan menitipkan tugas ke teman lain.", benar: false, penjelasan: "Melarikan diri dari tanggung jawab piket merugikan teman sekelompok." },
+            { id: "C", teks: "Hanya berdiri memerintah teman tanpa mau memegang sapu.", benar: false, penjelasan: "Gotong royong menuntut keterlibatan aktif semua anggota." },
+          ],
+        },
+        {
+          id: "gotong_pos3",
+          namaPos: "Pos 3: Kerja Bakti Lingkungan",
+          namaSuku: "Suku Minang (Rumah Gadang)",
+          rumahAdat: "Rumah Gadang Gonjong",
+          tokohNama: "Uda Buyung (Datuk Muda)",
+          tokohAvatar: "🤠",
+          guruNama: "Pak Guru Darmawan",
+          subMateri: "Membersihkan Lingkungan RT/Desa",
+          penjelasanGuru: "Kerja bakti di lingkungan tempat tinggal mempererat silaturahmi tetangga dan mencegah bencana seperti banjir atau sarang nyamuk.",
+          silaKe: 3,
+          simbolSila: "🏡",
+          zPos: -165,
+          xPos: 14,
+          warnaKhas: "#4ade80",
+          pertanyaan: "Di hari Minggu pagi, warga desa mengadakan kerja bakti membersihkan selokan. Peran anak sekolah yang paling tepat:",
+          opsi: [
+            { id: "A", teks: "Mengunci kamar dan bermain game sepanjang hari.", benar: false, penjelasan: "Kita harus belajar peduli pada lingkungan sekitar tempat tinggal." },
+            { id: "B", teks: "Menonton saja sambil menertawakan tetangga yang berkeringat.", benar: false, penjelasan: "Menertawakan orang yang bekerja sangat tidak sopan." },
+            { id: "C", teks: "Ikut membantu tugas ringan, seperti mengumpulkan daun kering dan membagikan air minum.", benar: true, penjelasan: "Luar biasa! Kontribusi sekecil apa pun sangat berarti dalam kerja bakti." },
+          ],
+        },
+        {
+          id: "gotong_pos4",
+          namaPos: "Pos 4: Tolong-Menolong Ikhlas",
+          namaSuku: "Suku Dayak (Rumah Betang)",
+          rumahAdat: "Rumah Betang Panjang",
+          tokohNama: "Kepala Suku Kaian",
+          tokohAvatar: "🧓",
+          guruNama: "Pak Guru Triyono",
+          subMateri: "Membantu Kawan Tertimpa Musibah",
+          penjelasanGuru: "Ketika kawan atau saudara kita tertimpa musibah, kita segera mengulurkan tangan membantu donasi atau penghiburan.",
+          silaKe: 4,
+          simbolSila: "❤️",
+          zPos: -225,
+          xPos: -14,
+          warnaKhas: "#f87171",
+          pertanyaan: "Seorang kawan sekelas kehilangan buku paket dan alat tulisnya karena kebanjiran. Wujud solidaritas gotong royong kelas:",
+          opsi: [
+            { id: "A", teks: "Menyalahkan dia mengapa rumahnya terkena banjir.", benar: false, penjelasan: "Korban musibah butuh dukungan, bukan disalahkan." },
+            { id: "B", teks: "Mengumpulkan sumbangan sukarela dan berbagi alat tulis bersamanya.", benar: true, penjelasan: "Budi pekerti luhur! Solidaritas meringankan beban teman yang sedang kesulitan." },
+            { id: "C", teks: "Membiarkannya dihukum guru saat pelajaran dimulai.", benar: false, penjelasan: "Sikap acuh tak acuh melanggar nilai kemanusiaan gotong royong." },
+          ],
+        },
+        {
+          id: "gotong_pos5",
+          namaPos: "Pos 5: Berat Sama Dipikul",
+          namaSuku: "Suku Papua (Rumah Honai)",
+          rumahAdat: "Rumah Adat Honai",
+          tokohNama: "Kaka Pace (Sahabat Alam)",
+          tokohAvatar: "🧔",
+          guruNama: "Pak Guru Sukardi",
+          subMateri: "Manfaat Nyata Kebersamaan",
+          penjelasanGuru: "Pepatah 'Berat sama dipikul, ringan sama dijinjing' mengajarkan bahwa hal yang mustahil dikerjakan sendiri akan mudah jika bersatu.",
+          silaKe: 5,
+          simbolSila: "⚖️",
+          zPos: -285,
+          xPos: 14,
+          warnaKhas: "#facc15",
+          pertanyaan: "Arti peribahasa 'Berat sama dipikul, ringan sama dijinjing' dalam gotong royong adalah:",
+          opsi: [
+            { id: "A", teks: "Tugas berat diserahkan ke orang tua saja, tugas ringan untuk anak-anak.", benar: false, penjelasan: "Peribahasa ini berbicara tentang kebersamaan dalam suka dan duka." },
+            { id: "B", teks: "Pekerjaan sulit maupun mudah diselesaikan bersama-sama dengan penuh tanggung jawab.", benar: true, penjelasan: "Tepat sekali! Persatuan membuat pekerjaan berat terasa ringan." },
+            { id: "C", teks: "Barang yang berat harus ditinggal, hanya barang ringan yang dibawa.", benar: false, penjelasan: "Arti harfiah keliru. Makna aslinya adalah tentang solidaritas bersama." },
+          ],
+        },
+      ];
+    }
+
+    // 2. MATERI BAB 3: NORMA & ATURAN
+    if (rawChapter.includes("norma") || rawTitle.includes("norma") || rawTitle.includes("aturan")) {
+      return [
+        {
+          id: "norma_pos1",
+          namaPos: "Pos 1: Norma Agama & Ibadah",
+          namaSuku: "Suku Jawa (Rumah Joglo)",
+          rumahAdat: "Rumah Adat Joglo",
+          tokohNama: "Kakek Raden (Tetua Adat)",
+          tokohAvatar: "👴",
+          guruNama: "Pak Guru Zainuddin",
+          subMateri: "Pedoman dari Tuhan YME",
+          penjelasanGuru: "Norma agama adalah aturan hidup yang bersumber dari wahyu Tuhan Yang Maha Esa. Mengajarkan kebaikan dan toleransi antarumat beragama.",
+          silaKe: 1,
+          simbolSila: "⭐",
+          zPos: -45,
+          xPos: 14,
+          warnaKhas: "#38bdf8",
+          pertanyaan: "Contoh pengamalan norma agama dalam pergaulan di sekolah setiap hari adalah:",
+          opsi: [
+            { id: "A", teks: "Mengejek kawan yang sedang berdoa sebelum belajar.", benar: false, penjelasan: "Menghormati doa teman adalah cerminan norma agama." },
+            { id: "B", teks: "Rajin beribadah sesuai keyakinan dan menghormati teman yang berbeda cara ibadahnya.", benar: true, penjelasan: "Sangat baik! Norma agama menanamkan ketaatan dan saling menghargai." },
+            { id: "C", teks: "Memaksa kawan lain mengikuti keyakinan kita.", benar: false, penjelasan: "Agama tidak boleh dipaksakan kepada orang lain." },
+          ],
+        },
+        {
+          id: "norma_pos2",
+          namaPos: "Pos 2: Norma Kesusilaan",
+          namaSuku: "Suku Sunda (Rumah Panggung)",
+          rumahAdat: "Rumah Panggung Sunda",
+          tokohNama: "Kang Asep (Pemuda Desa)",
+          tokohAvatar: "🧑",
+          guruNama: "Pak Guru Arif",
+          subMateri: "Suara Hati & Kejujuran",
+          penjelasanGuru: "Norma kesusilaan bersumber dari hati nurani manusia. Sanksinya adalah rasa penyesalan, gelisah, atau malu jika berbuat curang.",
+          silaKe: 2,
+          simbolSila: "💡",
+          zPos: -105,
+          xPos: -14,
+          warnaKhas: "#fb923c",
+          pertanyaan: "Saat ulangan harian, kamu melihat ada teman yang membuka catatan sontekan. Sikap kesusilaanmu:",
+          opsi: [
+            { id: "A", teks: "Tetap percaya diri mengerjakan dengan jujur dan tidak ikut-ikutan mencontek.", benar: true, penjelasan: "Luar biasa! Kejujuran adalah mahkota pelajar sejati berhati bersih." },
+            { id: "B", teks: "Ikut meminta jawaban dari contekan tersebut agar nilai tinggi.", benar: false, penjelasan: "Mencontek mencoreng hati nurani dan melanggar kejujuran." },
+            { id: "C", teks: "Meminta imbalan agar tidak melaporkan ke pengawas.", benar: false, penjelasan: "Tindakan memeras sangat dilarang dan merusak integritas." },
+          ],
+        },
+        {
+          id: "norma_pos3",
+          namaPos: "Pos 3: Norma Kesopanan",
+          namaSuku: "Suku Minang (Rumah Gadang)",
+          rumahAdat: "Rumah Gadang Gonjong",
+          tokohNama: "Uda Buyung (Datuk Muda)",
+          tokohAvatar: "🤠",
+          guruNama: "Pak Guru Bambang",
+          subMateri: "Tata Krama & Santun Berbicara",
+          penjelasanGuru: "Norma kesopanan lahir dari pergaulan masyarakat. Biasakan 3 kata ajaib: Tolong, Maaf, dan Terima Kasih kepada siapa pun.",
+          silaKe: 3,
+          simbolSila: "🗣️",
+          zPos: -165,
+          xPos: 14,
+          warnaKhas: "#4ade80",
+          pertanyaan: "Ketika berpapasan dengan Bapak atau Ibu Guru di koridor sekolah, sikap sopan santun yang benar adalah:",
+          opsi: [
+            { id: "A", teks: "Berpura-pura tidak melihat dan langsung membuang muka.", benar: false, penjelasan: "Kurang beradab terhadap pendidik." },
+            { id: "B", teks: "Berlari kencang sambil berteriak di depan guru.", benar: false, penjelasan: "Tidak menjaga ketenangan dan tata krama koridor." },
+            { id: "C", teks: "Mengucapkan salam ramah, tersenyum, dan mengangguk dengan hormat.", benar: true, penjelasan: "Santun sekali! Menghormati guru mendatangkan keberkahan ilmu." },
+          ],
+        },
+        {
+          id: "norma_pos4",
+          namaPos: "Pos 4: Tata Tertib Sekolah",
+          namaSuku: "Suku Dayak (Rumah Betang)",
+          rumahAdat: "Rumah Betang Panjang",
+          tokohNama: "Kepala Suku Kaian",
+          tokohAvatar: "🧓",
+          guruNama: "Pak Guru Wijaya",
+          subMateri: "Kedisiplinan di Lingkungan Belajar",
+          penjelasanGuru: "Tata tertib sekolah dibuat agar suasana belajar aman, tertib, dan nyaman. Contohnya datang tepat waktu dan berseragam rapi.",
+          silaKe: 4,
+          simbolSila: "⏰",
+          zPos: -225,
+          xPos: -14,
+          warnaKhas: "#f87171",
+          pertanyaan: "Mengapa setiap siswa wajib mematuhi tata tertib dan aturan yang berlaku di sekolah?",
+          opsi: [
+            { id: "A", teks: "Agar proses belajar mengajar berjalan teratur, aman, dan tercipta kedisiplinan.", benar: true, penjelasan: "Tepat sekali! Disiplin sekolah membentuk pribadi berprestasi." },
+            { id: "B", teks: "Hanya untuk menyenangkan hati kepala sekolah semata.", benar: false, penjelasan: "Aturan dibuat demi keselamatan dan kenyamanan seluruh murid." },
+            { id: "C", teks: "Supaya guru bisa memberikan hukuman setiap hari.", benar: false, penjelasan: "Tujuan tata tertib adalah pembinaan, bukan mencari kesalahan." },
+          ],
+        },
+        {
+          id: "norma_pos5",
+          namaPos: "Pos 5: Hak & Kewajiban Seimbang",
+          namaSuku: "Suku Papua (Rumah Honai)",
+          rumahAdat: "Rumah Adat Honai",
+          tokohNama: "Kaka Pace (Sahabat Alam)",
+          tokohAvatar: "🧔",
+          guruNama: "Pak Guru Nugroho",
+          subMateri: "Menunaikan Tugas Sebelum Menuntut Hak",
+          penjelasanGuru: "Sebagai pelajar, kita punya hak mendapatkan bimbingan ilmu. Namun kewajiban belajar dan mematuhi tata tertib harus ditunaikan terlebih dahulu.",
+          silaKe: 5,
+          simbolSila: "⚖️",
+          zPos: -285,
+          xPos: 14,
+          warnaKhas: "#facc15",
+          pertanyaan: "Hubungan yang tepat antara Hak dan Kewajiban bagi seorang murid adalah:",
+          opsi: [
+            { id: "A", teks: "Menuntut hak sebanyak-banyaknya tanpa mau mengerjakan kewajiban belajar.", benar: false, penjelasan: "Sikap menuntut hak tanpa kewajiban tidak bertanggung jawab." },
+            { id: "B", teks: "Menjalankan kewajiban dengan ikhlas terlebih dahulu, baru kemudian menuntut hak secara seimbang.", benar: true, penjelasan: "Pintar! Keseimbangan hak dan kewajiban menciptakan keadilan dan kedamaian." },
+            { id: "C", teks: "Murid hanya memiliki kewajiban dan tidak memiliki hak sama sekali.", benar: false, penjelasan: "Setiap anak berhak dilindungi dan mendapatkan pengajaran terbaik." },
+          ],
+        },
+      ];
+    }
+
+    // 3. MATERI BAB 4: BHINNEKA TUNGGAL IKA
+    if (rawChapter.includes("bhinneka") || rawTitle.includes("bhinneka") || rawTitle.includes("keragaman")) {
+      return [
+        {
+          id: "bhinneka_pos1",
+          namaPos: "Pos 1: Rumah Adat Sabang-Merauke",
+          namaSuku: "Suku Jawa (Rumah Joglo)",
+          rumahAdat: "Rumah Adat Joglo",
+          tokohNama: "Kakek Raden (Tetua Adat)",
+          tokohAvatar: "👴",
+          guruNama: "Pak Guru Iskandar",
+          subMateri: "Kekayaan Arsitektur Tradisional",
+          penjelasanGuru: "Setiap suku memiliki rumah adat yang dirancang menyesuaikan iklim dan kearifan lokal daerahnya, seperti Joglo, Gadang, Tongkonan, dan Honai.",
+          silaKe: 1,
+          simbolSila: "🏛️",
+          zPos: -45,
+          xPos: 14,
+          warnaKhas: "#38bdf8",
+          pertanyaan: "Rumah adat Honai khas Papua memiliki atap berbentuk kubah jerami. Fungsi utamanya adalah:",
+          opsi: [
+            { id: "A", teks: "Sebagai tempat memelihara burung cendrawasih.", benar: false, penjelasan: "Honai adalah tempat tinggal keluarga." },
+            { id: "B", teks: "Menahan hawa dingin pegunungan dan melindungi keluarga dari hujan serta angin malam.", benar: true, penjelasan: "Benar sekali! Desain Honai sangat cerdas beradaptasi dengan iklim lembah pegunungan Papua." },
+            { id: "C", teks: "Tempat menyimpan kendaraan bermotor.", benar: false, penjelasan: "Masyarakat pedalaman membangun Honai sebagai tempat tinggal adat." },
+          ],
+        },
+        {
+          id: "bhinneka_pos2",
+          namaPos: "Pos 2: Busana Adat Nusantara",
+          namaSuku: "Suku Sunda (Rumah Panggung)",
+          rumahAdat: "Rumah Panggung Sunda",
+          tokohNama: "Kang Asep (Pemuda Desa)",
+          tokohAvatar: "🧑",
+          guruNama: "Pak Guru Teuku Umar",
+          subMateri: "Kain Tenun, Batik & Kebaya",
+          penjelasanGuru: "Pakaian adat daerah seperti Batik Jawa, Songket Minang, Tenun Ikat NTT, dan Ulos Batak adalah mahakarya seni yang diakui dunia.",
+          silaKe: 2,
+          simbolSila: "👘",
+          zPos: -105,
+          xPos: -14,
+          warnaKhas: "#fb923c",
+          pertanyaan: "Saat upacara peringatan Hari Kartini atau Hari Sumpah Pemuda, kita dianjurkan memakai pakaian adat daerah. Tujuannya adalah:",
+          opsi: [
+            { id: "A", teks: "Mengenal, melestarikan, dan bangga akan warisan kebudayaan luhur bangsa.", benar: true, penjelasan: "Sangat benar! Memakai pakaian adat menumbuhkan kecintaan terhadap identitas budaya." },
+            { id: "B", teks: "Memamerkan kekayaan keluarga kepada teman sekelas.", benar: false, penjelasan: "Bukan ajang pamer, melainkan bentuk edukasi pelestarian budaya." },
+            { id: "C", teks: "Mengejek pakaian daerah lain yang bentuknya berbeda.", benar: false, penjelasan: "Semua pakaian adat daerah bernilai seni tinggi dan patut dihormati." },
+          ],
+        },
+        {
+          id: "bhinneka_pos3",
+          namaPos: "Pos 3: Harmoni Musik & Tarian Daerah",
+          namaSuku: "Suku Minang (Rumah Gadang)",
+          rumahAdat: "Rumah Gadang Gonjong",
+          tokohNama: "Uda Buyung (Datuk Muda)",
+          tokohAvatar: "🤠",
+          guruNama: "Pak Guru Nyoman",
+          subMateri: "Gamelan, Angklung & Tari Tradisional",
+          penjelasanGuru: "Dari Sabang sampai Merauke terdapat tarian daerah memukau seperti Tari Saman Aceh, Tari Piring Minang, Tari Jaipong, hingga Tari Pendet Bali.",
+          silaKe: 3,
+          simbolSila: "🎵",
+          zPos: -165,
+          xPos: 14,
+          warnaKhas: "#4ade80",
+          pertanyaan: "Alat musik Angklung asal Jawa Barat telah diakui UNESCO sebagai warisan dunia. Ciri khas memainkannya adalah:",
+          opsi: [
+            { id: "A", teks: "Ditiup dengan kencang menggunakan bambu kecil.", benar: false, penjelasan: "Angklung dimainkan dengan cara digoyangkan atau digetarkan." },
+            { id: "B", teks: "Digoyang dan digetarkan sehingga menghasilkan paduan bunyi merdu berkolaborasi bersama.", benar: true, penjelasan: "Hebat! Angklung melambangkan kebersamaan karena membutuhkan kerja sama banyak orang untuk menciptakan lagu." },
+            { id: "C", teks: "Dipukul dengan palu besi yang berat.", benar: false, penjelasan: "Memukul angklung dengan palu besi akan merusak bilah bambu." },
+          ],
+        },
+        {
+          id: "bhinneka_pos4",
+          namaPos: "Pos 4: Bahasa Daerah Pemersatu",
+          namaSuku: "Suku Dayak (Rumah Betang)",
+          rumahAdat: "Rumah Betang Panjang",
+          tokohNama: "Kepala Suku Kaian",
+          tokohAvatar: "🧓",
+          guruNama: "Pak Guru Frans",
+          subMateri: "Kekayaan Ratusan Bahasa Daerah",
+          penjelasanGuru: "Indonesia memiliki lebih dari 700 bahasa daerah. Semua dirangkul dan dipersatukan oleh Bahasa Nasional, yaitu Bahasa Indonesia.",
+          silaKe: 4,
+          simbolSila: "🗣️",
+          zPos: -225,
+          xPos: -14,
+          warnaKhas: "#f87171",
+          pertanyaan: "Peran utama Bahasa Indonesia di tengah keberagaman ratusan bahasa daerah suku nusantara adalah sebagai:",
+          opsi: [
+            { id: "A", teks: "Bahasa persatuan nasional yang menghubungkan komunikasi antarwarga dari berbagai daerah.", benar: true, penjelasan: "Tepat sekali! Bahasa Indonesia mempersatukan komunikasi seluruh rakyat Indonesia." },
+            { id: "B", teks: "Bahasa yang digunakan untuk menghapus semua bahasa daerah.", benar: false, penjelasan: "Bahasa daerah tetap wajib dilestarikan sebagai kekayaan bangsa." },
+            { id: "C", teks: "Bahasa rahasia yang hanya boleh dipelajari oleh guru.", benar: false, penjelasan: "Bahasa Indonesia adalah milik seluruh tumpah darah Indonesia." },
+          ],
+        },
+        {
+          id: "bhinneka_pos5",
+          namaPos: "Pos 5: Semboyan Bhinneka Tunggal Ika",
+          namaSuku: "Suku Papua (Rumah Honai)",
+          rumahAdat: "Rumah Adat Honai",
+          tokohNama: "Kaka Pace (Sahabat Alam)",
+          tokohAvatar: "🧔",
+          guruNama: "Pak Guru Yohan",
+          subMateri: "Berbeda Namun Tetap Satu Jua",
+          penjelasanGuru: "Bhinneka Tunggal Ika diambil dari Kitab Sutasoma karya Mpu Tantular. Mengingatkan bahwa perbedaan bukan pemecah, melainkan kekuatan terindah bangsa kita.",
+          silaKe: 5,
+          simbolSila: "🇮🇩",
+          zPos: -285,
+          xPos: 14,
+          warnaKhas: "#facc15",
+          pertanyaan: "Sikap yang paling mencerminkan semboyan Bhinneka Tunggal Ika di lingkungan pergaulan kelas adalah:",
+          opsi: [
+            { id: "A", teks: "Memilih teman bermain hanya yang berasal dari satu daerah asal yang sama.", benar: false, penjelasan: "Sikap membeda-bedakan bertentangan dengan Bhinneka Tunggal Ika." },
+            { id: "B", teks: "Berteman akrab dan saling menghargai dengan semua kawan tanpa memandang latar belakang suku atau agama.", benar: true, penjelasan: "Luar biasa! Inilah cerminan sejati generasi penerus bangsa yang toleran dan beradab." },
+            { id: "C", teks: "Mengejek tradisi daerah lain yang belum pernah kita ketahui.", benar: false, penjelasan: "Kita harus belajar menghormati setiap tradisi daerah nusantara." },
+          ],
+        },
+      ];
+    }
+
+    // 4. MATERI DEFAULT (BAB 1: MAKNA SILA KE-3 PANCASILA & PENGAMALAN 5 SILA)
+    // TERTAMPIL OTOMATIS SESUAI DASHBOARD SISWA SAAT MEMILIH BAB 1 / SILA KE-3
+    return [
+      {
+        id: "sila3_pos1",
+        namaPos: "Pos 1: Pohon Beringin Luhur",
+        namaSuku: "Suku Jawa (Rumah Joglo)",
+        rumahAdat: "Rumah Adat Joglo",
+        tokohNama: "Kakek Raden (Tetua Adat)",
+        tokohAvatar: "👴",
+        guruNama: "Pak Guru Haryanto",
+        subMateri: "Makna Lambang Sila Ke-3",
+        penjelasanGuru: "Pohon beringin melambangkan naungan dan tempat berteduh. Akar tunggangnya yang kokoh ke dalam tanah mencerminkan persatuan bangsa yang tak tergoyahkan.",
+        silaKe: 1,
+        simbolSila: "🌳",
+        zPos: -45,
+        xPos: 14,
+        warnaKhas: "#38bdf8",
+        pertanyaan: "Lambang pohon beringin pada Sila ke-3 Pancasila 'Persatuan Indonesia' memiliki makna luhur yaitu:",
+        opsi: [
+          { id: "A", teks: "Menunjukkan bahwa pohon beringin merupakan pohon terbesar di hutan rimba.", benar: false, penjelasan: "Bukan tentang ukuran pohon, melainkan makna simbolis perlindungan dan persatuan." },
+          { id: "B", teks: "Sebagai tempat berteduh yang menaungi seluruh rakyat Indonesia dalam persatuan yang kokoh.", benar: true, penjelasan: "Sangat bijak! Pohon beringin melambangkan bangsa besar yang rukun dan terlindungi." },
+          { id: "C", teks: "Tanda bahwa semua siswa harus menanam pohon di dalam kelas.", benar: false, penjelasan: "Makna pohon beringin adalah persatuan seluruh rakyat Indonesia." },
+        ],
+      },
+      {
+        id: "sila3_pos2",
+        namaPos: "Pos 2: Rukun di Lingkungan Sekolah",
+        namaSuku: "Suku Sunda (Rumah Panggung)",
+        rumahAdat: "Rumah Panggung Sunda",
+        tokohNama: "Kang Asep (Pemuda Desa)",
+        tokohAvatar: "🧑",
+        guruNama: "Pak Guru Joko",
+        subMateri: "Menghargai Keberagaman Teman",
+        penjelasanGuru: "Pengamalan Sila ke-3 di sekolah diwujudkan dengan tidak membeda-bedakan teman, tidak mengejek (anti-bullying), dan selalu kompak saat belajar bersama.",
+        silaKe: 2,
+        simbolSila: "🤝",
+        zPos: -105,
+        xPos: -14,
+        warnaKhas: "#fb923c",
+        pertanyaan: "Ada murid baru pindahan dari daerah lain yang logat bicaranya berbeda. Sikap persatuan yang benar adalah:",
+        opsi: [
+          { id: "A", teks: "Mengajaknya berkenalan, bermain bersama, dan membantunya mengenal lingkungan sekolah.", benar: true, penjelasan: "Luar biasa! Sikap ramah dan terbuka merajut persaudaraan di sekolah." },
+          { id: "B", teks: "Menirukan logat bicaranya untuk ditertawakan teman sekelas.", benar: false, penjelasan: "Mengejek dialek teman melanggar adab kesopanan dan merusak persatuan." },
+          { id: "C", teks: "Menjauhinya dan melarang teman lain mendekatinya.", benar: false, penjelasan: "Mengucilkan teman bertentangan keras dengan nilai Pancasila." },
+        ],
+      },
+      {
+        id: "sila3_pos3",
+        namaPos: "Pos 3: Cinta Produk Tanah Air",
+        namaSuku: "Suku Minang (Rumah Gadang)",
+        rumahAdat: "Rumah Gadang Gonjong",
+        tokohNama: "Uda Buyung (Datuk Muda)",
+        tokohAvatar: "🤠",
+        guruNama: "Pak Guru Slamet",
+        subMateri: "Bangga Karya Anak Bangsa",
+        penjelasanGuru: "Cinta tanah air tercermin dari kebiasaan kita bangga memakai sepatu buatan Indonesia, mengenakan kain batik, dan mencintai makanan khas nusantara.",
+        silaKe: 3,
+        simbolSila: "🇮🇩",
+        zPos: -165,
+        xPos: 14,
+        warnaKhas: "#4ade80",
+        pertanyaan: "Bentuk nyata cinta tanah air yang dapat dilakukan siswa sekolah dasar dalam kehidupan sehari-hari:",
+        opsi: [
+          { id: "A", teks: "Selalu menuntut dibelikan barang luar negeri yang harganya sangat mahal.", benar: false, penjelasan: "Gaya hidup konsumtif barang impor kurang mendukung produk lokal." },
+          { id: "B", teks: "Bangga memakai batik dan mencintai hasil karya produk buatan bangsa sendiri.", benar: true, penjelasan: "Hebat! Mencintai produk dalam negeri memperkuat perekonomian bangsa." },
+          { id: "C", teks: "Malu menyanyikan lagu nasional saat upacara bendera hari Senin.", benar: false, penjelasan: "Lagu nasional wajib dinyanyikan dengan khidmat dan rasa bangga." },
+        ],
+      },
+      {
+        id: "sila3_pos4",
+        namaPos: "Pos 4: Kepentingan Bersama",
+        namaSuku: "Suku Dayak (Rumah Betang)",
+        rumahAdat: "Rumah Betang Panjang",
+        tokohNama: "Kepala Suku Kaian",
+        tokohAvatar: "🧓",
+        guruNama: "Pak Guru Hendra",
+        subMateri: "Rela Berkorban Demi Kelompok",
+        penjelasanGuru: "Sila ke-3 mengajarkan kita untuk rela mengorbankan waktu bermain sejenak demi menuntaskan tugas kelompok atau kerja bakti demi kepentingan kelas.",
+        silaKe: 4,
+        simbolSila: "🛡️",
+        zPos: -225,
+        xPos: -14,
+        warnaKhas: "#f87171",
+        pertanyaan: "Ketika kelompok belajarmu sedang menyelesaikan tugas presentasi bersama, tindakan yang mencerminkan persatuan:",
+        opsi: [
+          { id: "A", teks: "Meninggalkan teman kelompok untuk jajan dan bermain bola sendiri.", benar: false, penjelasan: "Meninggalkan tanggung jawab kelompok adalah sikap egois." },
+          { id: "B", teks: "Bekerja sama menyumbangkan ide, membantu menulis, dan saling menyemangati hingga selesai.", benar: true, penjelasan: "Sangat bertanggung jawab! Mengutamakan tugas bersama menjamin keberhasilan kelompok." },
+          { id: "C", teks: "Menuntut namanya ditulis paling atas padahal tidak ikut mengerjakan tugas.", benar: false, penjelasan: "Tidak jujur dan merugikan teman yang sudah bekerja keras." },
+        ],
+      },
+      {
+        id: "sila3_pos5",
+        namaPos: "Pos 5: Garuda Perekat Bangsa",
+        namaSuku: "Suku Papua (Rumah Honai)",
+        rumahAdat: "Rumah Adat Honai",
+        tokohNama: "Kaka Pace (Sahabat Alam)",
+        tokohAvatar: "🧔",
+        guruNama: "Pak Guru Wayan",
+        subMateri: "Semboyan Bhinneka Tunggal Ika",
+        penjelasanGuru: "Burung Garuda Pancasila mencengkeram pita bertuliskan 'Bhinneka Tunggal Ika'. Artinya: Berbeda-beda tetapi tetap satu jua. Keberagaman adalah kekuatan kita!",
+        silaKe: 5,
+        simbolSila: "🦅",
+        zPos: -285,
+        xPos: 14,
+        warnaKhas: "#facc15",
+        pertanyaan: "Mengapa persatuan bangsa sangat penting bagi kemajuan Negara Kesatuan Republik Indonesia?",
+        opsi: [
+          { id: "A", teks: "Tanpa persatuan, bangsa kita mudah diadu domba dan pembangunan akan terhambat.", benar: true, penjelasan: "Tepat sekali! 'Bersatu kita teguh, bercerai kita runtuh' adalah kunci kejayaan Indonesia." },
+          { id: "B", teks: "Agar semua penduduk Indonesia memiliki nama dan hobi yang sama persis.", benar: false, penjelasan: "Persatuan menghargai keberagaman, bukan memaksakan keseragaman." },
+          { id: "C", teks: "Hanya untuk memenuhi syarat pelajaran di sekolah saja.", benar: false, penjelasan: "Persatuan adalah pondasi hidup berbangsa dan bernegara." },
+        ],
+      },
+    ];
+  }, [chapter, activeValidatedModule, chapterTitle]);
 
   // --------------------------------------------------------------------------
   // SISWA ONLINE (KOSTUM BERBEDA DENGAN MODEL ANATOMI SERAGAM)
@@ -377,6 +757,11 @@ export default function AdaptiveEduGameModal({
     }
   }, [isOpen, stopGuruVoice]);
 
+  // Sinkronkan Judul Materi Aktif dari Dashboard Siswa
+  useEffect(() => {
+    setResolvedTitle(activeValidatedModule?.title || chapterTitle || chapter);
+  }, [activeValidatedModule, chapterTitle, chapter]);
+
   // Kontrol Background Music
   useEffect(() => {
     if (isOpen && gameStarted && bgmEnabled) {
@@ -469,7 +854,7 @@ export default function AdaptiveEduGameModal({
     renderer.setSize(initW, initH);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
 
     renderer.domElement.style.position = "absolute";
     renderer.domElement.style.top = "0";
@@ -480,7 +865,7 @@ export default function AdaptiveEduGameModal({
 
     mount.appendChild(renderer.domElement);
 
-    // 2. LIGHTING
+    // 2. LIGHTING INDAH PEDESAAN
     const ambientLight = new THREE.AmbientLight("#ffffff", 0.95);
     scene.add(ambientLight);
 
@@ -502,13 +887,74 @@ export default function AdaptiveEduGameModal({
     groundMesh.receiveShadow = true;
     scene.add(groundMesh);
 
-    // Jalan Paving Pedesaan
+    // Jalan Paving Pedesaan Hangat
     const pathGeo = new THREE.PlaneGeometry(12, 400);
     const pathMat = new THREE.MeshLambertMaterial({ color: "#fef08a" });
     const pathMesh = new THREE.Mesh(pathGeo, pathMat);
     pathMesh.rotation.x = -Math.PI / 2;
     pathMesh.position.set(0, 0.02, -150);
     scene.add(pathMesh);
+
+    // Pembatas Batu Tepi Jalan Kiri & Kanan (Curbs)
+    const curbGeo = new THREE.BoxGeometry(0.35, 0.22, 400);
+    const curbMat = new THREE.MeshLambertMaterial({ color: "#94a3b8" });
+    const curbLeft = new THREE.Mesh(curbGeo, curbMat);
+    curbLeft.position.set(-6.15, 0.11, -150);
+    scene.add(curbLeft);
+    const curbRight = curbLeft.clone();
+    curbRight.position.x = 6.15;
+    scene.add(curbRight);
+
+    // Tiang Lampu Lentera Pedesaan Hangat di Pinggir Jalan
+    const lanternZPositions = [10, -45, -105, -165, -225, -285];
+    lanternZPositions.forEach((lz, lIdx) => {
+      const lampGroup = new THREE.Group();
+      const poleMesh = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.12, 0.14, 4.2, 8),
+        new THREE.MeshLambertMaterial({ color: "#334155" })
+      );
+      poleMesh.position.y = 2.1;
+      lampGroup.add(poleMesh);
+
+      const lampHead = new THREE.Mesh(
+        new THREE.BoxGeometry(0.55, 0.65, 0.55),
+        new THREE.MeshLambertMaterial({ color: "#fef08a", emissive: "#facc15" })
+      );
+      lampHead.position.set(0, 4.3, 0);
+      lampGroup.add(lampHead);
+
+      const lampCap = new THREE.Mesh(
+        new THREE.ConeGeometry(0.48, 0.35, 4),
+        new THREE.MeshLambertMaterial({ color: "#1e293b" })
+      );
+      lampCap.rotation.y = Math.PI / 4;
+      lampCap.position.set(0, 4.75, 0);
+      lampGroup.add(lampCap);
+
+      const pLight = new THREE.PointLight("#fef08a", 0.9, 12);
+      pLight.position.set(0, 4.3, 0);
+      lampGroup.add(pLight);
+
+      lampGroup.position.set(lIdx % 2 === 0 ? -5.8 : 5.8, 0, lz);
+      scene.add(lampGroup);
+    });
+
+    // Taman Bunga Berwarna-warni di Sepanjang Jalan Desa
+    const flowerColors = ["#f43f5e", "#fb923c", "#facc15", "#38bdf8", "#ec4899", "#a855f7"];
+    for (let fz = 8; fz > -300; fz -= 14) {
+      const fGroup = new THREE.Group();
+      const col = flowerColors[Math.abs(Math.floor(fz)) % flowerColors.length];
+      for (let i = 0; i < 4; i++) {
+        const flMesh = new THREE.Mesh(
+          new THREE.DodecahedronGeometry(0.22),
+          new THREE.MeshLambertMaterial({ color: col })
+        );
+        flMesh.position.set((Math.random() - 0.5) * 1.2, 0.22, (Math.random() - 0.5) * 1.2);
+        fGroup.add(flMesh);
+      }
+      fGroup.position.set(fz % 2 === 0 ? -7.2 : 7.2, 0, fz);
+      scene.add(fGroup);
+    }
 
     // ------------------------------------------------------------------------
     // GAPURA MASUK MEGAH (Z = +14) - TULISAN TAJAM & PRESISI
@@ -908,16 +1354,21 @@ export default function AdaptiveEduGameModal({
     // ------------------------------------------------------------------------
     // 5 RUMAH ADAT SUKU NUSANTARA, PLANG NAMA DI DEPAN & TITIK MISI BERCAHAYA
     // ------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
+    // 5 RUMAH ADAT POS PEMBELAJARAN: PENUNGGU PAK GURU, PLANG NAMA & TITIK MISI
+    // ------------------------------------------------------------------------
     interface HotspotItem {
       suku: SukuAdat;
       x: number;
       z: number;
+      guruX: number;
+      guruZ: number;
       ringMesh: THREE.Mesh;
       beaconMesh: THREE.Mesh;
     }
     const hotspotList: HotspotItem[] = [];
 
-    sukuList.forEach((suku) => {
+    sukuList.forEach((suku, sIdx) => {
       const hGroup = new THREE.Group();
 
       // Dinding Rumah
@@ -929,13 +1380,13 @@ export default function AdaptiveEduGameModal({
       wallMesh.castShadow = true;
       hGroup.add(wallMesh);
 
-      // Atap Khas Adat
+      // Atap Khas Adat Nusantara
       let roofMesh: THREE.Mesh;
-      if (suku.id === "minang") {
+      if (suku.id.includes("minang") || suku.namaSuku.includes("Minang")) {
         roofMesh = new THREE.Mesh(new THREE.ConeGeometry(8, 6, 4), new THREE.MeshLambertMaterial({ color: "#78350f" }));
         roofMesh.rotation.y = Math.PI / 4;
         roofMesh.position.y = 9.8;
-      } else if (suku.id === "papua") {
+      } else if (suku.id.includes("papua") || suku.namaSuku.includes("Papua")) {
         roofMesh = new THREE.Mesh(new THREE.SphereGeometry(6, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshLambertMaterial({ color: "#ca8a04" }));
         roofMesh.position.y = 7.5;
       } else {
@@ -946,19 +1397,40 @@ export default function AdaptiveEduGameModal({
       roofMesh.castShadow = true;
       hGroup.add(roofMesh);
 
-      // Pintu Rumah
+      // Pintu Rumah Kayu
       const doorMesh = new THREE.Mesh(new THREE.BoxGeometry(2.4, 4.2, 0.2), new THREE.MeshLambertMaterial({ color: "#451a03" }));
       doorMesh.position.set(0, 2.1, suku.xPos > 0 ? -4.51 : 4.51);
       hGroup.add(doorMesh);
+
+      // Jendela Rumah Berpijar Hangat (Kiri & Kanan Pintu)
+      const winGeo = new THREE.PlaneGeometry(1.6, 1.4);
+      const winMat = new THREE.MeshBasicMaterial({ color: "#fef08a" });
+      const winLeft = new THREE.Mesh(winGeo, winMat);
+      winLeft.position.set(-2.8, 3.8, suku.xPos > 0 ? -4.52 : 4.52);
+      if (suku.xPos <= 0) winLeft.rotation.y = Math.PI;
+      hGroup.add(winLeft);
+
+      const winRight = new THREE.Mesh(winGeo, winMat);
+      winRight.position.set(2.8, 3.8, suku.xPos > 0 ? -4.52 : 4.52);
+      if (suku.xPos <= 0) winRight.rotation.y = Math.PI;
+      hGroup.add(winRight);
+
+      // Anak Tangga Masuk Teras Rumah
+      const stepMesh = new THREE.Mesh(
+        new THREE.BoxGeometry(3.2, 0.3, 1.2),
+        new THREE.MeshLambertMaterial({ color: "#64748b" })
+      );
+      stepMesh.position.set(0, 0.15, suku.xPos > 0 ? -5.1 : 5.1);
+      hGroup.add(stepMesh);
 
       hGroup.position.set(suku.xPos, 0, suku.zPos);
       scene.add(hGroup);
 
       // ----------------------------------------------------------------------
-      // PLANG PAPAN NAMA DI DEPAN RUMAH (BERDIRI DI TANAH DEKAT JALAN)
+      // PLANG PAPAN NAMA POS DI DEPAN RUMAH (BERDIRI DI TANAH DEKAT JALAN)
       // ----------------------------------------------------------------------
       const signX = suku.xPos > 0 ? 8.8 : -8.8;
-      const signZ = suku.zPos + (suku.xPos > 0 ? 3.0 : -3.0);
+      const signZ = suku.zPos + (suku.xPos > 0 ? 3.2 : -3.2);
       const signGroup = new THREE.Group();
 
       const signPole1 = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 3.2, 8), new THREE.MeshLambertMaterial({ color: "#78350f" }));
@@ -982,19 +1454,19 @@ export default function AdaptiveEduGameModal({
       sCtx.fillStyle = "#facc15";
       sCtx.font = "bold 28px sans-serif";
       sCtx.textAlign = "center";
-      sCtx.fillText(`${suku.simbolSila} SILA KE-${suku.silaKe} PANCASILA`, 256, 50);
+      sCtx.fillText(`🏷️ ${suku.namaPos.toUpperCase()}`, 256, 48);
 
       sCtx.fillStyle = "#ffffff";
-      sCtx.font = "bold 34px sans-serif";
-      sCtx.fillText(suku.namaSuku, 256, 110);
+      sCtx.font = "bold 26px sans-serif";
+      sCtx.fillText(`📚 ${suku.subMateri}`, 256, 105);
 
       sCtx.fillStyle = "#38bdf8";
       sCtx.font = "bold 24px sans-serif";
-      sCtx.fillText(suku.rumahAdat, 256, 160);
+      sCtx.fillText(`👨‍🏫 Penunggu: ${suku.guruNama}`, 256, 158);
 
       sCtx.fillStyle = "#4ade80";
       sCtx.font = "bold 20px sans-serif";
-      sCtx.fillText("📍 Titik Misi: Berdiri di Lingkaran & Tekan 'E'", 256, 215);
+      sCtx.fillText("📍 Berdiri di Titik Misi & Tekan 'E'", 256, 215);
 
       const signBoard = new THREE.Mesh(
         new THREE.PlaneGeometry(3.6, 1.8),
@@ -1006,6 +1478,68 @@ export default function AdaptiveEduGameModal({
       signGroup.position.set(signX, 0, signZ);
       signGroup.rotation.y = suku.xPos > 0 ? -Math.PI / 2 : Math.PI / 2;
       scene.add(signGroup);
+
+      // ----------------------------------------------------------------------
+      // PENUNGGU PAK GURU 3D HUMANOID DI TIAP-TIAP RUMAH / POS
+      // ----------------------------------------------------------------------
+      const guruTeacherColors = [
+        { shirt: "#0284c7", tie: "#1e3a8a" },
+        { shirt: "#15803d", tie: "#14532d" },
+        { shirt: "#b45309", tie: "#78350f" },
+        { shirt: "#7e22ce", tie: "#581c87" },
+        { shirt: "#0f766e", tie: "#134e4a" },
+      ];
+      const tCol = guruTeacherColors[sIdx % guruTeacherColors.length];
+
+      const guruPosData = createHumanoid({
+        shirtColor: tCol.shirt,
+        pantsColor: "#1e293b",
+        hatType: "peci_guru",
+        hasTie: true,
+        tieColor: tCol.tie,
+        hasGlasses: true,
+      });
+      const guruPosGroup = guruPosData.group;
+
+      // Lingkaran Emas Penanda di Bawah Kaki Pak Guru Penunggu Pos
+      const gRingGeo = new THREE.RingGeometry(0.9, 1.25, 32);
+      const gRingMat = new THREE.MeshBasicMaterial({ color: "#facc15", side: THREE.DoubleSide });
+      const gRingMesh = new THREE.Mesh(gRingGeo, gRingMat);
+      gRingMesh.rotation.x = -Math.PI / 2;
+      gRingMesh.position.y = 0.05;
+      guruPosGroup.add(gRingMesh);
+
+      // 3D Floating Sprite Label Overhead Pak Guru Penunggu Pos
+      const gpCanvas = document.createElement("canvas");
+      gpCanvas.width = 420;
+      gpCanvas.height = 96;
+      const gpCtx = gpCanvas.getContext("2d")!;
+      gpCtx.fillStyle = "#1e1b4b";
+      gpCtx.fillRect(0, 0, 420, 96);
+      gpCtx.strokeStyle = "#facc15";
+      gpCtx.lineWidth = 6;
+      gpCtx.strokeRect(3, 3, 414, 90);
+      gpCtx.fillStyle = "#ffffff";
+      gpCtx.font = "bold 24px sans-serif";
+      gpCtx.textAlign = "center";
+      gpCtx.fillText(`👨‍🏫 ${suku.guruNama}`, 210, 36);
+      gpCtx.fillStyle = "#38bdf8";
+      gpCtx.font = "bold 18px sans-serif";
+      gpCtx.fillText(`Penunggu: ${suku.namaPos}`, 210, 62);
+      gpCtx.fillStyle = "#4ade80";
+      gpCtx.font = "bold 16px sans-serif";
+      gpCtx.fillText("[ Tekan 'E' untuk Dialog & Kuis ]", 210, 85);
+
+      const gpSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(gpCanvas) }));
+      gpSprite.position.set(0, 4.8, 0);
+      gpSprite.scale.set(4.0, 0.95, 1);
+      guruPosGroup.add(gpSprite);
+
+      const guruPosHostX = suku.xPos > 0 ? 8.5 : -8.5;
+      const guruPosHostZ = suku.zPos + (suku.xPos > 0 ? 1.6 : -1.6);
+      guruPosGroup.position.set(guruPosHostX, 0, guruPosHostZ);
+      guruPosGroup.rotation.y = suku.xPos > 0 ? -Math.PI / 2 : Math.PI / 2;
+      scene.add(guruPosGroup);
 
       // ----------------------------------------------------------------------
       // TITIK MISI BERCAHAYA (CHECKPOINT PAD DI DEPAN RUMAH)
@@ -1044,16 +1578,16 @@ export default function AdaptiveEduGameModal({
 
       // Label Petunjuk Melayang di Atas Titik
       const padCanvas = document.createElement("canvas");
-      padCanvas.width = 380;
-      padCanvas.height = 90;
+      padCanvas.width = 400;
+      padCanvas.height = 92;
       const pdCtx = padCanvas.getContext("2d")!;
       pdCtx.fillStyle = "#ffffff";
-      pdCtx.font = "bold 26px sans-serif";
+      pdCtx.font = "bold 24px sans-serif";
       pdCtx.textAlign = "center";
-      pdCtx.fillText(`🎯 TITIK MISI SILA KE-${suku.silaKe}`, 190, 36);
+      pdCtx.fillText(`🎯 ${suku.namaPos.toUpperCase()}`, 200, 36);
       pdCtx.fillStyle = "#facc15";
-      pdCtx.font = "bold 22px sans-serif";
-      pdCtx.fillText("[ Berdiri di Sini & Tekan 'E' ]", 190, 72);
+      pdCtx.font = "bold 20px sans-serif";
+      pdCtx.fillText(`👨‍🏫 Bersama ${suku.guruNama} [Tekan 'E']`, 200, 72);
 
       const padSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(padCanvas) }));
       padSprite.position.set(0, 3.8, 0);
@@ -1067,6 +1601,8 @@ export default function AdaptiveEduGameModal({
         suku,
         x: hotspotX,
         z: hotspotZ,
+        guruX: guruPosHostX,
+        guruZ: guruPosHostZ,
         ringMesh: spotRing,
         beaconMesh,
       });
@@ -1341,18 +1877,22 @@ export default function AdaptiveEduGameModal({
           }
         }
 
-        // 3. Cek Apakah Pemain Berdiri di Titik Misi Salah Satu Rumah Suku
+        // 3. Cek Apakah Pemain Berada di Titik Misi atau Dekat Pak Guru Penunggu Pos
         for (const hp of hotspotList) {
           const distToHotspot = Math.hypot(px - hp.x, pz - hp.z);
-          if (distToHotspot < 3.8) {
+          const distToPosGuru = Math.hypot(px - hp.guruX, pz - hp.guruZ);
+          if (distToHotspot < 4.2 || distToPosGuru < 4.2) {
             setActiveSukuDialog(hp.suku);
             setSelectedAnswer(null);
             setAnswerFeedback(null);
+            speakGuruVoice(
+              `Halo murid hebat! Selamat datang di ${hp.suku.namaPos}. ${hp.suku.penjelasanGuru}`
+            );
             return;
           }
         }
 
-        setActiveNotification("📍 Berdirilah tepat di TITIK MISI bercahaya di depan rumah adat untuk memulai kuis!");
+        setActiveNotification("📍 Dekatilah Pak Guru Penunggu atau berdirilah di Titik Misi untuk belajar & kuis!");
         setTimeout(() => setActiveNotification(null), 3000);
       }
     };
@@ -1440,10 +1980,10 @@ export default function AdaptiveEduGameModal({
               </span>
             </div>
 
-            {/* Progres 5 Suku */}
+            {/* Progres 5 Pos Materi */}
             <div className="hidden md:flex items-center gap-1 bg-slate-800/90 px-3 py-1.5 rounded-2xl border border-emerald-500/40 text-xs font-bold text-emerald-300">
               <span>🏠</span>
-              <span>{visitedSukuIds.length}/5 Suku Selesai</span>
+              <span>{visitedSukuIds.length}/5 Pos Selesai</span>
             </div>
 
             {/* Tombol Musik */}
@@ -1715,29 +2255,62 @@ export default function AdaptiveEduGameModal({
             </div>
           )}
 
-          {/* DIALOG POPUP KUIS RUMAH SUKU */}
+          {/* DIALOG POPUP POS MATERI & KUIS BERSAMA PENUNGGU PAK GURU */}
           {activeSukuDialog && (
             <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
               <div className="bg-slate-900/95 border-3 border-yellow-400 rounded-3xl max-w-lg w-full p-6 text-white space-y-4 shadow-2xl">
-                <div className="flex items-center gap-3 border-b border-slate-700/80 pb-3">
-                  <span className="w-14 h-14 rounded-2xl bg-yellow-400/20 border border-yellow-400 flex items-center justify-center text-3xl shadow-md">
-                    {activeSukuDialog.tokohAvatar}
-                  </span>
-                  <div>
-                    <span className="text-[10px] font-bold text-yellow-400 uppercase tracking-wider">
-                      {activeSukuDialog.simbolSila} Sila ke-{activeSukuDialog.silaKe} • {activeSukuDialog.rumahAdat}
+                {/* Header Pos & Guru */}
+                <div className="flex items-center justify-between border-b border-slate-700/80 pb-3">
+                  <div className="flex items-center gap-3">
+                    <span className="w-14 h-14 rounded-2xl bg-yellow-400/20 border border-yellow-400 flex items-center justify-center text-3xl shadow-md">
+                      {activeSukuDialog.tokohAvatar}
                     </span>
-                    <h3 className="font-black text-base sm:text-lg text-white">
-                      {activeSukuDialog.namaSuku}
-                    </h3>
-                    <p className="text-xs text-slate-300">
-                      Disambut oleh: <b>{activeSukuDialog.tokohNama}</b>
-                    </p>
+                    <div>
+                      <span className="text-[10px] font-bold text-yellow-400 uppercase tracking-wider block">
+                        🏷️ {activeSukuDialog.namaPos}
+                      </span>
+                      <h3 className="font-black text-base sm:text-lg text-white">
+                        {activeSukuDialog.namaSuku}
+                      </h3>
+                      <p className="text-xs text-sky-300 font-semibold">
+                        👨‍🏫 Penunggu: <b>{activeSukuDialog.guruNama}</b> • Tetua: <b>{activeSukuDialog.tokohNama}</b>
+                      </p>
+                    </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isGuruSpeaking) {
+                        stopGuruVoice();
+                      } else {
+                        speakGuruVoice(
+                          `Halo anak hebat! Selamat datang di ${activeSukuDialog.namaPos}. ${activeSukuDialog.penjelasanGuru}`
+                        );
+                      }
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                      isGuruSpeaking
+                        ? "bg-rose-600 text-white animate-pulse"
+                        : "bg-sky-500 hover:bg-sky-600 text-white shadow"
+                    }`}
+                  >
+                    <span>{isGuruSpeaking ? "⏹️ Hentikan" : "🔊 Suara Guru"}</span>
+                  </button>
                 </div>
 
-                <div className="bg-slate-800/80 p-4 rounded-2xl border border-slate-700 text-xs sm:text-sm leading-relaxed text-slate-100 font-medium">
-                  "{activeSukuDialog.pertanyaan}"
+                {/* Kotak Ringkas Penjelasan Materi dari Pak Guru Penunggu Pos */}
+                <div className="bg-sky-950/60 border border-sky-400/50 p-3.5 rounded-2xl space-y-1 text-xs sm:text-sm leading-relaxed text-slate-100">
+                  <div className="flex items-center gap-2 text-sky-300 font-black text-xs uppercase tracking-wider">
+                    <span>💡 Penjelasan Materi {activeSukuDialog.subMateri}:</span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-sky-100 italic">
+                    "{activeSukuDialog.penjelasanGuru}"
+                  </p>
+                </div>
+
+                {/* Soal Kuis Tantangan */}
+                <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700 text-xs sm:text-sm leading-relaxed text-slate-100 font-medium">
+                  <b>🎯 Pertanyaan Kuis:</b> "{activeSukuDialog.pertanyaan}"
                 </div>
 
                 <div className="space-y-2 pt-1">
@@ -1781,7 +2354,10 @@ export default function AdaptiveEduGameModal({
                   </span>
                   <button
                     type="button"
-                    onClick={() => setActiveSukuDialog(null)}
+                    onClick={() => {
+                      stopGuruVoice();
+                      setActiveSukuDialog(null);
+                    }}
                     className="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 px-5 rounded-xl text-xs transition cursor-pointer"
                   >
                     Tutup Dialog
@@ -1868,7 +2444,7 @@ export default function AdaptiveEduGameModal({
                     SELAMAT! KAMU DUTA PANCASILA NUSANTARA! 🇮🇩
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-                    Kamu telah mengunjungi seluruh 5 Rumah Suku Adat (Jawa, Sunda, Minang, Dayak, Papua) dan mengamalkan nilai-nilai luhur Pancasila bersama kawan sekelas!
+                    Kamu telah mengunjungi seluruh 5 Pos Pembelajaran bersama para penunggu Pak Guru dan menyelesaikan seluruh kuis materi dengan gemilang!
                   </p>
                 </div>
 
