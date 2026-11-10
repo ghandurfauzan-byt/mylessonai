@@ -168,7 +168,7 @@ export default function StudentAccountsManager() {
   const handleResetSingle = (s: StudentAccount) => {
     playClickSound();
     const ok = window.confirm(
-      `Reset seluruh skor materi dan skor kuis untuk siswa: "${s.name}" (Absen #${s.noAbsen || "-"})?\n\nSkor materi dan evaluasi kuis akan menjadi 0.`
+      `Reset skor game dan skor kuis untuk siswa: "${s.name}" (Absen #${s.noAbsen || "-"})?\n\nSkor game dan evaluasi kuis akan menjadi 0.`
     );
     if (!ok) return;
     resetSinglePointsMutation.mutate(s.id);
@@ -288,7 +288,7 @@ export default function StudentAccountsManager() {
                 <th className="py-3 px-3.5">Absen</th>
                 <th className="py-3 px-3.5">Nama Siswa</th>
                 <th className="py-3 px-3.5">Kelas</th>
-                <th className="py-3 px-3.5">📖 Skor Materi</th>
+                <th className="py-3 px-3.5">🎮 Skor Game</th>
                 <th className="py-3 px-3.5">📝 Skor Kuis</th>
                 <th className="py-3 px-3.5">Status Belajar</th>
                 <th className="py-3 px-3.5 text-right">Aksi Kontrol</th>
@@ -324,7 +324,7 @@ export default function StudentAccountsManager() {
                     </td>
                     <td className="py-3 px-3.5">
                       <span className="font-black text-amber-700 dark:text-amber-400">
-                        ⭐ {s.materialScore ?? s.points ?? 0} Poin
+                        🎮 {s.gamePoints ?? s.points ?? 0} Poin
                       </span>
                     </td>
                     <td className="py-3 px-3.5">

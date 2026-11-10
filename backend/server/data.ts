@@ -2455,6 +2455,8 @@ export async function resetSingleStudentPoints(
   if (!user) return null;
   user.points = 0;
   user.gamePoints = 0;
+  if ("materialScore" in user) (user as any).materialScore = 0;
+  if ("quizScore" in user) (user as any).quizScore = 0;
   persistUsersDb();
   return { success: true, points: 0, gamePoints: 0 };
 }

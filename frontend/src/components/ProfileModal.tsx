@@ -160,7 +160,7 @@ export default function ProfileModal() {
                 <span>{institution || "SD Negeri 1 Madiun"}</span>
                 {isPelajar && (
                   <span className="font-bold text-amber-700 dark:text-amber-400">
-                    ⭐ Poin: {profile?.points ?? 0} | 🎮 Game: {profile?.gamePoints ?? 0}
+                    🎮 Skor Game: {profile?.gamePoints ?? profile?.points ?? 0} | 📝 Skor Kuis: {(profile as any)?.quizScore ?? (profile?.weakness ? profile.weakness.score * 10 : 90)}
                   </span>
                 )}
               </div>

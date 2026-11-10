@@ -727,20 +727,20 @@ export default function PelajarDashboardPage() {
             </p>
           </div>
 
-          {/* Gamifikasi Skor Materi & Skor Kuis */}
-          <div className="flex flex-wrap items-center gap-3 sm:gap-4 bg-white/20 dark:bg-slate-800/60 backdrop-blur-md border-4 border-white/50 dark:border-slate-700 rounded-2xl p-3 sm:p-4 shadow-lg text-white">
-            <div className="pr-3 sm:pr-4 border-r-2 border-white/40 dark:border-slate-700">
+          {/* Gamifikasi 2 Skor Utama: Skor Game & Skor Kuis */}
+          <div className="flex items-center gap-3 sm:gap-4 bg-white/20 dark:bg-slate-800/60 backdrop-blur-md border-4 border-white/50 dark:border-slate-700 rounded-2xl p-3 sm:p-4 shadow-lg text-white">
+            <div className="pr-3 sm:pr-4 border-r-2 border-white/40 dark:border-slate-700 shrink-0">
               <span className="text-[11px] font-black text-sky-100 dark:text-sky-300 tracking-wider block">
-                📖 Skor Materi
+                🎮 Skor Game
               </span>
               <div className="mt-1 text-white">
                 <PointsBadge />
               </div>
             </div>
 
-            <div className="pr-3 sm:pr-4 border-r-2 border-white/40 dark:border-slate-700">
+            <div className="pr-3 sm:pr-4 border-r-2 border-white/40 dark:border-slate-700 shrink-0">
               <span className="text-[11px] font-black text-amber-200 dark:text-amber-300 tracking-wider block">
-                📝 Skor Kuis (CBT)
+                📝 Skor Kuis
               </span>
               <div className="mt-1 text-base sm:text-lg font-black text-amber-300 flex items-center gap-1">
                 <span>{currentStudent?.quizScore ?? (currentStudent?.weakness ? currentStudent.weakness.score * 10 : 90)}</span>
@@ -748,7 +748,7 @@ export default function PelajarDashboardPage() {
               </div>
             </div>
 
-            <div className="pl-1 sm:pl-2 space-y-0.5">
+            <div className="shrink-0 space-y-0.5">
               <span className="text-[11px] font-black text-sky-100 dark:text-sky-300 tracking-wider block">
                 Level Kamu 🚀
               </span>
