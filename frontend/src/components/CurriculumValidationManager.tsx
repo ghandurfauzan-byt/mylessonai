@@ -33,318 +33,459 @@ export interface CurriculumModule {
   ragSummary?: string[];
   generatedQuizPreview?: string[];
   gameType?: GameType;
+  quizQuestions?: Record<number, any[]>;
 }
 
 const INITIAL_MODULES: CurriculumModule[] = [
   {
-    id: "mod-pkn-sila3",
-    subject: "pkn",
-    subjectLabel: "Pendidikan Pancasila & PKn",
-    grade: "Kelas 4",
-    title: "Makna Lambang Sila Ke-3: Persatuan Indonesia di Sekolah & Rumah",
-    chapterCode: "Bab 1",
-    source: "API SIBI Kemdikbudristek RI (Katalog Buku Teks Utama)",
-    sourceType: "kemdikbud",
-    pageCount: 28,
-    learningGoal:
-      "Peserta didik memahami makna filosofis pohon beringin dan mengamalkan sikap rukun tanpa membeda-bedakan kawan.",
-    isValidated: true,
-    isActiveToday: true,
-    validatedAt: "Hari ini, 07:30 WIB",
-    ragSummary: [
-      "Pengertian & Hakikat Sila Ke-3: Sila ketiga Pancasila berbunyi 'Persatuan Indonesia' dengan lambang Pohon Beringin. Hakikat sila ini adalah tekad bulat bersama bangsa Indonesia yang memiliki ribuan suku, bahasa daerah, dan tradisi berbeda untuk bersatu kokoh dalam satu ikatan keluarga besar kebangsaan.",
+    "id": "mod-pkn-kls1-simbol",
+    "subject": "pkn",
+    "subjectLabel": "Pendidikan Pancasila & PKn",
+    "grade": "Kelas 1",
+    "title": "Aku Cinta Pancasila: Mengenal 5 Simbol Garuda Pancasila",
+    "chapterCode": "Bab 1",
+    "source": "API SIBI Kemdikbudristek RI (Katalog Buku Teks Utama)",
+    "sourceType": "kemdikbud",
+    "pageCount": 22,
+    "learningGoal": "Peserta didik mengenal 5 simbol pada lambang Garuda Pancasila (Bintang, Rantai Emas, Pohon Beringin, Kepala Banteng, Padi & Kapas) serta makna dasarnya.",
+    "isValidated": true,
+    "isActiveToday": false,
+    "validatedAt": "Hari ini, 07:15 WIB",
+    "gameType": "adventure",
+    "ragSummary": [
+      "Pengertian Pancasila sebagai Dasar Negara: Pancasila adalah dasar negara dan pedoman tingkah laku bagi seluruh rakyat Indonesia. Kata Pancasila berasal dari bahasa Sanskerta: Panca artinya lima, dan Sila artinya dasar atau asas budi pekerti.",
+      "Mengenal Lambang Burung Garuda Pancasila: Burung Garuda adalah lambang negara Indonesia yang berbulu kuning keemasan, melambangkan keagungan dan kejayaan bangsa. Di dadanya tergantung perisai yang memuat lima simbol sila, serta kakinya mencengkeram pita bertuliskan semboyan suci Bhinneka Tunggal Ika.",
+      "Simbol Sila Ke-1 (Bintang Emas): Sila pertama berbunyi Ketuhanan Yang Maha Esa dilambangkan dengan Bintang bersudut lima berlatar hitam, maknanya adalah cahaya kerohanian dari Tuhan Yang Maha Esa kepada seluruh manusia.",
+      "Simbol Sila Ke-2 (Rantai Emas): Sila kedua berbunyi Kemanusiaan yang adil dan beradab dilambangkan dengan rantai gelang persegi dan lingkaran yang saling bertaut kokoh, mencerminkan persatuan gotong royong antara laki-laki dan perempuan.",
+      "Simbol Sila Ke-3 (Pohon Beringin): Sila ketiga berbunyi Persatuan Indonesia dilambangkan dengan Pohon Beringin yang rindang dan berakar kuat menghunjam ke bumi, melambangkan tempat berteduh yang aman bagi seluruh suku bangsa.",
+      "Simbol Sila Ke-4 (Kepala Banteng): Sila keempat berbunyi Kerakyatan yang dipimpin oleh hikmat kebijaksanaan dalam permusyawaratan/perwakilan dilambangkan dengan Kepala Banteng sebagai hewan sosial yang gemar berkumpul untuk musyawarah.",
+      "Simbol Sila Ke-5 (Padi dan Kapas): Sila kelima berbunyi Keadilan sosial bagi seluruh rakyat Indonesia dilambangkan dengan padi (makanan pokok) dan kapas (sandang/pakaian) sebagai syarat kemakmuran dan keadilan rakyat.",
+      "Aksi Nyata Pelajar Pancasila di Sekolah: Berdoa bersama sebelum dan sesudah belajar, rukun bermain dengan teman tanpa mengejek, meminjamkan alat tulis kepada kawan yang membutuhkan, serta tertib mematuhi nasihat guru."
+    ],
+    "generatedQuizPreview": [
+      "Level 1: Simbol Sila ke-1 Bintang Emas (+10 Poin)",
+      "Level 2: Lambang Sila ke-3 Pohon Beringin dan maknanya (+20 Poin)",
+      "Level 3: Perilaku rukun dan saling tolong-menolong sesama kawan (+30 Poin)"
+    ]
+  },
+  {
+    "id": "mod-pkn-kls2-aturan",
+    "subject": "pkn",
+    "subjectLabel": "Pendidikan Pancasila & PKn",
+    "grade": "Kelas 2",
+    "title": "Menaati Aturan & Tata Tertib di Rumah dan Sekolah",
+    "chapterCode": "Bab 1",
+    "source": "API SIBI Kemdikbudristek RI (Katalog Buku Teks Utama)",
+    "sourceType": "kemdikbud",
+    "pageCount": 24,
+    "learningGoal": "Peserta didik memahami fungsi aturan dan membiasakan diri mematuhi tata tertib di rumah maupun di lingkungan sekolah.",
+    "isValidated": true,
+    "isActiveToday": false,
+    "validatedAt": "Hari ini, 07:45 WIB",
+    "gameType": "adventure",
+    "ragSummary": [
+      "Pengertian & Hakikat Aturan: Aturan adalah pedoman, tata tertib, atau petunjuk yang disepakati bersama untuk mengatur tingkah laku kita agar kehidupan berjalan tertib, aman, rukun, dan damai.",
+      "Mengapa Harus Ada Aturan?: Tanpa adanya aturan, suasana di rumah maupun di kelas akan menjadi kacau, banyak pertengkaran, dan kegiatan belajar atau bermain menjadi tidak nyaman. Aturan melatih kita menjadi anak yang berdisiplin dan bertanggung jawab.",
+      "Contoh Aturan di Rumah: Bangun pagi tepat waktu, merapikan tempat tidur sendiri setelah bangun, meminta izin atau pamit mencium tangan orang tua sebelum pergi bermain, serta meletakkan sepatu dan tas pada tempatnya.",
+      "Contoh Tata Tertib di Sekolah: Mengenakan seragam sekolah yang bersih dan rapi sesuai harinya, datang tepat waktu sebelum bel masuk berbunyi, mendengarkan bimbingan guru dengan tertib, serta membuang sampah pada tempat sampah.",
+      "Keseimbangan Hak dan Kewajiban Anak: Kewajiban adalah sesuatu yang harus kita laksanakan terlebih dahulu (misalnya belajar dan membersihkan kelas), sedangkan hak adalah sesuatu yang kita terima (misalnya mendapatkan bimbingan guru dan ruangan kelas yang nyaman).",
+      "Akibat Melanggar Aturan: Mengakibatkan suasana tidak tertib, merugikan diri sendiri dan orang lain, serta mendapatkan teguran atau sanksi disiplin dari orang tua maupun guru."
+    ],
+    "generatedQuizPreview": [
+      "Level 1: Contoh aturan bangun pagi di rumah (+10 Poin)",
+      "Level 2: Tata tertib seragam dan kebersihan sekolah (+20 Poin)",
+      "Level 3: Keseimbangan antara hak dan kewajiban anak (+30 Poin)"
+    ]
+  },
+  {
+    "id": "mod-pkn-bhinneka",
+    "subject": "pkn",
+    "subjectLabel": "Pendidikan Pancasila & PKn",
+    "grade": "Kelas 3",
+    "title": "Bhinneka Tunggal Ika: Mengenal Keragaman Suku, Rumah Adat & Budaya Nusantara",
+    "chapterCode": "Bab 1",
+    "source": "API SIBI Kemdikbudristek RI (Katalog Buku Teks Siswa)",
+    "sourceType": "kemdikbud",
+    "pageCount": 28,
+    "learningGoal": "Mengidentifikasi kekayaan rumah adat, tarian tradisional, serta memupuk toleransi beragama dan kerukunan antarsuku bangsa.",
+    "isValidated": true,
+    "isActiveToday": false,
+    "validatedAt": "Hari ini, 08:00 WIB",
+    "gameType": "adventure",
+    "ragSummary": [
+      "Pengertian Semboyan Bhinneka Tunggal Ika: Semboyan resmi bangsa Indonesia ini dipetik dari Kakawin Sutasoma karangan pujangga Mpu Tantular pada era Kerajaan Majapahit abad ke-14. Maknanya: Meskipun berbeda-beda suku, agama, dan adat, pada hakikatnya kita tetap satu jua dalam ikatan keluarga besar Indonesia.",
+      "Keragaman Suku Bangsa di Nusantara: Indonesia memiliki lebih dari 1.340 suku bangsa yang tersebar dari Sabang sampai Merauke, seperti Suku Jawa, Sunda, Batak, Minangkabau, Dayak, Bugis, Bali, Sasak, dan Asmat Papua.",
+      "Mengenal Rumah Adat Tradisional: Rumah Joglo (Jawa Tengah), Rumah Gadang dengan atap melengkung runcing seperti tanduk kerbau (Sumatera Barat), Rumah Tongkonan (Toraja Sulawesi Selatan), dan Rumah Honai berbentuk bulat beratap jerami (Papua).",
+      "Mengenal Tarian & Pakaian Adat: Tari Saman (Aceh), Tari Kecak (Bali), Tari Jaipong (Jawa Barat), Tari Pendet (Bali), serta pakaian adat yang anggun seperti Kebaya, Baju Bodo, dan Ulos.",
+      "Toleransi Antarumat Beragama: Menghormati 6 agama resmi di Indonesia (Islam, Kristen Protestan, Katolik, Hindu, Buddha, Khonghucu) dengan saling menjaga ketenangan saat tetangga atau kawan sedang beribadah.",
+      "Aksi Nyata di Sekolah: Belajar dan bermain bersama secara kompak tanpa memilih kawan berdasarkan asal daerah atau warna kulit, mencintai lagu daerah Nusantara, serta bangga menggunakan produk kebudayaan bangsa sendiri."
+    ],
+    "generatedQuizPreview": [
+      "Level 1: Asal-usul semboyan Bhinneka Tunggal Ika (+10 Poin)",
+      "Level 2: Mengenal Rumah Gadang dan Rumah Honai (+20 Poin)",
+      "Level 3: Sikap toleransi kerukunan antarsuku di sekolah (+30 Poin)"
+    ]
+  },
+  {
+    "id": "mod-pkn-sila3",
+    "subject": "pkn",
+    "subjectLabel": "Pendidikan Pancasila & PKn",
+    "grade": "Kelas 4",
+    "title": "Makna Lambang Sila Ke-3: Persatuan Indonesia di Sekolah & Rumah",
+    "chapterCode": "Bab 1",
+    "source": "API SIBI Kemdikbudristek RI (Katalog Buku Teks Utama)",
+    "sourceType": "kemdikbud",
+    "pageCount": 28,
+    "learningGoal": "Peserta didik memahami makna filosofis pohon beringin dan mengamalkan sikap rukun tanpa membeda-bedakan kawan.",
+    "isValidated": true,
+    "isActiveToday": true,
+    "validatedAt": "Hari ini, 07:30 WIB",
+    "gameType": "adventure",
+    "ragSummary": [
+      "Pengertian & Hakikat Sila Ke-3: Sila ketiga Pancasila berbunyi Persatuan Indonesia dengan lambang Pohon Beringin. Hakikat sila ini adalah tekad bulat bersama bangsa Indonesia yang memiliki ribuan suku, bahasa daerah, dan tradisi berbeda untuk bersatu kokoh dalam satu ikatan keluarga besar kebangsaan.",
       "Makna Filosofis Pohon Beringin: Pohon beringin memiliki akar tunggang dalam yang menancap kokoh ke bumi, melambangkan negara Indonesia sebagai tempat berteduh dan bernaung seluruh rakyat dengan aman. Sulur dan akar gantungnya yang menjalar ke segala arah mencerminkan kekayaan keberagaman suku bangsa Nusantara yang tetap bersatu teguh dalam satu pohon persatuan.",
-      "Sejarah & Makna Lambang Garuda Pancasila: Burung Garuda berwarna keemasan melambangkan keagungan dan kejayaan bangsa. Jumlah helai bulunya merefleksikan tanggal keramat Proklamasi Kemerdekaan: 17 bulu sayap, 8 bulu ekor, 19 bulu pangkal ekor, dan 45 bulu leher (17 Agustus 1945). Pada perisai di dadanya terpatri lima lambang sila yang diikat kokoh oleh pita bertuliskan 'Bhinneka Tunggal Ika'.",
-      "Semboyan Suci Bhinneka Tunggal Ika: Berasal dari Kakawin Sutasoma karya pujangga besar Mpu Tantular pada zaman Majapahit abad ke-14. Semboyan 'Bhinneka Tunggal Ika tan hana dharma mangrwa' bermakna meskipun berbeda-beda suku, agama, dan adat istiadat, kita tetap satu kesatuan keluarga besar Indonesia.",
+      "Sejarah & Makna Lambang Garuda Pancasila: Burung Garuda berwarna keemasan melambangkan keagungan dan kejayaan bangsa. Jumlah helai bulunya merefleksikan tanggal keramat Proklamasi Kemerdekaan: 17 bulu sayap, 8 bulu ekor, 19 bulu pangkal ekor, dan 45 bulu leher (17 Agustus 1945). Pada perisai di dadanya terpatri lima lambang sila yang diikat kokoh oleh pita bertuliskan Bhinneka Tunggal Ika.",
+      "Semboyan Suci Bhinneka Tunggal Ika: Berasal dari Kakawin Sutasoma karya pujangga besar Mpu Tantular pada zaman Majapahit abad ke-14. Semboyan Bhinneka Tunggal Ika tan hana dharma mangrwa bermakna meskipun berbeda-beda suku, agama, dan adat istiadat, kita tetap satu kesatuan keluarga besar Indonesia.",
       "Intisari Lima Sila Luhur Bangsa: Sila ke-1 menuntun ketakwaan dan toleransi antarumat beragama, Sila ke-2 menjunjung martabat kemanusiaan yang adil dan beradab, Sila ke-3 mengikat persatuan di atas keragaman, Sila ke-4 mengedepankan musyawarah mufakat, dan Sila ke-5 mengamanatkan keadilan sosial bagi seluruh rakyat Indonesia.",
       "Mengapa Materi Ini Sangat Penting Bagi Siswa SD?: Memahami nilai persatuan sejak dini mencegah terjadinya permusuhan, saling ejek perbedaan fisik atau suku (anti-bullying), serta pertengkaran antarteman. Siswa menyadari bahwa perbedaan adalah kekayaan bangsa yang harus disyukuri dan dirawat.",
       "Aksi Nyata & Penerapan di Sekolah: Melaksanakan jadwal piket kebersihan kelas secara kompak tanpa pilih-pilih kawan, mengajak teman baru atau teman pendiam untuk belajar dan bermain bersama saat jam istirahat, serta membiasakan diri bertutur kata menggunakan Bahasa Indonesia yang santun.",
       "Pengamalan di Rumah & Warga: Menjaga kerukunan antarsaudara di rumah, tidak membuat kegaduhan ketika tetangga sedang beribadah, serta ikut membantu saat ada kegiatan kerja bakti membersihkan lingkungan tempat tinggal.",
-      "Semangat Gotong Royong Tradisi Luhur Nusantara: Falsafah luhur 'berat sama dipikul, ringan sama dijinjing'. Kerja sama sukarela dan tolong-menolong membuat masalah sulit menjadi ringan dan menumbuhkan rasa persaudaraan yang tulus di tengah masyarakat.",
-      "Nilai Budi Pekerti & Karakter Pelajar Pancasila: Membiasakan sikap toleransi, rendah hati, cinta tanah air, bangga memakai produk karya bangsa sendiri seperti batik Indonesia, serta senantiasa bersikap jujur dan amanah dalam setiap perbuatan.",
+      "Semangat Gotong Royong Tradisi Luhur Nusantara: Falsafah luhur berat sama dipikul, ringan sama dijinjing. Kerja sama sukarela dan tolong-menolong membuat masalah sulit menjadi ringan dan menumbuhkan rasa persaudaraan yang tulus di tengah masyarakat.",
+      "Nilai Budi Pekerti & Karakter Pelajar Pancasila: Membiasakan sikap toleransi, rendah hati, cinta tanah air, bangga memakai produk karya bangsa sendiri seperti batik Indonesia, serta senantiasa bersikap jujur dan amanah dalam setiap perbuatan."
     ],
-    generatedQuizPreview: [
+    "generatedQuizPreview": [
       "Level 1: Lambang Sila Ke-3 Persatuan Indonesia (+10 Poin)",
       "Level 2: Sikap saat melihat teman berbeda suku sendirian (+20 Poin)",
-      "Level 3: Analogi akar gantung pohon beringin bagi keberagaman (+30 Poin)",
-    ],
+      "Level 3: Analogi akar gantung pohon beringin bagi keberagaman (+30 Poin)"
+    ]
   },
   {
-    id: "mod-pkn-gotongroyong",
-    subject: "pkn",
-    subjectLabel: "Pendidikan Pancasila & PKn",
-    grade: "Kelas 4",
-    title: "Gotong Royong & Kerja Sama: Berat Sama Dipikul Ringan Sama Dijinjing",
-    chapterCode: "Bab 2",
-    source: "API SIBI Kemdikbudristek RI (Buku Panduan Guru & Siswa)",
-    sourceType: "kemdikbud",
-    pageCount: 32,
-    learningGoal:
-      "Menumbuhkan empati sosial dan pembiasaan kerja bakti serta piket bersama di lingkungan sekolah.",
-    isValidated: false,
-    isActiveToday: false,
-    ragSummary: [
-      "Pengertian & Asal-Usul Gotong Royong: Gotong royong berasal dari kata 'gotong' (mengangkat atau memikul bersama) dan 'royong' (bersama-sama). Gotong royong adalah tradisi luhur bangsa Indonesia berupa kegiatan bekerja bersama-sama secara sukarela untuk mencapai tujuan bersama yang bermanfaat bagi banyak orang.",
-      "Prinsip Utama & Pembagian Peran: Prinsip dasar gotong royong adalah 'berat sama dipikul, ringan sama dijinjing'. Pekerjaan besar dan berat akan terasa ringan serta cepat selesai bila setiap orang mengambil peran masing-masing dengan ikhlas tanpa pamrih.",
+    "id": "mod-pkn-gotongroyong",
+    "subject": "pkn",
+    "subjectLabel": "Pendidikan Pancasila & PKn",
+    "grade": "Kelas 4",
+    "title": "Gotong Royong & Kerja Sama: Berat Sama Dipikul Ringan Sama Dijinjing",
+    "chapterCode": "Bab 2",
+    "source": "API SIBI Kemdikbudristek RI (Buku Panduan Guru & Siswa)",
+    "sourceType": "kemdikbud",
+    "pageCount": 32,
+    "learningGoal": "Menumbuhkan empati sosial dan pembiasaan kerja bakti serta piket bersama di lingkungan sekolah.",
+    "isValidated": true,
+    "isActiveToday": false,
+    "validatedAt": "Hari ini, 08:15 WIB",
+    "gameType": "adventure",
+    "ragSummary": [
+      "Pengertian & Asal-Usul Gotong Royong: Gotong royong berasal dari kata gotong (mengangkat atau memikul bersama) dan royong (bersama-sama). Gotong royong adalah tradisi luhur bangsa Indonesia berupa kegiatan bekerja bersama-sama secara sukarela untuk mencapai tujuan bersama yang bermanfaat bagi banyak orang.",
+      "Prinsip Utama & Pembagian Peran: Prinsip dasar gotong royong adalah berat sama dipikul, ringan sama dijinjing. Pekerjaan besar dan berat akan terasa ringan serta cepat selesai bila setiap orang mengambil peran masing-masing dengan ikhlas tanpa pamrih.",
       "Mengapa Gotong Royong Wajib Dipelajari?: Mengikis sifat individualis (mementingkan diri sendiri), menumbuhkan empati sosial, dan mempererat tali persaudaraan sesama kawan sehingga kelas menjadi ruang belajar yang nyaman dan hangat.",
       "Aksi Nyata di Lingkungan Sekolah: Bekerja sama menata perpustakaan kelas, merapikan meja dan kursi setelah jam belajar, serta aktif dalam kelompok diskusi di mana kawan yang sudah paham membantu kawan yang masih kesulitan belajar.",
       "Pengamalan di Rumah & Warga: Membantu meringankan pekerjaan orang tua seperti merapikan tempat tidur sendiri dan mencuci piring, serta ikut serta dalam kegiatan membersihkan selokan lingkungan dari sampah.",
-      "Nilai Karakter Pelajar Pancasila: Menanamkan jiwa tolong-menolong, peduli lingkungan, tanggung jawab bersama, dan tidak mengharapkan imbalan materi saat menolong sesama.",
+      "Nilai Karakter Pelajar Pancasila: Menanamkan jiwa tolong-menolong, peduli lingkungan, tanggung jawab bersama, dan tidak mengharapkan imbalan materi saat menolong sesama."
     ],
-    generatedQuizPreview: [
+    "generatedQuizPreview": [
       "Level 1: Makna pepatah berat sama dipikul (+10 Poin)",
-      "Level 2: Perilaku gotong royong di lingkungan sekolah (+20 Poin)",
-    ],
+      "Level 2: Perilaku gotong royong di lingkungan sekolah (+20 Poin)"
+    ]
   },
   {
-    id: "mod-bjawa-unggahungguh",
-    subject: "bjawa",
-    subjectLabel: "Basa Jawa (Muatan Lokal)",
-    grade: "Kelas 4",
-    title: "Trap-Trapan Unggah-Ungguh Basa marang Bapak/Ibu Guru & Tiyang Sepuh",
-    chapterCode: "Bab 1",
-    source: "Repositori Mulok Disdikbud Provinsi (Buku Wursita Basa)",
-    sourceType: "disdik",
-    pageCount: 20,
-    learningGoal:
-      "Siswa saged mbedakaken tembung Basa Ngoko kaliyan Basa Krama Alus nalika matur kaliyan tiyang ingkang langkung sepuh.",
-    isValidated: true,
-    isActiveToday: false,
-    validatedAt: "Kemarin, 14:15 WIB",
-    ragSummary: [
+    "id": "mod-pkn-norma",
+    "subject": "pkn",
+    "subjectLabel": "Pendidikan Pancasila & PKn",
+    "grade": "Kelas 5",
+    "title": "Norma, Hak & Kewajiban Warga Negara serta UUD 1945",
+    "chapterCode": "Bab 1",
+    "source": "API SIBI Kemdikbudristek RI (Kurikulum Merdeka 2024)",
+    "sourceType": "kemdikbud",
+    "pageCount": 26,
+    "learningGoal": "Memahami 4 macam norma dalam masyarakat, prinsip keseimbangan hak dan kewajiban, serta penegakan keadilan sosial UUD 1945.",
+    "isValidated": true,
+    "isActiveToday": false,
+    "validatedAt": "Hari ini, 08:30 WIB",
+    "gameType": "adventure",
+    "ragSummary": [
+      "Pengertian & Asal-Usul Norma: Kata norma diserap dari bahasa Latin norma yang bermakna garis siku pengukur tegak lurus—dimaknai sebagai kaidah, pedoman tingkah laku, dan tolok ukur yang disepakati bersama agar kehidupan bermasyarakat berjalan tertib, aman, dan berkeadilan.",
+      "Empat Macam Norma Utama: (1) Norma Agama (bersumber dari wahyu Tuhan Yang Maha Esa), (2) Norma Kesusilaan (bersumber dari suara hati nurani manusia), (3) Norma Kesopanan (bersumber dari tata krama adat pergaulan setempat), serta (4) Norma Hukum (aturan tertulis negara yang tegas dan mengikat seluruh warga).",
+      "Keseimbangan Hak dan Kewajiban: Kewajiban adalah tugas yang harus kita laksanakan dengan penuh tanggung jawab, sedangkan hak adalah sesuatu yang sah kita terima. Mendahulukan kewajiban sebelum menuntut hak melahirkan keadilan sosial dan ketenteraman bersama.",
+      "Aksi Nyata di Sekolah: Datang tepat waktu sebelum bel masuk berbunyi, mendengarkan bimbingan guru dengan tertib, menjaga fasilitas kelas, serta membiasakan budaya antre di kantin dan perpustakaan.",
+      "Pengamalan di Rumah & Warga: Menghormati nasihat orang tua, menjaga ketenangan saat tetangga beristirahat, mematuhi rambu lalu lintas, serta tidak mengambil barang milik orang lain tanpa izin.",
+      "Nilai Karakter Bangsa: Membiasakan sikap jujur, mandiri, disiplin waktu, cinta keadilan, dan menghormati hak asasi sesama kawan."
+    ],
+    "generatedQuizPreview": [
+      "Level 1: Contoh aturan yang berlaku di dalam kelas (+10 Poin)",
+      "Level 2: Perbedaan antara hak dan kewajiban siswa SD (+20 Poin)",
+      "Level 3: Analisis pentingnya hukum dan sanksi yang adil (+30 Poin)"
+    ]
+  },
+  {
+    "id": "mod-pkn-musyawarah",
+    "subject": "pkn",
+    "subjectLabel": "Pendidikan Pancasila & PKn",
+    "grade": "Kelas 6",
+    "title": "Musyawarah Mufakat & Semangat Persatuan NKRI untuk Keutuhan Bangsa",
+    "chapterCode": "Bab 1",
+    "source": "API SIBI Kemdikbudristek RI (Katalog Buku Teks Utama)",
+    "sourceType": "kemdikbud",
+    "pageCount": 26,
+    "learningGoal": "Mengamalkan musyawarah mufakat dalam pengambilan keputusan bersama serta menjaga keutuhan Negara Kesatuan Republik Indonesia.",
+    "isValidated": true,
+    "isActiveToday": false,
+    "validatedAt": "Hari ini, 09:00 WIB",
+    "gameType": "adventure",
+    "ragSummary": [
+      "Pengertian Musyawarah Mufakat: Musyawarah berasal dari bahasa Arab syawara yang bermakna berunding atau berdiskusi bersama untuk mencapai kesepakatan bulat (mufakat) dalam memecahkan masalah atau mengambil keputusan bersama.",
+      "Landasan Konstitusi & Sila Ke-4: Musyawarah mufakat dijiwai oleh Sila Keempat Pancasila: Kerakyatan yang dipimpin oleh hikmat kebijaksanaan dalam permusyawaratan/perwakilan. Mengedepankan akal sehat, hati nurani, dan kepentingan umum di atas kepentingan pribadi atau golongan.",
+      "Prinsip Pokok dalam Musyawarah: Setiap orang memiliki hak yang sama untuk berpendapat, wajib menghargai dan mendengarkan pendapat kawan tanpa memotong pembicaraan, tidak memaksakan kehendak sendiri, dan melaksanakan hasil keputusan bersama dengan ikhlas dan penuh tanggung jawab.",
+      "Contoh Penerapan di Sekolah: Pemilihan ketua kelas dan pengurus kelas secara tertib demokratis, musyawarah menentukan tujuan wisata edukasi kelas, dan pembagian tugas kerja bakti sekolah.",
+      "Pengamalan di Lingkungan Warga: Mengikuti rembuk warga RT/RW untuk pembangunan fasilitas umum pos ronda, kerja bakti membersihkan lingkungan, dan menjaga kerukunan warga.",
+      "Menjaga Keutuhan NKRI: Melatih jiwa kepemimpinan, menolak ujaran kebencian atau berita bohong (hoaks), membela kebenaran, serta senantiasa mengutamakan persatuan dan kesatuan bangsa di atas perbedaan."
+    ],
+    "generatedQuizPreview": [
+      "Level 1: Pengertian musyawarah mufakat dan Sila ke-4 (+10 Poin)",
+      "Level 2: Tata cara menyampaikan pendapat yang santun (+20 Poin)",
+      "Level 3: Komitmen menjaga keutuhan dan persatuan NKRI (+30 Poin)"
+    ]
+  },
+  {
+    "id": "mod-bjawa-anakkewan",
+    "subject": "bjawa",
+    "subjectLabel": "Basa Jawa (Muatan Lokal)",
+    "grade": "Kelas 1",
+    "title": "Kawruh Basa Jawa: Mengenal Jeneng Arane Anak Kewan (Bebek-Meri, Sapi-Pedhet, dll.)",
+    "chapterCode": "Bab 1",
+    "source": "Repositori Mulok Disdikbud Provinsi (Buku Sastri Basa)",
+    "sourceType": "disdik",
+    "pageCount": 18,
+    "learningGoal": "Peserta didik saged nyebutaken lan njodohaken arane anak kewan ing padintenan (meri, pedhet, cemeng, kuthuk, cempe, belo) kanthi leres.",
+    "isValidated": true,
+    "isActiveToday": false,
+    "validatedAt": "Hari ini, 09:15 WIB",
+    "gameType": "matching",
+    "ragSummary": [
+      "Pangertosan Arane Anak Kewan: Ing basa Jawa, jeneng anak kewan iku nduweni sesebutan dhewe-dhewe minangka kasugihan kabudayan basa lan bukti celake uripe wong Jawa karo alam sakupenge.",
+      "Arane Anak Unggas (Buntut Suwiwi): Anak bebek arane meri, anak pitik arane kuthuk, anak menthok arane minthi, anak manuk arane piyik, anak doro arane piyik.",
+      "Arane Anak Kewan Rumput & Ngesusoni: Anak sapi arane pedhet, anak wedhus arane cempe, anak kebo arane gudel, anak jaran arane belo, anak kucing arane cemeng.",
+      "Arane Anak Kewan Galak & Liar: Anak gajah arane bledug, anak macan arane gogor, anak baya arane rete, anak kodhok arane precel utawa cebong.",
+      "Tuladha ing Ukara Basa Jawa: Bapak mundhut pedhet cacahe loro ing pasar kewan, Meri-meri padha nglangi bebarengan ing blumbang, sarta Kucingku duwe anak telu cemeng kabeh."
+    ],
+    "generatedQuizPreview": [
+      "Level 1: Arane anak bebek yaiku meri (+10 Poin)",
+      "Level 2: Anak sapi diarani pedhet, anak kucing cemeng (+20 Poin)",
+      "Level 3: Jeneng anak kewan galak bledug lan gogor (+30 Poin)"
+    ]
+  },
+  {
+    "id": "mod-bjawa-aksara",
+    "subject": "bjawa",
+    "subjectLabel": "Basa Jawa (Muatan Lokal)",
+    "grade": "Kelas 2",
+    "title": "Maca lan Nulis Aksara Jawa Legena (20 Aksara) sarta Sandhangan Swara",
+    "chapterCode": "Bab 1",
+    "source": "Repositori Mulok Disdikbud Provinsi (Buku Wursita Basa)",
+    "sourceType": "disdik",
+    "pageCount": 22,
+    "learningGoal": "Siswa saged mangertosi wujud aksara Jawa dhasar (Ha-Na-Ca-Ra-Ka) lan sandhangan swara Wulu, Suku, Pepet, Taling.",
+    "isValidated": true,
+    "isActiveToday": false,
+    "validatedAt": "Hari ini, 09:30 WIB",
+    "gameType": "matching",
+    "ragSummary": [
+      "Pangertosan Aksara Jawa Legena: Aksara Jawa legena yaiku aksara dhasar Jawa kang cacahe ana 20 lan durung diwenehi sandhangan apa-apa, saben aksara nduweni swara vokal a.",
+      "Urutan 20 Aksara Jawa: Ha-Na-Ca-Ra-Ka (ana utusan), Da-Ta-Sa-Wa-La (padha pasulayan), Pa-Dha-Ja-Ya-Nya (padha digdayane), Ma-Ga-Ba-Tha-Nga (padha dadi bathang).",
+      "Sandhangan Swara Pokok: Wulu ngowahi swara dadi i (tuladha: siki), Suku ngowahi swara dadi u (tuladha: buku), Pepet ngowahi swara dadi e sepet (tuladha: seger), Taling ngowahi swara dadi e taling (tuladha: sate), lan Taling Tarung ngowahi swara dadi o (tuladha: toko).",
+      "Gladhen Maca & Nulis Prasaja: Ngenal pasangan aksara lan nyalin tembung-tembung prasaja saka aksara Latin menyang Aksara Jawa ing buku pasinaon."
+    ],
+    "generatedQuizPreview": [
+      "Level 1: Jumlah aksara Jawa legena dhasar ana 20 (+10 Poin)",
+      "Level 2: Sandhangan suku ngowahi swara dadi u (+20 Poin)",
+      "Level 3: Pasangan aksara lan sandhangan swara wulu (+30 Poin)"
+    ]
+  },
+  {
+    "id": "mod-bjawa-punokawan",
+    "subject": "bjawa",
+    "subjectLabel": "Basa Jawa (Muatan Lokal)",
+    "grade": "Kelas 3",
+    "title": "Mengenal Watak Luhur Tokoh Pewayangan Punokawan (Semar, Gareng, Petruk, Bagong)",
+    "chapterCode": "Bab 1",
+    "source": "Repositori Mulok Disdikbud Provinsi (Buku Sastri Basa)",
+    "sourceType": "disdik",
+    "pageCount": 26,
+    "learningGoal": "Meneladani watak sabar Semar, cermat Gareng, loman Petruk, serta sifat jujur blaka suta dari tokoh Bagong.",
+    "isValidated": true,
+    "isActiveToday": false,
+    "validatedAt": "Hari ini, 09:45 WIB",
+    "gameType": "matching",
+    "ragSummary": [
+      "Pangertosan & Asal-Usul Punokawan: Punokawan asale saka tembung Pana (paham utawa weruh kanthi cetha) lan Kawan (kanca/pamomong). Punokawan yaiku papat tokoh pamomong para ksatria Pandhawa kang nduweni kawicaksanan luhur kanggo nuntun marang kabecikan.",
+      "Watak Luhur Kyai Semar: Semar minangka bapa pamomong kang sejatine titising dewa (Batara Ismaya). Watake sabar banget, wicaksana, welas asih marang sapa wae, lan ora tau kumalungkung (sombong). Pasinaon: dadi bocah kudu sabar lan ora gampang nesu.",
+      "Watak Nala Gareng & Petruk: Gareng tangane ceko lan sikile jinjit minangka perlambang kudu ngati-ati nalika tumindak lan ora njupuk duweke liyan. Petruk dedege dhuwur, irunge dawa, watake grapyak, loman (seneng tetulung), lan pinter gawe senenge kanca tanpa nglarani ati.",
+      "Watak Bagong (Blaka Suta): Bagong awake lemu cendhek, watake jujur apa anane (blaka suta), ora seneng lamis (munafik), lan kendel mbelani bebener senadyan ngadhepi bebaya.",
+      "Penerapan ing Sekolah & Padintenan: Niru watak jujur Bagong nalika nggarap ulangan, watak sabar Semar nalika ana kanca kang nggodha, lan watak loman Petruk nalika ana kanca kang mbutuhake pitulungan."
+    ],
+    "generatedQuizPreview": [
+      "Level 1: Watak luhur sabar Kyai Semar (+10 Poin)",
+      "Level 2: Tuladha watak blaka suta Bagong ing kelas (+20 Poin)",
+      "Level 3: Perlambang ceko lan jinjite Nala Gareng (+30 Poin)"
+    ]
+  },
+  {
+    "id": "mod-bjawa-unggahungguh",
+    "subject": "bjawa",
+    "subjectLabel": "Basa Jawa (Muatan Lokal)",
+    "grade": "Kelas 4",
+    "title": "Trap-Trapan Unggah-Ungguh Basa marang Bapak/Ibu Guru & Tiyang Sepuh",
+    "chapterCode": "Bab 1",
+    "source": "Repositori Mulok Disdikbud Provinsi (Buku Wursita Basa)",
+    "sourceType": "disdik",
+    "pageCount": 20,
+    "learningGoal": "Siswa saged mbedakaken tembung Basa Ngoko kaliyan Basa Krama Alus nalika matur kaliyan tiyang ingkang langkung sepuh.",
+    "isValidated": true,
+    "isActiveToday": false,
+    "validatedAt": "Hari ini, 10:00 WIB",
+    "gameType": "matching",
+    "ragSummary": [
       "Pangertosan Basa Krama: Basa Krama yaiku salah siji undha-usuk utawa trap-trapan basa Jawa kang luwih alus lan kurmat, digunakake nalika micara karo wong liya murih bisa ngajeni lan ngurmati.",
       "Basa Krama Kuwi Kanggo Apa?: Digunakake nalika matur marang Bapak lan Ibu ing omah, matur marang Bapak/Ibu Guru ing sekolah, guneman marang simbah utawa sedulur sepuh, sarta sapa aruh marang tamu supaya tatakramane becik.",
       "Bedane Tingkatan Basa: Basa Ngoko (kanggo kanca sakelas/sebaya), Basa Krama Lugu (tembunge krama nanging kanggo nyritakake awake dhewe, tuladhane: kula nedha, kula tilem), lan Basa Krama Alus (basa paling kurmat mligi kagem wong tuwa utawa guru, tuladhane: Bapak dhahar, Bu Guru sare).",
       "Tuladha Tembung Ngoko menyang Krama Alus: Mangan dadi dhahar, turu dadi sare, lunga dadi tindak, tuku dadi mundhut, ndeleng dadi mirsani, omah dadi dalem, jeneng dadi asma, teka dadi rawuh.",
-      "Tuladha Ukara (Kalimat) ing Padintenan: (1) Marang Guru: 'Nyuwun sewu Bu Guru, kepareng kula badhe nyuwun pirsa babagan tugas sekolah'. (2) Nyritakake Wong Tuwa: 'Bapak saweg dhahar sekul, dene Ibu saweg tindak dhateng peken mundhut janganan'.",
-      "Tatakrama Solah Bawa: Nalika matur marang wong tuwa utawa guru, polatan kudu sumeh (grapyak), asta ngapurancang (ditangkepake ing ngarep), awake rada mbungkuk, sarta ora kena mbengok utawa nyela rembug.",
+      "Tuladha Ukara (Kalimat) ing Padintenan: (1) Marang Guru: Nyuwun sewu Bu Guru, kepareng kula badhe nyuwun pirsa babagan tugas sekolah. (2) Nyritakake Wong Tuwa: Bapak saweg dhahar sekul, dene Ibu saweg tindak dhateng peken mundhut janganan.",
+      "Tatakrama Solah Bawa: Nalika matur marang wong tuwa utawa guru, polatan kudu sumeh (grapyak), asta ngapurancang (ditangkepake ing ngarep), awake rada mbungkuk, sarta ora kena mbengok utawa nyela rembug."
     ],
-    gameType: "matching",
-    generatedQuizPreview: [
+    "generatedQuizPreview": [
       "Level 1: Krama aluse tembung mangan kagem guru (+10 Poin)",
       "Level 2: Basa kang trep nalika nyuwun pirsa Bu Guru (+20 Poin)",
-      "Level 3: Bedane krama lugu (nedha) lan krama alus (dhahar) (+30 Poin)",
-    ],
+      "Level 3: Bedane krama lugu (nedha) lan krama alus (dhahar) (+30 Poin)"
+    ]
   },
   {
-    id: "mod-bjawa-punokawan",
-    subject: "bjawa",
-    subjectLabel: "Basa Jawa (Muatan Lokal)",
-    grade: "Kelas 4",
-    title: "Mengenal Watak Luhur Tokoh Pewayangan Punokawan (Semar, Gareng, Petruk, Bagong)",
-    chapterCode: "Bab 2",
-    source: "Repositori Mulok Disdikbud Provinsi (Buku Sastri Basa)",
-    sourceType: "disdik",
-    pageCount: 26,
-    learningGoal:
-      "Meneladani watak sabar Semar, grapyak Petruk, serta sifat jujur apa adanya dari tokoh Bagong.",
-    isValidated: false,
-    isActiveToday: false,
-    ragSummary: [
-      "Pangertosan & Asal-Usul Punokawan: Punokawan asale saka tembung 'Pana' (paham utawa weruh kanthi cetha) lan 'Kawan' (kanca/sedulur). Punokawan yaiku papat tokoh pamomong para ksatria Pandhawa kang asale saka rakyat cilik, nanging nduweni kawicaksanan luhur kanggo nuntun ksatria marang kabecikan.",
-      "Watak Luhur Kyai Semar: Semar minangka bapa pamomong kang sejatine titising dewa (Batara Ismaya). Watake sabar banget, wicaksana, welas asih marang sapa wae, lan ora tau kumalungkung (sombong). Pasinaon: dadi bocah kudu sabar lan ora gampang nesu.",
-      "Watak Nala Gareng & Petruk: Gareng tangane ceko lan sikile jinjit minangka perlambang kudu ngati-ati nalika tumindak lan ora njupuk duweke liyan. Petruk dedege dhuwur, irunge dawa, watake grapyak, loman (seneng tetulung), lan pinter gawe senenge kanca tanpa nglarani ati.",
-      "Watak Bagong (Blaka Suta): Bagong awake lemu cendhek, watake jujur apa anane (blaka suta), ora seneng lamis (munafik), lan kendel mbelani bebener senadyan ngadhepi bebaya.",
-      "Mengapa Siswa Perlu Mempelajari Ini?: Nuntun siswa supaya ora mung ngoyak kepinteran pikiran, nanging uga nduweni watak andhap asor, jujur, lan seneng mbantu kanca kaya para paraga Punokawan.",
-      "Penerapan ing Sekolah & Padintenan: Niru watak jujur Bagong nalika nggarap ulangan, watak sabar Semar nalika ana kanca kang nggodha, lan watak loman Petruk nalika ana kanca kang mbutuhake pitulungan.",
-    ],
-    generatedQuizPreview: [
-      "Level 1: Watak luhur Kyai Semar (+10 Poin)",
-      "Level 2: Tuladha watak blaka suta Bagong ing kelas (+20 Poin)",
-    ],
-  },
-  {
-    id: "mod-pkn-norma",
-    subject: "pkn",
-    subjectLabel: "Pendidikan Pancasila & PKn",
-    grade: "Kelas 4",
-    title: "Norma, Aturan Sekolah & Tertib Hukum Sehari-hari (UUD 1945)",
-    chapterCode: "Bab 3",
-    source: "API SIBI Kemdikbudristek (Kurikulum Merdeka 2024)",
-    sourceType: "kemdikbud",
-    pageCount: 26,
-    learningGoal:
-      "Memahami hak dan kewajiban anak di rumah dan sekolah serta mentaati tata tertib secara disiplin.",
-    isValidated: false,
-    isActiveToday: false,
-    ragSummary: [
-      "Hai Adik-adik Hebat! Apa itu Norma dan Aturan?: Norma adalah aturan atau petunjuk tentang bagaimana kita harus bertingkah laku yang baik. Aturan ini disepakati bersama agar kehidupan di sekolah dan di rumah berjalan tertib, aman, rukun, dan adil bagi semua orang.",
-      "Empat Macam Norma Utama: Terdiri atas Norma Agama (wahyu Tuhan), Norma Kesusilaan (suara hati nurani), Norma Kesopanan (tata krama adat pergaulan), serta Norma Hukum (aturan tertulis negara yang tegas dan mengikat).",
-      "Keseimbangan Hak dan Kewajiban: Kewajiban adalah tugas yang harus kita laksanakan dengan penuh tanggung jawab, sedangkan hak adalah sesuatu yang sah kita terima. Mendahulukan kewajiban sebelum menuntut hak melahirkan keadilan dan kedamaian.",
-      "Aksi Nyata di Sekolah: Datang tepat waktu sebelum bel masuk berbunyi, mendengarkan bimbingan guru dengan tertib, menjaga kebersihan kelas, serta membiasakan budaya antre di kantin dan perpustakaan.",
-      "Pengamalan di Rumah & Warga: Menghormati nasihat orang tua, menjaga ketenangan saat tetangga beristirahat, dan mematuhi aturan keluarga.",
-      "Nilai Karakter Bangsa: Membiasakan sikap jujur, mandiri, disiplin waktu, dan menghormati hak asasi sesama kawan.",
-    ],
-    generatedQuizPreview: [
-      "Level 1: Contoh aturan yang berlaku di dalam kelas (+10 Poin)",
-      "Level 2: Perbedaan antara hak dan kewajiban siswa SD (+20 Poin)",
-      "Level 3: Analisis pentingnya hukum dan sanksi yang adil (+30 Poin)",
-    ],
-  },
-  {
-    id: "mod-pkn-bhinneka",
-    subject: "pkn",
-    subjectLabel: "Pendidikan Pancasila & PKn",
-    grade: "Kelas 4",
-    title: "Bhinneka Tunggal Ika: Mengenal Keragaman Suku, Rumah Adat & Toleransi Beragama",
-    chapterCode: "Bab 4",
-    source: "API SIBI Kemdikbudristek (Buku Teks Siswa)",
-    sourceType: "kemdikbud",
-    pageCount: 30,
-    learningGoal:
-      "Mengidentifikasi kekayaan rumah adat, tarian tradisional, serta memupuk toleransi beragama dan kerukunan.",
-    isValidated: false,
-    isActiveToday: false,
-    ragSummary: [
-      "Pengertian & Asal-Usul Semboyan: Semboyan Bhinneka Tunggal Ika berasal dari Kitab Sutasoma karangan Mpu Tantular pada era Majapahit, berbunyi 'Bhinneka Tunggal Ika tan hana dharma mangrwa', yang bermakna meskipun berbeda-beda keyakinan dan suku bangsa, pada hakikatnya kita tetap satu jua dalam ikatan keluarga besar Indonesia.",
-      "Landasan Konstitusi & Kemerdekaan Beragama: Kemerdekaan memeluk keyakinan dijamin secara kokoh dalam Sila ke-1 Pancasila serta Pasal 29 Ayat (2) UUD 1945: Negara menjamin kemerdekaan tiap-tiap penduduk untuk memeluk agamanya masing-masing dan beribadat menurut agamanya dan kepercayaannya itu.",
-      "Prinsip Toleransi Beragama (Tasamuh): Kata toleransi berasal dari bahasa Latin 'tolerare' (bersabar dan menahan diri). Menghargai 6 agama resmi di Indonesia (Islam, Kristen Protestan, Katolik, Hindu, Buddha, Khonghucu) dan aliran kepercayaan dengan hidup rukun secara sosial tanpa mencampuradukkan ajaran ritual ibadah.",
-      "Kekayaan Ragam Nusantara: Mengenal ribuan pulau, ratusan bahasa daerah, rumah adat (Joglo, Gadang, Tongkonan), pakaian adat, dan kesenian tradisional sebagai kekayaan luhur milik bersama.",
-      "Aksi Nyata di Sekolah: Menjaga ketenangan saat teman berdoa sebelum belajar, tetap kompak bermain dan belajar kelompok bersama tanpa membedakan agama kawan, serta saling mengucapkan selamat hari raya dengan santun.",
-      "Pengamalan di Rumah & Nilai Luhur: Menjaga ketenangan saat tempat ibadah tetangga sedang melaksanakan peribadatan, bergotong royong tanpa membedakan latar belakang warga, serta menanamkan budi pekerti tepa selira (tenggang rasa) dan cinta damai.",
-    ],
-    generatedQuizPreview: [
-      "Level 1: Asal-usul semboyan Bhinneka Tunggal Ika (+10 Poin)",
-      "Level 2: Jaminan kemerdekaan beragama Pasal 29 Ayat 2 (+20 Poin)",
-      "Level 3: Sikap toleransi dan kerukunan sosial di sekolah (+30 Poin)",
-    ],
-  },
-  {
-    id: "mod-bjawa-pandhawa",
-    subject: "bjawa",
-    subjectLabel: "Basa Jawa (Muatan Lokal)",
-    grade: "Kelas 4",
-    title: "Kisah Kepahlawanan & Silsilah Pandhawa Lima ing Perang Baratayuda",
-    chapterCode: "Bab 3",
-    source: "Repositori Mulok Disdikbud Provinsi (Buku Kirtya Basa)",
-    sourceType: "disdik",
-    pageCount: 24,
-    learningGoal:
-      "Mengenal keteladanan watak kesatria Pandhawa: Puntadewa, Werkudara, Janaka, Nakula, lan Sadewa.",
-    isValidated: false,
-    isActiveToday: false,
-    ragSummary: [
-      "Pandhawa Lima yaiku sedulur cacah lima kang nduweni watak utama lan luhur.",
-      "Puntadewa watake jujur ora tau goroh, Werkudara watake kendel mbelani bebener.",
-      "Janaka (Arjuna) alus budine lan sekti, Nakula lan Sadewa setya tuhu marang sedulur tuwa.",
-    ],
-    generatedQuizPreview: [
-      "Level 1: Urutan silsilah sedulur Pandhawa Lima (+10 Poin)",
-      "Level 2: Watak utama Raden Werkudara nalika tetulung (+20 Poin)",
-    ],
-  },
-  {
-    id: "mod-bjawa-aksara",
-    subject: "bjawa",
-    subjectLabel: "Basa Jawa (Muatan Lokal)",
-    grade: "Kelas 4",
-    title: "Maca lan Nulis Aksara Jawa Legena (20 Aksara) sarta Sandhangan Swara",
-    chapterCode: "Bab 4",
-    source: "Repositori Mulok Disdikbud Provinsi (Buku Wursita Basa)",
-    sourceType: "disdik",
-    pageCount: 22,
-    learningGoal:
-      "Siswa saged mangertosi wujud aksara Jawa Ha-Na-Ca-Ra-Ka lan nggunakake sandhangan Wulu, Suku, Pepet, Taling.",
-    isValidated: false,
-    isActiveToday: false,
-    ragSummary: [
-      "Aksara Jawa Legena cacahe ana rong puluh (20) wiwit saka Ha nganti Nga.",
-      "Sandhangan Swara: Wulu (swara i), Suku (swara u), Pepet (swara e), Taling (swara é), Taling Tarung (swara o).",
-      "Gladhen nulis tembung-tembung prasaja kanthi aksara Jawa ing buku tulis.",
-    ],
-    generatedQuizPreview: [
-      "Level 1: Jumlah aksara Jawa legena dhasar (+10 Poin)",
-      "Level 2: Sandhangan kang ngowahi swara dadi 'u' (+20 Poin)",
-    ],
-    gameType: "matching",
-  },
-  {
-    id: "mod-bjawa-anakkewan",
-    subject: "bjawa",
-    subjectLabel: "Basa Jawa (Muatan Lokal)",
-    grade: "Kelas 4",
-    title: "Kawruh Basa Jawa: Mengenal Jeneng Arane Anak Kewan (Bebek-Meri, Sapi-Pedhet, dll.)",
-    chapterCode: "Bab 5",
-    source: "Repositori Mulok Disdikbud Provinsi (Buku Sastri Basa)",
-    sourceType: "disdik",
-    pageCount: 18,
-    learningGoal:
-      "Peserta didik saged nyebutaken arane anak kewan ing padintenan (meri, pedhet, cemeng, kuthuk, cempe, bledug) kanthi leres.",
-    isValidated: true,
-    isActiveToday: false,
-    validatedAt: "Hari ini, 09:15 WIB",
-    ragSummary: [
-      "Pangertosan Arane Anak Kewan: Ing basa Jawa, jeneng anak kewan iku nduweni sesebutan dhewe-dhewe minangka kasugihan basa lan bukti celake manungsa karo alam sakupenge.",
-      "Arane Anak Unggas & Kewan Ingon-Ingon: Anak bebek arane meri, anak pitik arane kuthuk, anak menthok arane minthi, anak manuk arane piyik.",
-      "Arane Anak Kewan Mamalia & Rumput: Anak sapi arane pedhet, anak wedhus arane cempe, anak kebo arane gudel, anak jaran arane belo.",
-      "Arane Anak Kewan Galak & Liar: Anak gajah arane bledug, anak macan arane gogor, anak boyo arane rete, anak kodhok arane precel/cebong.",
-      "Tuladha ing Ukara Basa Jawa: 'Bapak mundhut pedhet cacahe loro ing pasar kewan' sarta 'Meri-meri padha nglangi bebarengan ing blumbang'.",
-    ],
-    generatedQuizPreview: [
-      "Level 1: Arane anak bebek yaiku meri (+10 Poin)",
-      "Level 2: Anak sapi diarani pedhet (+20 Poin)",
-    ],
-    gameType: "matching",
-  },
-  {
-    id: "mod-bjawa-geguritan",
-    subject: "bjawa",
-    subjectLabel: "Basa Jawa (Muatan Lokal)",
-    grade: "Kelas 4",
-    title: "Geguritan: Mengenal Puisi Basa Jawa Gagrag Anyar & Unsur-Unsurnya",
-    chapterCode: "Bab 6",
-    source: "Repositori Mulok Disdikbud Provinsi (Buku Sastri Basa & Tantri Basa)",
-    sourceType: "disdik",
-    pageCount: 22,
-    learningGoal:
-      "Siswa saged mangertosi pangertosan geguritan gagrag anyar, ciri-ciri, unsur pambangun, sarta tuladha geguritan kanthi lafal kang trep.",
-    isValidated: true,
-    isActiveToday: false,
-    validatedAt: "Hari ini, 08:30 WIB",
-    gameType: "susunkata",
-    ragSummary: [
+    "id": "mod-bjawa-geguritan",
+    "subject": "bjawa",
+    "subjectLabel": "Basa Jawa (Muatan Lokal)",
+    "grade": "Kelas 5",
+    "title": "Geguritan: Mengenal Puisi Basa Jawa Gagrag Anyar & Unsur-Unsurnya",
+    "chapterCode": "Bab 1",
+    "source": "Repositori Mulok Disdikbud Provinsi (Buku Sastri Basa & Tantri Basa)",
+    "sourceType": "disdik",
+    "pageCount": 22,
+    "learningGoal": "Siswa saged mangertosi pangertosan geguritan gagrag anyar, ciri-ciri, unsur pambangun, sarta tuladha geguritan kanthi lafal kang trep.",
+    "isValidated": true,
+    "isActiveToday": false,
+    "validatedAt": "Hari ini, 08:30 WIB",
+    "gameType": "susunkata",
+    "ragSummary": [
       "Pangertosan Geguritan: Geguritan yaiku karya sastra puisi basa Jawa gagrag anyar kang medharake rasa pangrasa panganggit kanthi basa kang endah lan mentes. Geguritan gagrag anyar ora kaiket dening paugeran tartamtu kaya tembang macapat.",
       "Geguritan Kuwi Kanggo Apa?: Kanggo medharake rasa pangrasa ati (katresnan marang wong tuwa, rasa syukur marang Gusti, tresna asih marang alam), aweh piwulang becik (amanat luhur), sarta nguri-uri kaendahan basa Jawa puitis.",
       "Ciri-Ciri Utama Geguritan Gagrag Anyar: (1) Ora kaiket guru gatra (larik), guru wilangan (suku kata), lan guru lagu (tibaning swara), (2) Basane endah, mentes, lan puitis, (3) Nggunakake purwakanthi (persamaan swara utawa sastra), (4) Tembunge dipilih kanthi cermat (diksi).",
       "Unsur Pambangun Geguritan: Tema (underaning gagasan pokok), Diksi (pamilihing tembung endah), Purwakanthi (runtuting swara vokal/konsonan), lan Amanat (pesen becik kang kinandhut ing geguritan).",
-      "Tuladha Geguritan 1 (Ibu): 'Ibu... Rina wengi tansah ngusap luh ing pipiku. Ndonga puji marang Gusti Kang Murbeng Dumadi. Kagem putra-putrimu kang tansah mbok trisnani. Tresnamu tanpa upama, ora bakal sirna selawase.' (Tegese: Nggambarake katresnane ibu kang tanpa kendhat).",
-      "Tuladha Geguritan 2 (Sekolahanku): 'Sekolahanku endah asri... Papan kanggo golek ilmu lan wawasan. Bapak Ibu Guru mulang kanthi tulusing ati. Kanca-kancaku padha rukun sesandhingan.' (Tegese: Nggambarake rasa seneng lan syukur sekolah ing papan kang rukun lan asri).",
+      "Tuladha Geguritan 1 (Ibu): Ibu... Rina wengi tansah ngusap luh ing pipiku. Ndonga puji marang Gusti Kang Murbeng Dumadi. Kagem putra-putrimu kang tansah mbok trisnani. Tresnamu tanpa upama, ora bakal sirna selawase. (Tegese: Nggambarake katresnane ibu kang tanpa kendhat).",
+      "Tuladha Geguritan 2 (Sekolahanku): Sekolahanku endah asri... Papan kanggo golek ilmu lan wawasan. Bapak Ibu Guru mulang kanthi tulusing ati. Kanca-kancaku padha rukun sesandhingan. (Tegese: Nggambarake rasa seneng lan syukur sekolah ing papan kang rukun lan asri)."
     ],
-    generatedQuizPreview: [
+    "generatedQuizPreview": [
       "Level 1: Pangertosan geguritan gagrag anyar (+10 Poin)",
       "Level 2: Ciri khas geguritan ora kaiket paugeran (+20 Poin)",
-      "Level 3: Purwakanthi lan pamilihing diksi tembung (+30 Poin)",
-    ],
+      "Level 3: Purwakanthi lan pamilihing diksi tembung (+30 Poin)"
+    ]
   },
   {
-    id: "mod-pkn-nasionalisme",
-    subject: "pkn",
-    subjectLabel: "Pendidikan Pancasila & PKn",
-    grade: "Kelas 4",
-    title: "Cinta Tanah Air & Nasionalisme: Bangga Menjadi Anak Indonesia",
-    chapterCode: "Bab 5",
-    source: "API SIBI Kemdikbudristek RI (Katalog Buku Teks Utama)",
-    sourceType: "kemdikbud",
-    pageCount: 26,
-    learningGoal:
-      "Peserta didik mengenal simbol kebanggaan negara dan membiasakan sikap cinta tanah air serta bangga menggunakan produk Indonesia.",
-    isValidated: true,
-    isActiveToday: false,
-    validatedAt: "Hari ini, 08:00 WIB",
-    ragSummary: [
-      "Hai Adik-adik Pintar! Apa itu Nasionalisme?: Nasionalisme artinya rasa cinta, bangga, dan setia yang tulus kepada bangsa dan tanah air kita tercinta, Indonesia! Sebagai anak bangsa, kita bangga tinggal di tanah air Indonesia yang indah, kaya akan budaya, dan penuh keberagaman yang rukun.",
-      "Simbol-Simbol Kebanggaan Negara Indonesia: Bangsa kita memiliki lambang dan simbol resmi yang wajib kita hormati bersama: 1) Bendera Merah Putih (Merah berarti berani membela kebenaran, Putih berarti suci hatinya), 2) Lagu Kebangsaan 'Indonesia Raya' ciptaan W.R. Supratman, 3) Lambang Garuda Pancasila dengan semboyan 'Bhinneka Tunggal Ika', serta 4) Bahasa persatuan kita, Bahasa Indonesia.",
-      "Mengapa Kita Harus Cinta Tanah Air?: Indonesia adalah rumah besar tempat kita lahir, bertumbuh, belajar, dan bermain dengan gembira bersama keluarga dan sahabat. Bila setiap anak memiliki rasa cinta tanah air, persatuan bangsa kita akan selalu kuat, rukun, dan tidak mudah diadu domba.",
-      "Contoh Sikap Nyata di Sekolah: Mengikuti upacara bendera hari Senin dengan tertib dan khidmat (berdiri tegak dan hormat saat Sang Merah Putih dinaikkan), menyanyikan lagu Indonesia Raya dengan semangat, rukun berteman dengan kawan sekelas meski berbeda suku atau agama, serta giat belajar agar dapat berprestasi membanggakan bangsa.",
-      "Pengamalan di Rumah dan Lingkungan: Bangga memakai produk buatan pengrajin dalam negeri seperti baju batik atau sepatu lokal, merawat kebersihan lingkungan sekitar, menghargai budaya daerah lain, dan selalu bersikap ramah kepada tetangga.",
-      "Pesan Budi Pekerti Anak Indonesia: Tanamkan selalu di dalam hati semboyan 'Aku Bangga Menjadi Anak Indonesia!' Jadilah anak yang jujur, santun, pemberani dalam kebaikan, dan siap menjaga persatuan di mana pun kita berada.",
+    "id": "mod-bjawa-pandhawa",
+    "subject": "bjawa",
+    "subjectLabel": "Basa Jawa (Muatan Lokal)",
+    "grade": "Kelas 6",
+    "title": "Kisah Kepahlawanan & Silsilah Pandhawa Lima ing Perang Baratayuda",
+    "chapterCode": "Bab 1",
+    "source": "Repositori Mulok Disdikbud Provinsi (Buku Kirtya Basa)",
+    "sourceType": "disdik",
+    "pageCount": 24,
+    "learningGoal": "Mengenal keteladanan watak kesatria Pandhawa: Puntadewa, Werkudara, Janaka, Nakula, lan Sadewa.",
+    "isValidated": true,
+    "isActiveToday": false,
+    "validatedAt": "Hari ini, 10:15 WIB",
+    "gameType": "adventure",
+    "ragSummary": [
+      "Pangertosan Pandhawa Lima: Pandhawa Lima yaiku sedulur lanang cacah lima putrane Prabu Pandu Dewanata saka kraton Ngastina kang nduweni watak utama, jujur, lan mbelani kabecikan.",
+      "Prabu Puntadewa (Yudhistira): Pambarepe Pandhawa, ratu ing Amarta. Watake suci, getihe putih, jujur ora tau goroh, lan remen tetulung marang sapa wae.",
+      "Raden Werkudara (Bima): Panenggake Pandhawa, satriya ing Jipang Jodhipati. Awake dhuwur gedhe gagah prakosa, nduweni kuku Pancanaka, watake kendel, setya tuhu marang dhawuhe guru, lan pantang mundur mbelani bebener.",
+      "Raden Janaka (Arjuna): Penengahe Pandhawa, satriya ing Madukara. Praupane bagus mencorong, sekti mandraguna kanthi pusaka jemparing Pasopati, alus budine lan remen tapa brata.",
+      "Raden Nakula lan Raden Sadewa: Wuragile Pandhawa wujud kembar putra Dewi Madrim. Watake setya bekti marang sedulur tuwa, pinter babagan tetanen lan ngopeni jaran sarta wasis ing ngelmu panitisan.",
+      "Piwulang ing Perang Baratayuda: Mbelani bebener nglawan Kurawa kang angkara murka kanthi tetep njunjung luhuring budi pekerti lan satria."
     ],
-    generatedQuizPreview: [
-      "Level 1: Arti rasa cinta tanah air dan simbol lagu kebangsaan (+10 Poin)",
-      "Level 2: Sikap hormat saat upacara bendera dan bangga produk lokal (+20 Poin)",
-      "Level 3: Menjaga kerukunan teman beda daerah dan makna bendera Merah Putih (+30 Poin)",
-    ],
+    "generatedQuizPreview": [
+      "Level 1: Urutan silsilah sedulur Pandhawa Lima (+10 Poin)",
+      "Level 2: Watak utama Raden Werkudara nalika tetulung (+20 Poin)",
+      "Level 3: Kasetyan lan bektine Nakula lan Sadewa (+30 Poin)"
+    ]
   },
+{
+  "id": "mod-pkn-nasionalisme",
+  "subject": "pkn",
+  "subjectLabel": "Pendidikan Pancasila & PKn",
+  "grade": "Kelas 4",
+  "title": "Cinta Tanah Air & Nasionalisme: Bangga Menjadi Anak Indonesia",
+  "chapterCode": "Bab 5",
+  "source": "API SIBI Kemdikbudristek RI (Katalog Buku Teks Utama)",
+  "sourceType": "kemdikbud",
+  "pageCount": 26,
+  "learningGoal": "Peserta didik mengenal simbol kebanggaan negara dan membiasakan sikap cinta tanah air serta bangga menggunakan produk Indonesia.",
+  "isValidated": true,
+  "isActiveToday": false,
+  "validatedAt": "Hari ini, 08:00 WIB",
+  "gameType": "adventure",
+  "ragSummary": [
+    "Hai Adik-adik Pintar! Apa itu Nasionalisme?: Nasionalisme artinya rasa cinta, bangga, dan setia yang tulus kepada bangsa dan tanah air kita tercinta, Indonesia! Sebagai anak bangsa, kita bangga tinggal di tanah air Indonesia yang indah, kaya akan budaya, dan penuh keberagaman yang rukun.",
+    "Simbol-Simbol Kebanggaan Negara Indonesia: Bangsa kita memiliki lambang dan simbol resmi yang wajib kita hormati bersama: 1) Bendera Merah Putih (Merah berarti berani membela kebenaran, Putih berarti suci hatinya), 2) Lagu Kebangsaan Indonesia Raya ciptaan W.R. Supratman, 3) Lambang Garuda Pancasila dengan semboyan Bhinneka Tunggal Ika, serta 4) Bahasa persatuan kita, Bahasa Indonesia.",
+    "Mengapa Kita Harus Cinta Tanah Air?: Indonesia adalah rumah besar tempat kita lahir, bertumbuh, belajar, dan bermain dengan gembira bersama keluarga dan sahabat. Bila setiap anak memiliki rasa cinta tanah air, persatuan bangsa kita akan selalu kuat, rukun, dan tidak mudah diadu domba.",
+    "Contoh Sikap Nyata di Sekolah: Mengikuti upacara bendera hari Senin dengan tertib dan khidmat (berdiri tegak dan hormat saat Sang Merah Putih dinaikkan), menyanyikan lagu Indonesia Raya dengan semangat, rukun berteman dengan kawan sekelas meski berbeda suku atau agama, serta giat belajar agar dapat berprestasi membanggakan bangsa.",
+    "Pengamalan di Rumah dan Lingkungan: Bangga memakai produk buatan pengrajin dalam negeri seperti baju batik atau sepatu lokal, merawat kebersihan lingkungan sekitar, menghargai budaya daerah lain, dan selalu bersikap ramah kepada tetangga.",
+    "Pesan Budi Pekerti Anak Indonesia: Tanamkan selalu di dalam hati semboyan Aku Bangga Menjadi Anak Indonesia! Jadilah anak yang jujur, santun, pemberani dalam kebaikan, dan siap menjaga persatuan di mana pun kita berada."
+  ],
+  "generatedQuizPreview": [
+    "Level 1: Arti rasa cinta tanah air dan simbol lagu kebangsaan (+10 Poin)",
+    "Level 2: Sikap hormat saat upacara bendera dan bangga produk lokal (+20 Poin)",
+    "Level 3: Menjaga kerukunan teman beda daerah dan makna bendera Merah Putih (+30 Poin)"
+  ],
+  "quizQuestions": {
+    "1": [
+      {
+        "id": "q1_nas_1",
+        "question": "Apakah arti dari rasa cinta tanah air (nasionalisme) bagi anak sekolah dasar?",
+        "options": [
+          "Rasa bangga, sayang, dan setia kepada bangsa dan negara Indonesia",
+          "Hanya menyukai barang dan budaya dari luar negeri",
+          "Menolak berteman dengan kawan yang berbeda daerah",
+          "Sikap malas dan tidak mau ikut upacara bendera"
+        ],
+        "correctOption": 0,
+        "hint": "Nasionalisme adalah wujud rasa cinta dan kebanggaan kita sebagai anak Indonesia."
+      },
+      {
+        "id": "q1_nas_2",
+        "question": "Lagu kebangsaan negara Indonesia yang selalu kita nyanyikan dengan sikap tegak saat upacara sekolah adalah...",
+        "options": [
+          "Indonesia Raya ciptaan W.R. Supratman",
+          "Balonku Ada Lima",
+          "Bintang Kejora",
+          "Pelangi-Pelangi"
+        ],
+        "correctOption": 0,
+        "hint": "Lagu kebangsaan resmi Indonesia adalah Indonesia Raya yang diciptakan oleh W.R. Supratman."
+      }
+    ],
+    "2": [
+      {
+        "id": "q2_nas_1",
+        "question": "Saat bendera Merah Putih dinaikkan pada upacara bendera hari Senin di sekolah, sikap yang benar adalah...",
+        "options": [
+          "Berdiri tegak dengan sikap khidmat dan memberikan hormat kepada bendera",
+          "Duduk santai di bawah pohon sambil makan bekal jajan",
+          "Mengobrol dan bercanda bersama teman di barisan",
+          "Bermain kejar-kejaran di lapangan upacara"
+        ],
+        "correctOption": 0,
+        "hint": "Upacara bendera mengajarkan rasa hormat dan terima kasih atas perjuangan para pahlawan."
+      }
+    ]
+  }
+}
 ];
 
 // Pilihan rekomendasi topik resmi dari API
@@ -473,7 +614,7 @@ export default function CurriculumValidationManager() {
   const queryClient = useQueryClient();
   const setActiveValidatedModule = useUIStore((s) => s.setActiveValidatedModule);
   const [modules, setModules] = useState<CurriculumModule[]>(INITIAL_MODULES);
-  const [filterSubject, setFilterSubject] = useState<"all" | "pkn" | "bjawa">("all");
+  const [filterSubject, setFilterSubject] = useState<"pkn" | "bjawa">("pkn");
   const [previewingModule, setPreviewingModule] = useState<CurriculumModule | null>(null);
 
   // Ambil seluruh materi kurikulum tersimpan dari database backend saat mount
@@ -498,8 +639,8 @@ export default function CurriculumValidationManager() {
 
   // Form input
   const [selectedSubject, setSelectedSubject] = useState<"pkn" | "bjawa">("pkn");
-  const [selectedGrade, setSelectedGrade] = useState<string>("Kelas 4");
-  const [chapterCode, setChapterCode] = useState("Bab 3");
+  const [selectedGrade, setSelectedGrade] = useState<string>("Kelas 1");
+  const [chapterCode, setChapterCode] = useState("Bab 1");
   const [topicTitle, setTopicTitle] = useState("");
   const [learningGoal, setLearningGoal] = useState("");
   const [apiSourceOption, setApiSourceOption] = useState<"kemdikbud" | "disdik">("kemdikbud");
@@ -507,10 +648,10 @@ export default function CurriculumValidationManager() {
   // Penampung data hasil respon API yang siap divalidasi
   const [generatedModule, setGeneratedModule] = useState<CurriculumModule | null>(null);
 
-  const [filterGrade, setFilterGrade] = useState<string>("all");
+  const [filterGrade, setFilterGrade] = useState<string>("Kelas 1");
 
   const filteredModules = modules.filter((m) => {
-    if (filterSubject !== "all" && m.subject !== filterSubject) return false;
+    if (m.subject !== filterSubject) return false;
     const g = (m.grade || "").toLowerCase();
     if (filterGrade !== "all" && !(g.includes(filterGrade.toLowerCase()) || g.includes("semua"))) return false;
     return true;
@@ -902,23 +1043,9 @@ export default function CurriculumValidationManager() {
             type="button"
             onClick={() => {
               playClickSound();
-              setFilterSubject("all");
-            }}
-            className={`px-3 py-1.5 rounded-xl text-xs font-black transition ${
-              filterSubject === "all"
-                ? "bg-amber-400 text-amber-950 shadow-xs"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-            }`}
-          >
-            Semua Mapel ({modules.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              playClickSound();
               setFilterSubject("pkn");
             }}
-            className={`px-3 py-1.5 rounded-xl text-xs font-black transition ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-black transition cursor-pointer ${
               filterSubject === "pkn"
                 ? "bg-amber-400 text-amber-950 shadow-xs"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -932,7 +1059,7 @@ export default function CurriculumValidationManager() {
               playClickSound();
               setFilterSubject("bjawa");
             }}
-            className={`px-3 py-1.5 rounded-xl text-xs font-black transition ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-black transition cursor-pointer ${
               filterSubject === "bjawa"
                 ? "bg-amber-400 text-amber-950 shadow-xs"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"

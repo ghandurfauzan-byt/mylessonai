@@ -174,6 +174,8 @@ export default function PelajarDashboardPage() {
     kelas?: string;
     noAbsen?: string;
     points?: number;
+    materialScore?: number;
+    quizScore?: number;
     gamePoints?: number;
     weakness?: {
       chapterId: string;
@@ -725,19 +727,29 @@ export default function PelajarDashboardPage() {
             </p>
           </div>
 
-          {/* Gamifikasi Poin Kartu */}
-          <div className="flex items-center gap-4 bg-white/20 dark:bg-slate-800/60 backdrop-blur-md border-4 border-white/50 dark:border-slate-700 rounded-2xl p-4 shadow-lg text-white">
-            <div className="pr-4 border-r-2 border-white/40 dark:border-slate-700">
-              <span className="text-xs font-black text-sky-100 dark:text-sky-300 tracking-wider block">
-                Total Poin Prestasi 🪙
+          {/* Gamifikasi Skor Materi & Skor Kuis */}
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 bg-white/20 dark:bg-slate-800/60 backdrop-blur-md border-4 border-white/50 dark:border-slate-700 rounded-2xl p-3 sm:p-4 shadow-lg text-white">
+            <div className="pr-3 sm:pr-4 border-r-2 border-white/40 dark:border-slate-700">
+              <span className="text-[11px] font-black text-sky-100 dark:text-sky-300 tracking-wider block">
+                📖 Skor Materi
               </span>
               <div className="mt-1 text-white">
                 <PointsBadge />
               </div>
             </div>
 
-            <div className="pl-2 space-y-1">
-              <span className="text-xs font-black text-sky-100 dark:text-sky-300 tracking-wider block">
+            <div className="pr-3 sm:pr-4 border-r-2 border-white/40 dark:border-slate-700">
+              <span className="text-[11px] font-black text-amber-200 dark:text-amber-300 tracking-wider block">
+                📝 Skor Kuis (CBT)
+              </span>
+              <div className="mt-1 text-base sm:text-lg font-black text-amber-300 flex items-center gap-1">
+                <span>{currentStudent?.quizScore ?? (currentStudent?.weakness ? currentStudent.weakness.score * 10 : 90)}</span>
+                <span className="text-xs font-semibold text-sky-100">/ 100</span>
+              </div>
+            </div>
+
+            <div className="pl-1 sm:pl-2 space-y-0.5">
+              <span className="text-[11px] font-black text-sky-100 dark:text-sky-300 tracking-wider block">
                 Level Kamu 🚀
               </span>
               <div className="mt-1">

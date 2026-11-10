@@ -1451,9 +1451,9 @@ export default function AdaptiveEduGameModal({
       ];
     }
 
-    // 6.5. JIKA MATERI DITARIK DARI API DENGAN RAG SUMMARY (DINAMIS 5 POS MATERI API)
+    // 6.5. JIKA MATERI MEMILIKI RAG SUMMARY (DINAMIS 5 POS MATERI API / KURIKULUM)
     const summary = mod?.ragSummary || [];
-    if (summary.length >= 3) {
+    if (summary.length >= 1) {
       const colors = ["#38bdf8", "#fb923c", "#4ade80", "#f87171", "#facc15"];
       const zPositions = [-45, -105, -165, -225, -285];
       const xPositions = [14, -14, 14, -14, 14];
@@ -1467,9 +1467,9 @@ export default function AdaptiveEduGameModal({
       const avatars = ["👨‍🏫", "👩‍🏫", "👴", "🧑", "🌟"];
 
       return zPositions.map((z, idx) => {
-        const rawPoint = summary[idx] || summary[idx % summary.length] || "";
+        const rawPoint = summary[idx] || summary[idx % summary.length] || `Intisari Bagian ${idx + 1} materi ${resolvedTitle}`;
         const parts = rawPoint.split(":");
-        const subMateri = (parts[0] || `Intisari Materi Bagian ${idx + 1}`).trim();
+        const subMateri = (parts[0] || `Intisari Bagian ${idx + 1}`).trim();
         const penjelasanGuru = (parts[1] || rawPoint || "").trim();
 
         // Ambil kuis dari quizQuestions jika guru/API sudah menyediakannya
@@ -1479,6 +1479,7 @@ export default function AdaptiveEduGameModal({
 
         const pertanyaan =
           matchedQ?.pertanyaan ||
+          matchedQ?.question ||
           `Berdasarkan intisari materi '${subMateri.slice(0, 45)}', sikap apa yang paling baik kita amalkan?`;
 
         const opsi =
@@ -1490,26 +1491,35 @@ export default function AdaptiveEduGameModal({
                 penjelasan:
                   String(o?.penjelasan || "Sangat baik dan sesuai dengan pemahaman materi kurikulum!"),
               }))
-            : [
-                {
-                  id: "A",
-                  teks: `Memahami dan mengamalkan nilai ${subMateri.slice(0, 35)} dengan tulus ikhlas.`,
-                  benar: true,
-                  penjelasan: "Tepat sekali! Membiasakan perbuatan baik sejak dini di sekolah dan rumah.",
-                },
-                {
-                  id: "B",
-                  teks: "Mengabaikan pelajaran dan hanya mementingkan diri sendiri.",
-                  benar: false,
-                  penjelasan: "Kita harus rajin belajar dan peduli kepada sesama teman.",
-                },
-                {
-                  id: "C",
-                  teks: "Meniru perbuatan yang merugikan kawan lain.",
-                  benar: false,
-                  penjelasan: "Perbuatan buruk tidak sesuai dengan karakter Pelajar Pancasila.",
-                },
-              ];
+            : matchedQ?.options && Array.isArray(matchedQ.options) && matchedQ.options.length >= 2
+              ? (matchedQ.options as any[]).map((opt: any, oIdx: number) => ({
+                  id: String.fromCharCode(65 + oIdx),
+                  teks: String(opt),
+                  benar: oIdx === (matchedQ.correctOption ?? 0),
+                  penjelasan: oIdx === (matchedQ.correctOption ?? 0)
+                    ? "Jawaban tepat sesuai pemahaman materi kurikulum!"
+                    : "Pilihan belum tepat, mari cermati kembali intisari materi.",
+                }))
+              : [
+                  {
+                    id: "A",
+                    teks: `Memahami dan mengamalkan nilai ${subMateri.slice(0, 35)} dengan tulus dan disiplin.`,
+                    benar: true,
+                    penjelasan: "Tepat sekali! Membiasakan perbuatan baik sejak dini di sekolah dan rumah.",
+                  },
+                  {
+                    id: "B",
+                    teks: "Mengabaikan pelajaran dan hanya mementingkan diri sendiri.",
+                    benar: false,
+                    penjelasan: "Kita harus rajin belajar dan peduli kepada sesama teman.",
+                  },
+                  {
+                    id: "C",
+                    teks: "Meniru perbuatan yang merugikan kawan lain.",
+                    benar: false,
+                    penjelasan: "Perbuatan buruk tidak sesuai dengan karakter Pelajar berakhlak mulia.",
+                  },
+                ];
 
         return {
           id: `api_dyn_pos_${idx + 1}`,
@@ -1524,7 +1534,7 @@ export default function AdaptiveEduGameModal({
             penjelasanGuru.slice(0, 180) ||
             `Pelajari dan amalkan nilai luhur materi ${resolvedTitle} bersama kawan sekelas!`,
           silaKe: idx + 1,
-          simbolSila: "⭐",
+          simbolSila: ["🌟", "📘", "🤝", "🏛️", "🏆"][idx] || "⭐",
           zPos: z,
           xPos: xPositions[idx] || 0,
           warnaKhas: colors[idx % colors.length] || "#38bdf8",
@@ -1534,10 +1544,16 @@ export default function AdaptiveEduGameModal({
       });
     }
 
-    // 7. MATERI DEFAULT: BAB 1 SILA KE-3 & 5 SILA PANCASILA
-    return [
-      {
-        id: "sila3_pos1",
+    // 7. MATERI KHUSUS SILA KE-3 PANCASILA & PERSATUAN
+    if (
+      rawChapter.includes("sila3") ||
+      rawTitle.includes("sila ke-3") ||
+      rawTitle.includes("pohon beringin") ||
+      rawTitle.includes("persatuan indonesia")
+    ) {
+      return [
+        {
+          id: "sila3_pos1",
         namaPos: "Pos 1: Pohon Beringin Luhur",
         namaSuku: "Suku Jawa (Rumah Joglo)",
         rumahAdat: "Rumah Adat Joglo",
@@ -1647,7 +1663,84 @@ export default function AdaptiveEduGameModal({
         ],
       },
     ];
-  }, [chapter, activeValidatedModule, chapterTitle]);
+  }
+
+  // 8. GENERATOR DINAMIS UNTUK MATERI LAINNYA (MENYESUAIKAN TOPIK AKTIF SECARA OTOMATIS)
+  const topicColors = ["#38bdf8", "#fb923c", "#4ade80", "#f87171", "#facc15"];
+  const topicZ = [-45, -105, -165, -225, -285];
+  const topicX = [14, -14, 14, -14, 14];
+  const defaultStations = [
+    {
+      subMateri: `Pengenalan ${resolvedTitle.slice(0, 28)}`,
+      penjelasan: `Materi ${resolvedTitle} memberikan panduan penting untuk memahami konsep dasar dan menerapkannya dalam kehidupan sehari-hari dengan budi pekerti yang baik.`,
+      pertanyaan: `Apa tujuan utama mempelajari materi '${resolvedTitle.slice(0, 35)}'?`,
+      opsi: [
+        { id: "A", teks: "Memahami intisari materi dan mengamalkannya dalam sikap baik sehari-hari.", benar: true, penjelasan: "Tepat sekali! Belajar bertujuan membentuk karakter budi pekerti yang baik." },
+        { id: "B", teks: "Hanya sekadar menghafal tanpa mempraktikkannya.", benar: false, penjelasan: "Materi harus diamalkan dalam kehidupan nyata." },
+        { id: "C", teks: "Mencari kelemahan teman sekelas.", benar: false, penjelasan: "Kita harus saling mendukung kawan belajar." },
+      ],
+    },
+    {
+      subMateri: `Nilai & Karakter Luhur`,
+      penjelasan: `Membiasakan sikap jujur, disiplin, santun, dan empati sosial kepada sesama teman di sekolah maupun keluarga di rumah.`,
+      pertanyaan: `Sikap yang mencerminkan karakter pelajar yang baik adalah:`,
+      opsi: [
+        { id: "A", teks: "Jujur, disiplin menaati aturan, dan suka menolong teman.", benar: true, penjelasan: "Sangat baik! Nilai luhur ini menjadi teladan bagi sesama." },
+        { id: "B", teks: "Mudah marah saat berbeda pendapat dengan teman.", benar: false, penjelasan: "Kita harus bersikap sabar dan menghargai teman." },
+        { id: "C", teks: "Hanya berteman dengan yang satu kelompok saja.", benar: false, penjelasan: "Kita harus rukun berteman dengan siapa pun." },
+      ],
+    },
+    {
+      subMateri: `Penerapan di Sekolah`,
+      penjelasan: `Kompak melaksanakan tugas belajar bersama, menyimak bimbingan guru dengan tertib, dan tidak melakukan perundungan (anti-bullying).`,
+      pertanyaan: `Bagaimana wujud kerja sama yang baik saat belajar di kelas?`,
+      opsi: [
+        { id: "A", teks: "Aktif berbagi tugas piket dan saling membantu teman yang belum paham.", benar: true, penjelasan: "Bagus sekali! Gotong royong di kelas membuat suasana nyaman." },
+        { id: "B", teks: "Meninggalkan tugas piket dan pulang lebih awal.", benar: false, penjelasan: "Setiap siswa bertanggung jawab atas tugasnya." },
+        { id: "C", teks: "Mengejek hasil karya teman lain.", benar: false, penjelasan: "Kita harus mengapresiasi karya setiap kawan." },
+      ],
+    },
+    {
+      subMateri: `Pengamalan di Rumah & Warga`,
+      penjelasan: `Menghormati orang tua, membiasakan adab sopan santun saat berbicara, serta menjaga kebersihan dan kerukunan lingkungan tempat tinggal.`,
+      pertanyaan: `Sikap berbudi pekerti saat di rumah kepada orang tua adalah:`,
+      opsi: [
+        { id: "A", teks: "Mendengarkan nasihat baik orang tua dan berpamitan saat hendak pergi.", benar: true, penjelasan: "Benar sekali! Berbakti kepada orang tua adalah kunci keberkahan hidup." },
+        { id: "B", teks: "Membantah perintah baik orang tua.", benar: false, penjelasan: "Membantah orang tua adalah perbuatan tidak terpuji." },
+        { id: "C", teks: "Mengabaikan kebersihan kamar tidur sendiri.", benar: false, penjelasan: "Anak mandiri menjaga kebersihan tempat tinggalnya." },
+      ],
+    },
+    {
+      subMateri: `Komitmen & Refleksi Diri`,
+      penjelasan: `Menjadikan nilai-nilai pembelajaran sebagai pegangan hidup agar menjadi generasi penerus bangsa yang unggul, berprestasi, dan berakhlak mulia.`,
+      pertanyaan: `Komitmen nyata yang harus dimiliki seorang pelajar berprestasi adalah:`,
+      opsi: [
+        { id: "A", teks: "Rajin belajar, berani membela kebenaran, dan terus berprestasi membanggakan bangsa.", benar: true, penjelasan: "Luar biasa! Komitmen ini mengantarkanmu menjadi generasi emas Indonesia." },
+        { id: "B", teks: "Gampang menyerah ketika menemukan soal yang sulit.", benar: false, penjelasan: "Pelajar pantang menyerah dalam menuntut ilmu." },
+        { id: "C", teks: "Tidak mau mendengarkan masukan dari guru.", benar: false, penjelasan: "Nasihat guru adalah pelita ilmu." },
+      ],
+    },
+  ];
+
+  return defaultStations.map((st, idx) => ({
+    id: `topic_dyn_pos_${idx + 1}`,
+    namaPos: `Pos ${idx + 1}: ${st.subMateri}`,
+    namaSuku: `Pos Belajar Mandiri ${idx + 1}`,
+    rumahAdat: `Bale Belajar ${idx + 1}`,
+    tokohNama: `Duta Pelajar Pos ${idx + 1}`,
+    tokohAvatar: ["👨‍🏫", "👩‍🏫", "👴", "🧑", "🌟"][idx] || "👨‍🏫",
+    guruNama: ["Pak Guru Subroto", "Pak Guru Darmawan", "Ibu Guru Rahayu", "Pak Guru Bambang", "Pak Guru Wijaya"][idx] || "Pak Guru",
+    subMateri: st.subMateri,
+    penjelasanGuru: st.penjelasan,
+    silaKe: idx + 1,
+    simbolSila: ["🌟", "📘", "🤝", "🏛️", "🏆"][idx] || "⭐",
+    zPos: topicZ[idx] || -45,
+    xPos: topicX[idx] || 0,
+    warnaKhas: topicColors[idx] || "#38bdf8",
+    pertanyaan: st.pertanyaan,
+    opsi: st.opsi,
+  }));
+}, [chapter, activeValidatedModule, chapterTitle, resolvedTitle, currentModule]);
 
   // --------------------------------------------------------------------------
   // SISWA ONLINE (KOSTUM BERBEDA DENGAN MODEL ANATOMI SERAGAM)
@@ -2065,16 +2158,24 @@ export default function AdaptiveEduGameModal({
     bCtx.strokeRect(20, 20, 1160, 240);
 
     // Judul Utama Gapura Auto-Fitted (Jamin Tidak Terpotong)
-    drawFittedText(bCtx, "★ DESA PANCASILA NUSANTARA ★", 600, 95, 1120, 52, {
+    const mainBannerTitle = isJawaTopic
+      ? "★ DESA KABUDAYAN BASA JAWA ★"
+      : `★ JELAJAH EDUKASI: ${(resolvedTitle || "NUSANTARA").toUpperCase().slice(0, 32)} ★`;
+
+    drawFittedText(bCtx, mainBannerTitle, 600, 95, 1120, 52, {
       color: "#fef08a",
       shadowColor: "#ca8a04",
       shadowBlur: 10,
     });
 
     // Subjudul Gapura Auto-Fitted
+    const subBannerTitle = isJawaTopic
+      ? `🎭  ${resolvedTitle.toUpperCase()} • SINAU BUDI PAKARTI & 5 POS  🎭`
+      : `🇮🇩  ${resolvedTitle.toUpperCase()} • JELAJAH PENGAMALAN 5 POS  🇮🇩`;
+
     drawFittedText(
       bCtx,
-      `🇮🇩  ${resolvedTitle.toUpperCase()} • JELAJAH PENGAMALAN 5 SILA  🇮🇩`,
+      subBannerTitle,
       600,
       190,
       1120,
@@ -2139,7 +2240,7 @@ export default function AdaptiveEduGameModal({
         shadowColor: "#ca8a04",
         shadowBlur: 8,
       });
-      drawFittedText(lbCtx, "Desa Pancasila • Peringkat Live Siswa 🟢", 320, 80, 580, 20, {
+      drawFittedText(lbCtx, `${(resolvedTitle || "Desa Edukasi").slice(0, 25)} • Peringkat Live 🟢`, 320, 80, 580, 20, {
         color: "#38bdf8",
       });
 
@@ -3035,9 +3136,10 @@ export default function AdaptiveEduGameModal({
           setHasTalkedToGuru(true);
           setGuruTab("apa_itu");
           // Otomatis bunyikan voice Pak Guru pertama kali
-          speakGuruVoice(
-            "Halo Penjelajah Muda! Selamat datang di Desa Pancasila Nusantara. Pancasila adalah lima dasar dan pedoman hidup luhur bangsa Indonesia yang menyatukan kita semua dari Sabang sampai Merauke."
-          );
+          const welcomeVoice = isJawaTopic
+            ? `Sugeng rawuh ing Desa Pasinaon Basa Jawa! Ayo sinau materi '${resolvedTitle}' kanthi trapsila lan gembira.`
+            : `Halo Penjelajah Muda! Selamat datang di petualangan edukasi materi: ${resolvedTitle}. Kunjungi 5 pos belajar untuk mengamalkan intisari materinya dan kumpulkan koin emas!`;
+          speakGuruVoice(welcomeVoice);
           return;
         }
 
@@ -3105,6 +3207,18 @@ export default function AdaptiveEduGameModal({
     stopGuruVoice,
   ]);
 
+  const cleanTopicTitle = resolvedTitle || (isJawaTopic ? "Basa Jawa" : "Pendidikan Pancasila");
+  const topicIntroText =
+    currentModule?.ragSummary?.[0] ||
+    (isJawaTopic
+      ? `Materi ${cleanTopicTitle} mulangake subasita, tata krama, lan unggah-ungguh basa marang tiyang sepuh sarta guru minangka piwulang kabudayan Jawa.`
+      : `Materi ${cleanTopicTitle} menuntun kita memahami dan mengamalkan nilai budi pekerti, disiplin, toleransi, dan persatuan dalam kehidupan sehari-hari.`);
+
+  const posVoiceList = sukuList
+    .slice(0, 5)
+    .map((p, i) => `Pos ${i + 1} ${p.subMateri || p.namaPos}`)
+    .join(", ");
+
   if (!isOpen) return null;
 
   return (
@@ -3125,7 +3239,7 @@ export default function AdaptiveEduGameModal({
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <h2 id="game-title" className="font-black text-xs sm:text-sm text-yellow-300 truncate tracking-wide">
-                    {isJawaTopic ? "SINAU BASA JAWA INTERAKTIF" : "PETUALANGAN PANCASILA: JELAJAH DESA NUSANTARA"}
+                    {isJawaTopic ? "SINAU BASA JAWA INTERAKTIF" : `PETUALANGAN 3D: ${(resolvedTitle || "JELAJAH DESA NUSANTARA").toUpperCase()}`}
                   </h2>
                   <span className="hidden md:inline-flex text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold border border-emerald-400/30">
                     🟢 4 Siswa Online
@@ -3407,16 +3521,14 @@ export default function AdaptiveEduGameModal({
                                 }
                               } else {
                                 if (guruTab === "apa_itu") {
-                                  speakGuruVoice(
-                                    "Pancasila adalah lima dasar dan pedoman hidup luhur bangsa Indonesia yang menyatukan kita semua dari Sabang sampai Merauke."
-                                  );
+                                  speakGuruVoice(topicIntroText);
                                 } else if (guruTab === "makna_sila") {
                                   speakGuruVoice(
-                                    "Sila 1 Ketuhanan: saling menghormati ibadah teman. Sila 2 Kemanusiaan: tolong menolong tanpa pamrih. Sila 3 Persatuan: rukun berbeda suku. Sila 4 Kerakyatan: musyawarah mufakat. Sila 5 Keadilan: bersikap adil dan gotong royong."
+                                    `Intisari 5 Pos Materi ${cleanTopicTitle}: ${posVoiceList}. Selesaikan misi di setiap pos untuk mengamalkannya!`
                                   );
                                 } else {
                                   speakGuruVoice(
-                                    "Cara mainnya mudah: jalan dengan WASD atau panah, ambil koin emas di jalan, kunjungi 5 rumah suku adat di kiri dan kanan jalan lalu tekan E untuk menjawab kuis dan sapa teman sekelasmu!"
+                                    "Cara mainnya mudah: jalan dengan WASD atau panah, ambil koin emas di jalan, kunjungi 5 pos di kiri dan kanan jalan lalu tekan E untuk menjawab kuis dan sapa teman sekelasmu!"
                                   );
                                 }
                               }
@@ -3439,15 +3551,7 @@ export default function AdaptiveEduGameModal({
                         type="button"
                         onClick={() => {
                           setGuruTab("apa_itu");
-                          if (isJawaTopic) {
-                            speakGuruVoice(
-                              "Basa Jawa mulangake subasita, tata krama, lan unggah-ungguh basa marang tiyang sepuh sarta bapak/ibu guru. Uga nepangake watak satria luhur pewayangan lan aksara Jawa."
-                            );
-                          } else {
-                            speakGuruVoice(
-                              "Pancasila adalah lima dasar dan pedoman hidup luhur bangsa Indonesia yang menyatukan kita semua dari Sabang sampai Merauke."
-                            );
-                          }
+                          speakGuruVoice(topicIntroText);
                         }}
                         className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
                           guruTab === "apa_itu"
@@ -3455,7 +3559,7 @@ export default function AdaptiveEduGameModal({
                             : "text-slate-300 hover:text-white"
                         }`}
                       >
-                        {isJawaTopic ? "📖 Piwulang Basa Jawa" : "📖 Apa Itu Pancasila?"}
+                        {isJawaTopic ? "📖 Piwulang Basa Jawa" : `📖 Apa Itu ${cleanTopicTitle.length > 18 ? cleanTopicTitle.slice(0, 16) + "..." : cleanTopicTitle}?`}
                       </button>
 
                       <button
@@ -3468,7 +3572,7 @@ export default function AdaptiveEduGameModal({
                             );
                           } else {
                             speakGuruVoice(
-                              "Sila 1 Ketuhanan: saling menghormati ibadah teman. Sila 2 Kemanusiaan: tolong menolong tanpa pamrih. Sila 3 Persatuan: rukun berbeda suku. Sila 4 Kerakyatan: musyawarah mufakat. Sila 5 Keadilan: bersikap adil dan gotong royong."
+                              `Intisari 5 Pos Materi ${cleanTopicTitle}: ${posVoiceList}.`
                             );
                           }
                         }}
@@ -3478,22 +3582,16 @@ export default function AdaptiveEduGameModal({
                             : "text-slate-300 hover:text-white"
                         }`}
                       >
-                        {isJawaTopic ? "⭐ Titikan & Piwulang" : "⭐ Makna 5 Sila & Aksi"}
+                        {isJawaTopic ? "⭐ Titikan & Piwulang" : "⭐ 5 Intisari Pos Materi"}
                       </button>
 
                       <button
                         type="button"
                         onClick={() => {
                           setGuruTab("cara_main");
-                          if (isJawaTopic) {
-                            speakGuruVoice(
-                              "Cara main: Kowe bisa mlaku ing Desa Nusantara nganggo WASD, njawab kuis ing 5 pos, utawa nyoba game teka-teki njodohake kertu aksara lan wayang ing tab ndhuwur!"
-                            );
-                          } else {
-                            speakGuruVoice(
-                              "Cara mainnya mudah: jalan dengan WASD atau panah, ambil koin emas di jalan, kunjungi 5 rumah suku adat di kiri dan kanan jalan lalu tekan E untuk menjawab kuis dan sapa teman sekelasmu!"
-                            );
-                          }
+                          speakGuruVoice(
+                            "Cara mainnya mudah: jalan dengan WASD atau panah, ambil koin emas di jalan, kunjungi 5 pos di kiri dan kanan jalan lalu tekan E untuk menjawab kuis dan sapa teman sekelasmu!"
+                          );
                         }}
                         className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
                           guruTab === "cara_main"
@@ -3510,34 +3608,25 @@ export default function AdaptiveEduGameModal({
                       {guruTab === "apa_itu" && (
                         <div className="space-y-2">
                           <b className="text-yellow-300 block">
-                            {isJawaTopic ? "Piwulang Luhur Kabudayan Jawa:" : "Pondasi Luhur Bangsa Indonesia:"}
+                            {isJawaTopic ? "Piwulang Luhur Kabudayan Jawa:" : `Intisari Pembelajaran: ${cleanTopicTitle}`}
                           </b>
-                          <p>
-                            {isJawaTopic
-                              ? "Basa Jawa mulangake subasita, tata krama, lan unggah-ungguh basa marang tiyang sepuh sarta bapak/ibu guru. Uga nepangake watak satria luhur pewayangan (Punokawan & Pandhawa) sarta aksara Jawa minangka warisan adi luhung bangsa."
-                              : "Pancasila adalah lima dasar dan pedoman hidup luhur bangsa Indonesia yang dirumuskan oleh para pendiri bangsa. Nilai-nilai ini menjadi perekat persatuan di tengah keberagaman ratusan suku bangsa dan budaya Nusantara."}
-                          </p>
+                          <p>{topicIntroText}</p>
                         </div>
                       )}
 
                       {guruTab === "makna_sila" && (
-                        <div className="space-y-1.5 text-xs">
-                          {isJawaTopic ? (
-                            <>
-                              <div>📜 <b>Aksara Jawa</b>: Nguri-uri aksara legena (Ha-Na-Ca-Ra-Ka) lan sandhangan swara.</div>
-                              <div>🎭 <b>Punokawan</b>: Semar (wicaksana), Gareng (ngati-ati), Petruk (loman), Bagong (jujur).</div>
-                              <div>👑 <b>Pandhawa Lima</b>: Puntadewa, Werkudara, Janaka, Nakula, Sadewa minangka tuladha satria.</div>
-                              <div>🗣️ <b>Unggah-Ungguh Basa</b>: Ngoko lugu kanca sakelas, Krama Alus marang bapak/ibu guru.</div>
-                            </>
-                          ) : (
-                            <>
-                              <div>⭐ <b>Sila 1</b>: Menghormati teman beribadah & rukun antarumat beragama.</div>
-                              <div>⛓️ <b>Sila 2</b>: Gemar menolong sesama & tidak mengejek teman (anti-bullying).</div>
-                              <div>🌳 <b>Sila 3</b>: Bangga bermain rukun dengan teman dari berbagai suku daerah.</div>
-                              <div>🐂 <b>Sila 4</b>: Mengutamakan musyawarah mufakat dalam mengambil keputusan bersama.</div>
-                              <div>🌾 <b>Sila 5</b>: Bersikap adil, tidak pilih kasih, dan suka gotong royong.</div>
-                            </>
-                          )}
+                        <div className="space-y-2 text-xs">
+                          {sukuList.slice(0, 5).map((pos, idx) => (
+                            <div key={pos.id} className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-700/60">
+                              <div className="font-bold text-yellow-300 flex items-center gap-1.5">
+                                <span>{pos.simbolSila || "📍"}</span>
+                                <span>Pos {idx + 1}: {pos.subMateri || pos.namaPos}</span>
+                              </div>
+                              <p className="text-slate-300 mt-1 text-[11px] leading-relaxed">
+                                {pos.penjelasanGuru}
+                              </p>
+                            </div>
+                          ))}
                         </div>
                       )}
 
@@ -3596,7 +3685,7 @@ export default function AdaptiveEduGameModal({
                         </div>
                       </div>
                       <span className="text-[10px] bg-yellow-400/20 text-yellow-300 font-bold px-2 py-0.5 rounded-full border border-yellow-400/30 shrink-0">
-                        Sila {activeSukuDialog.silaKe} {activeSukuDialog.simbolSila}
+                        Pos {activeSukuDialog.silaKe} {activeSukuDialog.simbolSila || "🌟"}
                       </span>
                     </div>
 

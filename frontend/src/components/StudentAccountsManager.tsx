@@ -13,6 +13,8 @@ export interface StudentAccount {
   kelas?: string;
   noAbsen?: string;
   points?: number;
+  materialScore?: number;
+  quizScore?: number;
   gamePoints?: number;
   weakness?: {
     chapterId: string;
@@ -166,7 +168,7 @@ export default function StudentAccountsManager() {
   const handleResetSingle = (s: StudentAccount) => {
     playClickSound();
     const ok = window.confirm(
-      `Reset seluruh poin materi dan poin petualangan game untuk siswa: "${s.name}" (Absen #${s.noAbsen || "-"})?\n\nPoin dan skor game akan menjadi 0.`
+      `Reset seluruh skor materi dan skor kuis untuk siswa: "${s.name}" (Absen #${s.noAbsen || "-"})?\n\nSkor materi dan evaluasi kuis akan menjadi 0.`
     );
     if (!ok) return;
     resetSinglePointsMutation.mutate(s.id);
@@ -286,8 +288,8 @@ export default function StudentAccountsManager() {
                 <th className="py-3 px-3.5">Absen</th>
                 <th className="py-3 px-3.5">Nama Siswa</th>
                 <th className="py-3 px-3.5">Kelas</th>
-                <th className="py-3 px-3.5">Poin Materi</th>
-                <th className="py-3 px-3.5">Poin Game</th>
+                <th className="py-3 px-3.5">📖 Skor Materi</th>
+                <th className="py-3 px-3.5">📝 Skor Kuis</th>
                 <th className="py-3 px-3.5">Status Belajar</th>
                 <th className="py-3 px-3.5 text-right">Aksi Kontrol</th>
               </tr>
@@ -322,12 +324,12 @@ export default function StudentAccountsManager() {
                     </td>
                     <td className="py-3 px-3.5">
                       <span className="font-black text-amber-700 dark:text-amber-400">
-                        ⭐ {s.points ?? 0}
+                        ⭐ {s.materialScore ?? s.points ?? 0} Poin
                       </span>
                     </td>
                     <td className="py-3 px-3.5">
                       <span className="font-black text-emerald-700 dark:text-emerald-400">
-                        🎮 {s.gamePoints ?? 0}
+                        📝 {s.quizScore ?? (s.weakness ? s.weakness.score * 10 : 0)} / 100
                       </span>
                     </td>
                     <td className="py-3 px-3.5">
