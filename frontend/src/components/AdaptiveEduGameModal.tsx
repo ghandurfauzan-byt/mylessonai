@@ -1,5 +1,5 @@
 // frontend/src/components/AdaptiveEduGameModal.tsx
-// Game Edukasi 3D Roblox: "Jelajah Suku Nusantara & Desa Pancasila Online"
+// Game Edukasi 3D Petualangan: "Jelajah Suku Nusantara & Desa Pancasila Online"
 // Fitur Baru:
 // 1. Leaderboard Kelas di Awalan (di samping Gapura Masuk)
 // 2. Pak Guru Virtual dengan Voice Suara Penjelasan Nyata (Web Speech API id-ID):
@@ -170,7 +170,7 @@ export default function AdaptiveEduGameModal({
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [allSukuCompleted, setAllSukuCompleted] = useState(false);
 
-  // Skor Kawan Sekelas Online Dinamis (Seperti Roblox Multiplayer)
+  // Skor Kawan Sekelas Online Dinamis (Multiplayer)
   const [peerScores, setPeerScores] = useState<{ [id: string]: number }>({
     siti: 145,
     budi: 130,
@@ -197,7 +197,7 @@ export default function AdaptiveEduGameModal({
 
   // Ref Animasi Dadah & Interaksi Teman Online
   
-  // Tipe & State Emot Gerakan Tubuh (Roblox Movement Emotes)
+  // Tipe & State Emot Gerakan Tubuh (Emot Gerakan Tubuh)
   type MovementEmote = "none" | "wave" | "dance" | "cheer" | "bow" | "sit" | "flip";
   const [activeEmote, setActiveEmote] = useState<MovementEmote>("none");
   const activeEmoteRef = useRef<MovementEmote>("none");
@@ -870,7 +870,7 @@ export default function AdaptiveEduGameModal({
   }, [activeValidatedModule, chapterTitle, chapter]);
 
   
-  // Simulasi Siswa Kelas Online Bergerak, Mengumpulkan Poin & Chatting (Roblox Feel)
+  // Simulasi Siswa Kelas Online Bergerak, Mengumpulkan Poin & Chatting (Online)
   useEffect(() => {
     if (!isOpen || !gameStarted) return;
 
@@ -1001,7 +1001,7 @@ export default function AdaptiveEduGameModal({
 
 
 
-    // Sapa Teman Sekelas (Interaksi Dadah Online Seperti Roblox)
+    // Sapa Teman Sekelas (Interaksi Dadah Online Online)
   const handleGreetClassmate = useCallback((student: OnlineStudent) => {
     triggerMovementEmote("wave");
   }, [triggerMovementEmote]);
@@ -1349,7 +1349,7 @@ export default function AdaptiveEduGameModal({
     scene.add(lbGroup);
 
     // ------------------------------------------------------------------------
-    // BUILDER MODEL ANATOMI HUMANOID SERAGAM (STANDAR KELAS ROBLOX SD)
+    // BUILDER MODEL ANATOMI HUMANOID SERAGAM (STANDAR KELAS SD)
     // ------------------------------------------------------------------------
     const createHumanoid = (config: {
       shirtColor: string;
@@ -2012,7 +2012,7 @@ export default function AdaptiveEduGameModal({
       }
 
       
-      // ANIMASI 3D EMOT GERAKAN TUBUH KARAKTER (ROBLOX STYLE)
+      // ANIMASI 3D EMOT GERAKAN TUBUH KARAKTER ()
       const curEmote = activeEmoteRef.current;
       const emoteTime = (Date.now() - emoteStartTimeRef.current) / 1000;
 
@@ -2916,7 +2916,7 @@ export default function AdaptiveEduGameModal({
           </div>
 
           {/* ================================================================= */}
-          {/* MENU PILIHAN EMOT GERAKAN TUBUH (ROBLOX EMOTE WHEEL / POPUP) */}
+          {/* MENU PILIHAN EMOT GERAKAN TUBUH (Petualangan EMOTE WHEEL / POPUP) */}
           {/* ================================================================= */}
           {showEmoteMenu && (
             <div className="absolute bottom-20 right-4 sm:right-8 z-40 bg-slate-950/95 border-2 border-fuchsia-400 p-3.5 rounded-3xl shadow-2xl backdrop-blur-md w-72 text-white animate-in zoom-in-95 space-y-2 pointer-events-auto">

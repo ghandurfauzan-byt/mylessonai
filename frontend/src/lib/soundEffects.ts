@@ -404,7 +404,7 @@ export function stopBadgeSpeech() {
 }
 
 // -------------------------------------------------------------
-// BGM & EFEK SUARA PETUALANGAN 3D ROBLOX ADVENTURE
+// BGM & EFEK SUARA PETUALANGAN 3D DESA NUSANTARA ADVENTURE
 // -------------------------------------------------------------
 let bgmInterval: ReturnType<typeof setInterval> | null = null;
 let bgmStep = 0;
@@ -532,7 +532,7 @@ export function playKnockDoorSound() {
 }
 
 /**
- * BGM Petualangan Ceria Ala Game Nintendo / Roblox Obby
+ * BGM Petualangan Ceria Ala Game Nintendo / Petualangan
  * Pola Melodi 16 Baris, Bassline Menyenangkan, dan Beat Ritmis Web Audio API
  */
 export function startAdventureBgm() {
