@@ -2020,44 +2020,44 @@ export default function AdaptiveEduGameModal({
         charGroup.add(ribbon);
       }
 
-      // Lengan Kiri (Pivot pada bahu y = 2.15)
+      // Lengan Kiri (Pivot pada sendi bahu y = 2.65 agar ayunan luwes)
       const leftArm = new THREE.Group();
-      const lSlv = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.55, 0.44), shirtMat);
-      lSlv.position.y = 0.28;
-      const lHnd = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.65, 0.4), skinMat);
-      lHnd.position.y = -0.32;
+      const lSlv = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.55, 0.42), shirtMat);
+      lSlv.position.y = -0.275;
+      const lHnd = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.55, 0.38), skinMat);
+      lHnd.position.y = -0.725;
       leftArm.add(lSlv);
       leftArm.add(lHnd);
-      leftArm.position.set(-0.92, 2.15, 0);
+      leftArm.position.set(-0.85, 2.65, 0);
       charGroup.add(leftArm);
 
-      // Lengan Kanan (Pivot pada bahu y = 2.15)
+      // Lengan Kanan (Pivot pada sendi bahu y = 2.65)
       const rightArm = new THREE.Group();
       const rSlv = lSlv.clone();
       const rHnd = lHnd.clone();
       rightArm.add(rSlv);
       rightArm.add(rHnd);
-      rightArm.position.set(0.92, 2.15, 0);
+      rightArm.position.set(0.85, 2.65, 0);
       charGroup.add(rightArm);
 
-      // Kaki Kiri (Pivot pada pinggul y = 0.72)
+      // Kaki Kiri (Pivot pada sendi pinggul y = 1.42 agar ayunan langkah nyata)
       const leftLeg = new THREE.Group();
-      const lPnt = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.72, 0.5), pantsMat);
-      lPnt.position.y = 0.36;
-      const lShoe = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.35, 0.62), darkMat);
-      lShoe.position.set(0, -0.42, 0.05);
+      const lPnt = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.92, 0.48), pantsMat);
+      lPnt.position.y = -0.46;
+      const lShoe = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.36, 0.68), darkMat);
+      lShoe.position.set(0, -1.08, 0.08);
       leftLeg.add(lPnt);
       leftLeg.add(lShoe);
-      leftLeg.position.set(-0.34, 0.72, 0);
+      leftLeg.position.set(-0.34, 1.42, 0);
       charGroup.add(leftLeg);
 
-      // Kaki Kanan (Pivot pada pinggul y = 0.72)
+      // Kaki Kanan (Pivot pada sendi pinggul y = 1.42)
       const rightLeg = new THREE.Group();
       const rPnt = lPnt.clone();
       const rShoe = lShoe.clone();
       rightLeg.add(rPnt);
       rightLeg.add(rShoe);
-      rightLeg.position.set(0.34, 0.72, 0);
+      rightLeg.position.set(0.34, 1.42, 0);
       charGroup.add(rightLeg);
 
       return {
@@ -2519,7 +2519,9 @@ export default function AdaptiveEduGameModal({
       if (keys.left) moveX -= 1;
       if (keys.right) moveX += 1;
 
-      if (moveX !== 0 || moveZ !== 0) {
+      const isMoving = moveX !== 0 || moveZ !== 0;
+
+      if (isMoving) {
         const len = Math.hypot(moveX, moveZ);
         moveX /= len;
         moveZ /= len;
@@ -2530,20 +2532,53 @@ export default function AdaptiveEduGameModal({
         playerGroup.position.x = Math.max(-28, Math.min(28, playerGroup.position.x));
         playerGroup.position.z = Math.max(-320, Math.min(24, playerGroup.position.z));
 
-        const targetRot = Math.atan2(moveX, moveZ);
-        playerGroup.rotation.y = targetRot + Math.PI;
+        // Rotasi Halus (Smooth Facing Turn ke Arah Jalan)
+        const targetAngle = Math.atan2(moveX, moveZ) + Math.PI;
+        let angleDiff = targetAngle - playerGroup.rotation.y;
+        while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+        while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+        playerGroup.rotation.y += angleDiff * Math.min(1, delta * 14);
 
-        walkAnim += delta * (keys.sprint ? 16 : 10);
-        const swing = Math.sin(walkAnim) * 0.6;
-        leftLeg.rotation.x = swing;
-        rightLeg.rotation.x = -swing;
-        leftArm.rotation.x = -swing;
-        rightArm.rotation.x = swing;
+        // Animasi Langkah Kaki & Ayunan Tangan Manusiawi (Luwes & Hidup)
+        walkAnim += delta * (keys.sprint ? 15 : 10);
+        const legSwing = Math.sin(walkAnim) * (keys.sprint ? 0.75 : 0.55);
+        const armSwing = Math.sin(walkAnim) * (keys.sprint ? 0.8 : 0.55);
+
+        leftLeg.rotation.x = legSwing;
+        rightLeg.rotation.x = -legSwing;
+        leftArm.rotation.x = -armSwing;
+        leftArm.rotation.z = Math.cos(walkAnim) * 0.08 - 0.04;
+
+        if (!isPlayerWavingRef.current) {
+          rightArm.rotation.x = armSwing;
+          rightArm.rotation.z = -Math.cos(walkAnim) * 0.08 + 0.04;
+        }
+
+        // Efek Pantulan Tubuh (Bobbing Langkah Kaki & Ayunan Badan)
+        const bob = Math.abs(Math.sin(walkAnim)) * 0.12;
+        torso.position.y = 2.15 + bob;
+        torso.rotation.y = Math.sin(walkAnim) * 0.08;
+        torso.rotation.z = Math.cos(walkAnim) * 0.035;
+        head.position.y = 3.35 + bob;
+        head.rotation.y = -torso.rotation.y * 0.45;
       } else {
-        leftLeg.rotation.x = 0;
-        rightLeg.rotation.x = 0;
-        leftArm.rotation.x = 0;
-        rightArm.rotation.x = 0;
+        // Idle / Diam Bernapas Halus secara Natural
+        const idleTime = Date.now() * 0.003;
+        leftLeg.rotation.x = THREE.MathUtils.lerp(leftLeg.rotation.x, 0, delta * 10);
+        rightLeg.rotation.x = THREE.MathUtils.lerp(rightLeg.rotation.x, 0, delta * 10);
+        leftArm.rotation.x = THREE.MathUtils.lerp(leftArm.rotation.x, 0, delta * 10);
+        leftArm.rotation.z = THREE.MathUtils.lerp(leftArm.rotation.z, 0.08 + Math.sin(idleTime) * 0.03, delta * 8);
+
+        if (!isPlayerWavingRef.current) {
+          rightArm.rotation.x = THREE.MathUtils.lerp(rightArm.rotation.x, 0, delta * 10);
+          rightArm.rotation.z = THREE.MathUtils.lerp(rightArm.rotation.z, -0.08 - Math.sin(idleTime) * 0.03, delta * 8);
+        }
+
+        const breath = Math.sin(idleTime * 1.5) * 0.035;
+        torso.position.y = 2.15 + breath;
+        torso.rotation.set(0, 0, 0);
+        head.position.y = 3.35 + breath;
+        head.rotation.set(0, 0, 0);
       }
 
       // Gravitasi & Lompat
@@ -2560,28 +2595,22 @@ export default function AdaptiveEduGameModal({
           playerGroup.position.y = 0;
           vy = 0;
           isJumping = false;
+        } else {
+          // Pose melompat luwes di udara
+          leftLeg.rotation.x = -0.38;
+          rightLeg.rotation.x = 0.38;
+          leftArm.rotation.x = -0.55;
+          if (!isPlayerWavingRef.current) {
+            rightArm.rotation.x = -0.55;
+          }
         }
       }
 
-      
-      // Animasi 3D Lambaian Tangan Dada Menyapa
+      // Animasi 3D Lambaian Tangan Dada Menyapa (Q)
       if (isPlayerWavingRef.current) {
         rightArm.rotation.x = -Math.PI * 0.72;
         rightArm.rotation.z = Math.sin(Date.now() * 0.016) * 0.45;
-        leftArm.rotation.set(0, 0, 0);
-        leftLeg.rotation.set(0, 0, 0);
-        rightLeg.rotation.set(0, 0, 0);
-      } else {
-        leftLeg.rotation.x = 0;
-        rightLeg.rotation.x = 0;
-        leftArm.rotation.x = 0;
-        leftArm.rotation.z = 0;
-        rightArm.rotation.x = 0;
-        rightArm.rotation.z = 0;
       }
-      torso.rotation.set(0, 0, 0);
-      torso.position.y = 2.15;
-      head.rotation.set(0, 0, 0);
 
       playerPosRef.current = {
         x: playerGroup.position.x,
