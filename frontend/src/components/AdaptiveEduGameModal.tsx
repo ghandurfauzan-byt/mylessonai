@@ -15,6 +15,7 @@
 "use client";
 
 import ModalPortal from "@/components/ModalPortal";
+import UlarTanggaEduGame from "@/components/UlarTanggaEduGame";
 import {
   playBadgeFanfareSound,
   playClickSound,
@@ -189,7 +190,12 @@ export default function AdaptiveEduGameModal({
     );
   }, [chapter, chapterTitle, activeValidatedModule]);
 
-  const [gameMode, setGameMode] = useState<"adventure" | "matching" | "manus">("adventure");
+  // Tipe Mode Game:
+  // - "adventure"  : Petualangan 3D Desa (Cocok untuk materi yang butuh PENJELASAN & IMPLEMENTASI nilai luhur)
+  // - "ulartangga" : Papan Ular Tangga Edukasi (Cocok untuk materi yang butuh TES PEMAHAMAN & EVALUASI kuis)
+  // - "matching"   : Menjodohkan Kartu Pasangan (Cocok untuk materi yang butuh TES SIMBOL AKSARA / KOSAKATA)
+  // - "manus"      : Generator Game Manus AI Otomatis
+  const [gameMode, setGameMode] = useState<"adventure" | "ulartangga" | "matching" | "manus">("adventure");
 
   // State Integrasi Generator Manus AI
   const [manusGameData, setManusGameData] = useState<{
@@ -200,19 +206,49 @@ export default function AdaptiveEduGameModal({
     isLoading?: boolean;
   }>({});
 
-  const recommendedGameMode = useMemo(() => {
-    if (manusGameData.gameType === "matching" || isJawaTopic) return "matching";
-    return "adventure";
-  }, [manusGameData.gameType, isJawaTopic]);
+  // Klasifikasi Kebutuhan Model Game Berdasarkan Karakteristik Materi:
+  // 1. "implementasi": Butuh Penjelasan & Pengamalan Nilai (Gotong Royong, Sila Pancasila, Norma Hidup, Toleransi, Budi Pekerti)
+  //    -> Model Game Utama: 🏰 Petualangan 3D (Eksplorasi Desa, Penjelasan Suara Pak Guru, Pos Studi Kasus)
+  // 2. "tes": Butuh Tes / Uji Pemahaman / Evaluasi / Simbol / Kosakata (Aksara Jawa, Kuis Bab, Kosakata Basa Jawa, Latihan Soal)
+  //    -> Model Game Utama: 🎲 Ular Tangga Edukasi & 🧩 Menjodohkan Kartu
+  const materiCategory = useMemo<"implementasi" | "tes">(() => {
+    const raw = (activeValidatedModule?.title || chapterTitle || chapter || "").toLowerCase();
+    const id = (chapter || activeValidatedModule?.id || "").toLowerCase();
+    if (
+      id.includes("aksara") ||
+      raw.includes("aksara") ||
+      id.includes("kuis") ||
+      raw.includes("kuis") ||
+      id.includes("tes") ||
+      raw.includes("tes") ||
+      id.includes("evaluasi") ||
+      raw.includes("evaluasi") ||
+      raw.includes("latihan") ||
+      id.includes("soal") ||
+      raw.includes("soal")
+    ) {
+      return "tes";
+    }
+    return "implementasi";
+  }, [chapter, chapterTitle, activeValidatedModule]);
 
-  // Otomatis arahkan ke mode game yang paling pas saat topik berubah
+  const recommendedGameMode = useMemo(() => {
+    if (materiCategory === "tes") {
+      // Materi butuh tes pemahaman / evaluasi
+      return isJawaTopic ? "matching" : "ulartangga";
+    }
+    // Materi butuh penjelasan & implementasi nilai
+    return "adventure";
+  }, [materiCategory, isJawaTopic]);
+
+  // Otomatis arahkan ke model game yang paling pas saat topik berubah
   useEffect(() => {
-    if (recommendedGameMode === "matching") {
-      setGameMode("matching");
+    if (materiCategory === "tes") {
+      setGameMode(isJawaTopic ? "matching" : "ulartangga");
     } else {
       setGameMode("adventure");
     }
-  }, [recommendedGameMode]);
+  }, [materiCategory, isJawaTopic]);
 
   // State Game Menjodohkan Kartu Pasangan Interaktif
   interface MatchingCard {
@@ -2839,7 +2875,7 @@ export default function AdaptiveEduGameModal({
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-300 truncate">
-                  Materi: <b className="text-emerald-400">{resolvedTitle}</b>
+                  Materi: <b className="text-emerald-400">{resolvedTitle}</b> • Model: <b className={materiCategory === "implementasi" ? "text-amber-300" : "text-emerald-300"}>{materiCategory === "implementasi" ? "📖 Penjelasan & Implementasi" : "🎯 Tes & Evaluasi Pemahaman"}</b>
                 </p>
               </div>
             </div>
@@ -2859,54 +2895,87 @@ export default function AdaptiveEduGameModal({
             </button>
           </div>
 
-          {/* TAB SWITCHER TIPE GAME (SINKRON DENGAN TIPE MATERI) */}
+          {/* TAB MODEL GAME (DISINKRONKAN DENGAN KEBUTUHAN MATERI: PENJELASAN/IMPLEMENTASI VS TES) */}
           <div className="flex items-center bg-slate-950/80 p-1 rounded-2xl border border-yellow-400/30 gap-1 shadow-inner">
+            {/* Model 1: Petualangan 3D (Untuk Penjelasan & Implementasi Nilai) */}
             <button
               type="button"
               onClick={() => {
                 playClickSound();
                 setGameMode("adventure");
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                 gameMode === "adventure"
                   ? "bg-amber-500 text-slate-950 shadow-md font-black"
                   : "text-slate-300 hover:text-white"
               }`}
+              title="Model Game untuk Penjelasan & Implementasi Nilai Luhur"
             >
               <span>🏰</span>
-              <span className="hidden md:inline">Petualangan 3D</span>
+              <span>Petualangan 3D</span>
+              <span className="hidden xl:inline text-[9px] opacity-75 font-normal">
+                (Implementasi)
+              </span>
             </button>
 
+            {/* Model 2: Ular Tangga Edukasi (Untuk Tes & Evaluasi Pemahaman) */}
+            <button
+              type="button"
+              onClick={() => {
+                playClickSound();
+                setGameMode("ulartangga");
+              }}
+              className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                gameMode === "ulartangga"
+                  ? "bg-amber-500 text-slate-950 shadow-md font-black"
+                  : "text-slate-300 hover:text-white"
+              }`}
+              title="Model Game untuk Tes & Evaluasi Pemahaman Materi"
+            >
+              <span>🎲</span>
+              <span>Ular Tangga</span>
+              <span className="hidden xl:inline text-[9px] opacity-75 font-normal">
+                (Tes Kuis)
+              </span>
+            </button>
+
+            {/* Model 3: Menjodohkan Kartu (Untuk Tes Pasangan Simbol / Kata) */}
             <button
               type="button"
               onClick={() => {
                 playClickSound();
                 setGameMode("matching");
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                 gameMode === "matching"
                   ? "bg-amber-500 text-slate-950 shadow-md font-black"
                   : "text-slate-300 hover:text-white"
               }`}
+              title="Model Game untuk Tes Pasangan Simbol & Kosakata"
             >
               <span>🧩</span>
-              <span className="hidden md:inline">Menjodohkan Kartu</span>
+              <span>Menjodohkan</span>
+              <span className="hidden xl:inline text-[9px] opacity-75 font-normal">
+                (Tes Simbol)
+              </span>
             </button>
 
+            {/* Model 4: Generator Manus AI */}
             <button
               type="button"
               onClick={() => {
                 playClickSound();
                 setGameMode("manus");
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                 gameMode === "manus"
                   ? "bg-cyan-500 text-slate-950 shadow-md font-black"
                   : "text-slate-300 hover:text-white"
               }`}
+              title="Generator Game Otomatis Manus AI"
             >
               <span>🤖</span>
-              <span className="hidden md:inline">Generator Manus AI</span>
+              <span className="hidden md:inline">Manus AI</span>
             </button>
           </div>
 
@@ -3643,6 +3712,20 @@ export default function AdaptiveEduGameModal({
                 </div>
               </div>
             </>
+          )}
+
+          {/* ============================================================ */}
+          {/* MODE: ULAR TANGGA EDUKASI (TES & EVALUASI PEMAHAMAN MATERI) */}
+          {/* ============================================================ */}
+          {gameMode === "ulartangga" && (
+            <UlarTanggaEduGame
+              chapter={chapter}
+              chapterTitle={resolvedTitle}
+              studentName={studentName}
+              activeModule={activeValidatedModule}
+              onSwitchToAdventure={() => setGameMode("adventure")}
+              onSwitchToMatching={() => setGameMode("matching")}
+            />
           )}
 
           {/* ============================================================ */}
