@@ -31,11 +31,62 @@ import { useUIStore } from "@/lib/store/useUIStore";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 
+// Helper Canvas Text Auto-Scale: Mencegah Teks Terpotong di Plang & Gapura
+function drawFittedText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  maxFontSize: number,
+  options?: {
+    fontFamily?: string;
+    fontWeight?: string;
+    color?: string;
+    align?: CanvasTextAlign;
+    baseline?: CanvasTextBaseline;
+    shadowColor?: string;
+    shadowBlur?: number;
+  }
+): number {
+  const fontFamily = options?.fontFamily || "sans-serif";
+  const fontWeight = options?.fontWeight || "bold";
+  const color = options?.color || "#ffffff";
+  const align = options?.align || "center";
+  const baseline = options?.baseline || "middle";
+
+  ctx.save();
+  ctx.textAlign = align;
+  ctx.textBaseline = baseline;
+  if (options?.shadowColor) {
+    ctx.shadowColor = options.shadowColor;
+    ctx.shadowBlur = options.shadowBlur || 4;
+  } else {
+    ctx.shadowBlur = 0;
+  }
+  ctx.fillStyle = color;
+
+  let fontSize = maxFontSize;
+  ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+  let textWidth = ctx.measureText(text).width;
+
+  while (textWidth > maxWidth && fontSize > 11) {
+    fontSize -= 1;
+    ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+    textWidth = ctx.measureText(text).width;
+  }
+
+  ctx.fillText(text, x, y);
+  ctx.restore();
+  return fontSize;
+}
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   chapter: string;
   chapterTitle?: string;
+  studentName?: string;
 }
 
 // Model Suku Adat & Pos Pembelajaran Desa
@@ -101,6 +152,7 @@ export default function AdaptiveEduGameModal({
   onClose,
   chapter,
   chapterTitle,
+  studentName = "Ghandur Fauzan (Siswa)",
 }: Props) {
   const addPoints = useUIStore((s) => s.addPoints);
   const activeValidatedModule = useUIStore((s) => s.activeValidatedModule);
@@ -117,6 +169,40 @@ export default function AdaptiveEduGameModal({
   const [activeNotification, setActiveNotification] = useState<string | null>(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [allSukuCompleted, setAllSukuCompleted] = useState(false);
+
+  // Skor Kawan Sekelas Online Dinamis (Seperti Roblox Multiplayer)
+  const [peerScores, setPeerScores] = useState<{ [id: string]: number }>({
+    siti: 145,
+    budi: 130,
+    edo: 95,
+    dayu: 80,
+  });
+
+  // Chat Kelas Online Interaktif & Riwayat Percakapan
+  interface ChatMessage {
+    id: string;
+    sender: string;
+    avatar: string;
+    text: string;
+    time: string;
+    isPlayer?: boolean;
+  }
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    { id: "1", sender: "Siti Rahma", avatar: "👧", text: "Halo semua! Semangat belajar Pancasila bareng Pak Guru! 👋", time: "Baru saja" },
+    { id: "2", sender: "Budi Santoso", avatar: "👦", text: "Keren banget ada 5 rumah suku adat dan koin emas di sepanjang jalan! 🪙", time: "Baru saja" },
+    { id: "3", sender: "Edo Pratama", avatar: "🧒", text: "Ayo balapan kumpulkan koin dan selesaikan seluruh kuisnya! 🏃", time: "Baru saja" },
+  ]);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [customChatInput, setCustomChatInput] = useState("");
+
+  // Ref Animasi Dadah & Interaksi Teman Online
+  const isPlayerWavingRef = useRef(false);
+  const greetedStudentIdRef = useRef<string | null>(null);
+  const waveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Ref Update Papan Skor 3D Real-Time di Dekat Gapura
+  const lbUpdateRef = useRef<((data: any[]) => void) | null>(null);
+
 
   // Status Panduan Pak Guru
   const [hasTalkedToGuru, setHasTalkedToGuru] = useState(false);
@@ -727,14 +813,26 @@ export default function AdaptiveEduGameModal({
     },
   ]);
 
-  // Leaderboard Kelas Real-Time
-  const classLeaderboard = useMemo(() => [
-    { rank: 1, name: "Siti Rahma", points: 145, avatar: "👧", costume: "Pramuka", status: "Online 🟢" },
-    { rank: 2, name: "Budi Santoso", points: 130, avatar: "👦", costume: "Batik Hijau", status: "Online 🟢" },
-    { rank: 3, name: "Kamu (Pelajar)", points: adventureScore, avatar: "🎒", costume: "Merah Putih", status: "Online 🟢", isPlayer: true },
-    { rank: 4, name: "Edo Pratama", points: 95, avatar: "🧒", costume: "Olahraga Biru", status: "Online 🟢" },
-    { rank: 5, name: "Dayu Kemala", points: 80, avatar: "👧", costume: "Batik Ungu", status: "Online 🟢" },
-  ].sort((a, b) => b.points - a.points), [adventureScore]);
+    // Leaderboard Kelas Real-Time Dinamis (Otomatis Berubah saat Siswa Bermain & Raih Poin)
+  const classLeaderboard = useMemo(() => {
+    const list = [
+      { rank: 1, name: "Siti Rahma", points: peerScores.siti ?? 145, avatar: "👧", costume: "Pramuka", status: "Online 🟢" },
+      { rank: 2, name: "Budi Santoso", points: peerScores.budi ?? 130, avatar: "👦", costume: "Batik Hijau", status: "Online 🟢" },
+      { rank: 3, name: `${studentName} (Kamu)`, points: adventureScore, avatar: "🎒", costume: "Merah Putih", status: "Online 🟢", isPlayer: true },
+      { rank: 4, name: "Edo Pratama", points: peerScores.edo ?? 95, avatar: "🧒", costume: "Olahraga Biru", status: "Online 🟢" },
+      { rank: 5, name: "Dayu Kemala", points: peerScores.dayu ?? 80, avatar: "👧", costume: "Batik Ungu", status: "Online 🟢" },
+    ];
+    list.sort((a, b) => b.points - a.points);
+    return list.map((item, idx) => ({ ...item, rank: idx + 1 }));
+  }, [adventureScore, peerScores, studentName]);
+
+  // Sinkronkan Papan Skor 3D di Samping Gapura Masuk setiap ada perubahan skor
+  useEffect(() => {
+    if (lbUpdateRef.current) {
+      lbUpdateRef.current(classLeaderboard);
+    }
+  }, [classLeaderboard]);
+
 
   // Reset Saat Modal Buka
   useEffect(() => {
@@ -762,6 +860,62 @@ export default function AdaptiveEduGameModal({
     setResolvedTitle(activeValidatedModule?.title || chapterTitle || chapter);
   }, [activeValidatedModule, chapterTitle, chapter]);
 
+  
+  // Simulasi Siswa Kelas Online Bergerak, Mengumpulkan Poin & Chatting (Roblox Feel)
+  useEffect(() => {
+    if (!isOpen || !gameStarted) return;
+
+    const interval = setInterval(() => {
+      const peers = [
+        { id: "siti", name: "Siti Rahma", avatar: "👧", pos: "Pos 1 (Suku Jawa)" },
+        { id: "budi", name: "Budi Santoso", avatar: "👦", pos: "Pos 3 (Suku Minang)" },
+        { id: "edo", name: "Edo Pratama", avatar: "🧒", pos: "Pos 2 (Suku Sunda)" },
+        { id: "dayu", name: "Dayu Kemala", avatar: "👧", pos: "Pos 4 (Suku Dayak)" },
+      ];
+      const randomPeer = peers[Math.floor(Math.random() * peers.length)];
+      const isQuizEvent = Math.random() > 0.45;
+
+      if (isQuizEvent) {
+        setPeerScores((prev) => ({
+          ...prev,
+          [randomPeer.id]: (prev[randomPeer.id] || 80) + 25,
+        }));
+        setActiveNotification(`🎉 ${randomPeer.name} baru saja tuntas di ${randomPeer.pos} (+25 Poin)!`);
+        setChatMessages((prev) => [
+          {
+            id: String(Date.now()),
+            sender: randomPeer.name,
+            avatar: randomPeer.avatar,
+            text: `Hore! Aku baru saja menyelesaikan materi di ${randomPeer.pos}! 🌟`,
+            time: "Baru saja",
+          },
+          ...prev.slice(0, 20),
+        ]);
+      } else {
+        setPeerScores((prev) => ({
+          ...prev,
+          [randomPeer.id]: (prev[randomPeer.id] || 80) + 10,
+        }));
+        setChatMessages((prev) => [
+          {
+            id: String(Date.now()),
+            sender: randomPeer.name,
+            avatar: randomPeer.avatar,
+            text: "Koin emas di sepanjang jalan desa banyak banget! 🪙",
+            time: "Baru saja",
+          },
+          ...prev.slice(0, 20),
+        ]);
+      }
+
+      setTimeout(() => {
+        setActiveNotification(null);
+      }, 3500);
+    }, 14000);
+
+    return () => clearInterval(interval);
+  }, [isOpen, gameStarted]);
+
   // Kontrol Background Music
   useEffect(() => {
     if (isOpen && gameStarted && bgmEnabled) {
@@ -773,24 +927,96 @@ export default function AdaptiveEduGameModal({
     };
   }, [isOpen, gameStarted, bgmEnabled, stopGuruVoice]);
 
-  // Sapa Teman Sekelas (Interaksi Dadah Online)
+
+
+  // Emote Aksi Roblox: Dadah, Balapan, Kumpul di Pos, Semangat Belajar
+  const triggerPlayerEmote = useCallback(
+    (type: "wave" | "race" | "gather" | "cheer", targetStudent?: OnlineStudent) => {
+      isPlayerWavingRef.current = true;
+      playCoinSound();
+      playDashSound();
+
+      // Cari kawan terdekat jika tidak dispesifikasikan
+      const px = playerPosRef.current.x;
+      const pz = playerPosRef.current.z;
+      let closestPeer: OnlineStudent | null = targetStudent || null;
+      if (!closestPeer) {
+        let minD = 999;
+        for (const st of onlineStudents) {
+          if (st.mesh) {
+            const d = Math.hypot(px - st.mesh.position.x, pz - st.mesh.position.z);
+            if (d < minD) {
+              minD = d;
+              closestPeer = st;
+            }
+          }
+        }
+        if (minD > 14) closestPeer = null;
+      }
+
+      if (type === "wave") {
+        if (closestPeer) {
+          greetedStudentIdRef.current = closestPeer.id;
+          setAdventureScore((s) => s + 5);
+          addPoints(5, `Menyapa kawan: ${closestPeer.name}`);
+          setFriendGreetingBubble({
+            name: closestPeer.name,
+            text: `👋 "Halo ${studentName}! Senang ketemu di jalan desa! Ayo kumpulkan koin & jelajahi 5 Suku bareng!"`,
+          });
+          setActiveNotification(`👋 Kamu melambaikan tangan ke ${closestPeer.name} (+5 Poin Persahabatan!)`);
+          setChatMessages((prev) => [
+            { id: String(Date.now()), sender: studentName, avatar: "🎒", text: `👋 Halo ${closestPeer.name}! Semangat ya!`, time: "Baru saja", isPlayer: true },
+            { id: String(Date.now() + 1), sender: closestPeer.name, avatar: closestPeer.avatar, text: `👋 Halo juga ${studentName}! Gaspol kumpulkan koin!`, time: "Baru saja" },
+            ...prev.slice(0, 20),
+          ]);
+        } else {
+          setActiveNotification("👋 Kamu melambaikan tangan ke semua kawan sekelas!");
+          setChatMessages((prev) => [
+            { id: String(Date.now()), sender: studentName, avatar: "🎒", text: "👋 Halo kawan-kawan semua di Desa Pancasila!", time: "Baru saja", isPlayer: true },
+            ...prev.slice(0, 20),
+          ]);
+        }
+      } else if (type === "race") {
+        keysRef.current.sprint = true;
+        setTimeout(() => { keysRef.current.sprint = false; }, 2500);
+        setActiveNotification("🏃💨 SPRINT! Ayo balapan keliling desa kumpulkan koin!");
+        setChatMessages((prev) => [
+          { id: String(Date.now()), sender: studentName, avatar: "🎒", text: "🏃 Ayo balapan cepat kumpulkan koin di jalan desa!", time: "Baru saja", isPlayer: true },
+          { id: String(Date.now() + 1), sender: "Budi Santoso", avatar: "👦", text: "Siapa takut! Tunggu aku di depan ya! ⚡", time: "Baru saja" },
+          ...prev.slice(0, 20),
+        ]);
+      } else if (type === "gather") {
+        setActiveNotification("📢 Mengajak kawan-kawan berkumpul di Pos Pembelajaran!");
+        setChatMessages((prev) => [
+          { id: String(Date.now()), sender: studentName, avatar: "🎒", text: "📚 Teman-teman, ayo kumpul di Pos Pembelajaran bareng Pak Guru!", time: "Baru saja", isPlayer: true },
+          { id: String(Date.now() + 1), sender: "Siti Rahma", avatar: "👧", text: "Siap, aku sudah di dekat Pos Suku Adat nih! 🏠", time: "Baru saja" },
+          ...prev.slice(0, 20),
+        ]);
+      } else if (type === "cheer") {
+        playBadgeFanfareSound();
+        setActiveNotification("⭐ Bersorak gembira menyemangati kelas online!");
+        setChatMessages((prev) => [
+          { id: String(Date.now()), sender: studentName, avatar: "🎒", text: "⭐ Semangat 45 belajar Pancasila kawan-kawan!", time: "Baru saja", isPlayer: true },
+          { id: String(Date.now() + 1), sender: "Dayu Kemala", avatar: "👧", text: "Semangat pantang menyerah! Bhinneka Tunggal Ika! 🇮🇩", time: "Baru saja" },
+          ...prev.slice(0, 20),
+        ]);
+      }
+
+      if (waveTimeoutRef.current) clearTimeout(waveTimeoutRef.current);
+      waveTimeoutRef.current = setTimeout(() => {
+        isPlayerWavingRef.current = false;
+        greetedStudentIdRef.current = null;
+        setFriendGreetingBubble(null);
+      }, 3500);
+    },
+    [addPoints, onlineStudents, studentName]
+  );
+
+
+    // Sapa Teman Sekelas (Interaksi Dadah Online Seperti Roblox)
   const handleGreetClassmate = useCallback((student: OnlineStudent) => {
-    playCoinSound();
-    playCorrectSound();
-    setAdventureScore((s) => s + 5);
-    addPoints(5, `Menyapa teman sekelas: ${student.name}`);
-
-    setFriendGreetingBubble({
-      name: student.name,
-      text: `👋 "Halo juga! Senang ketemu di jalan desa! Ayo kumpulkan koin & jelajahi 5 Suku bareng!"`,
-    });
-
-    setActiveNotification(`👋 Kamu menyapa ${student.name} (${student.costumeName})! (+5 Poin Persahabatan!)`);
-    setTimeout(() => {
-      setFriendGreetingBubble(null);
-      setActiveNotification(null);
-    }, 4500);
-  }, [addPoints]);
+    triggerPlayerEmote("wave", student);
+  }, [triggerPlayerEmote]);
 
   // Jawab Pertanyaan Suku
   const handleAnswerSuku = (suku: SukuAdat, optId: string) => {
@@ -989,50 +1215,54 @@ export default function AdaptiveEduGameModal({
     archRoof.position.set(0, 9.85, 14);
     gapuraGroup.add(archRoof);
 
-    // Banner Tulisan Gapura Resolusi Tinggi (1024x256)
+        // Banner Tulisan Gapura Resolusi Tinggi (1200x280) - Anti Terpotong
     const bannerCanvas = document.createElement("canvas");
-    bannerCanvas.width = 1024;
-    bannerCanvas.height = 256;
+    bannerCanvas.width = 1200;
+    bannerCanvas.height = 280;
     const bCtx = bannerCanvas.getContext("2d")!;
 
     // Background Mewah Merah Marun & Border Emas
     bCtx.fillStyle = "#7f1d1d";
-    bCtx.fillRect(0, 0, 1024, 256);
+    bCtx.fillRect(0, 0, 1200, 280);
     bCtx.strokeStyle = "#facc15";
     bCtx.lineWidth = 14;
-    bCtx.strokeRect(7, 7, 1010, 242);
+    bCtx.strokeRect(7, 7, 1186, 266);
     bCtx.strokeStyle = "#ffffff";
     bCtx.lineWidth = 3;
-    bCtx.strokeRect(20, 20, 984, 216);
+    bCtx.strokeRect(20, 20, 1160, 240);
 
-    // Judul Utama Gapura
-    bCtx.fillStyle = "#fef08a";
-    bCtx.font = "bold 52px sans-serif";
-    bCtx.textAlign = "center";
-    bCtx.shadowColor = "#ca8a04";
-    bCtx.shadowBlur = 10;
-    bCtx.fillText("★ DESA PANCASILA NUSANTARA ★", 512, 105);
+    // Judul Utama Gapura Auto-Fitted (Jamin Tidak Terpotong)
+    drawFittedText(bCtx, "★ DESA PANCASILA NUSANTARA ★", 600, 95, 1120, 52, {
+      color: "#fef08a",
+      shadowColor: "#ca8a04",
+      shadowBlur: 10,
+    });
 
-    // Subjudul Gapura
-    bCtx.fillStyle = "#ffffff";
-    bCtx.font = "bold 30px sans-serif";
-    bCtx.shadowBlur = 0;
-    bCtx.fillText("🇮🇩  NEGERI GARUDA • JELAJAH PENGAMALAN 5 SILA  🇮🇩", 512, 185);
+    // Subjudul Gapura Auto-Fitted
+    drawFittedText(
+      bCtx,
+      `🇮🇩  ${resolvedTitle.toUpperCase()} • JELAJAH PENGAMALAN 5 SILA  🇮🇩`,
+      600,
+      190,
+      1120,
+      30,
+      { color: "#ffffff" }
+    );
 
     const bannerTexture = new THREE.CanvasTexture(bannerCanvas);
     bannerTexture.anisotropy = 8;
 
     // Banner Sisi Depan
     const bannerMeshFront = new THREE.Mesh(
-      new THREE.PlaneGeometry(13, 2.2),
+      new THREE.PlaneGeometry(13.2, 2.3),
       new THREE.MeshBasicMaterial({ map: bannerTexture })
     );
     bannerMeshFront.position.set(0, 8.6, 15.25);
     gapuraGroup.add(bannerMeshFront);
 
-    // Banner Sisi Belakang (dibalik agar bisa dibaca dari dalam)
+    // Banner Sisi Belakang
     const bannerMeshBack = new THREE.Mesh(
-      new THREE.PlaneGeometry(13, 2.2),
+      new THREE.PlaneGeometry(13.2, 2.3),
       new THREE.MeshBasicMaterial({ map: bannerTexture })
     );
     bannerMeshBack.position.set(0, 8.6, 12.75);
@@ -1041,46 +1271,90 @@ export default function AdaptiveEduGameModal({
 
     scene.add(gapuraGroup);
 
-    // ------------------------------------------------------------------------
-    // PAPAN SKOR KELAS 3D DI AWALAN (DI KANAN GAPURA: X = +4.5, Z = +16)
+        // ------------------------------------------------------------------------
+    // PAPAN SKOR KELAS 3D DINAMIS (DI KANAN GAPURA: X = +4.5, Z = +16)
+    // OTOMATIS BERUBAH SECARA REAL-TIME SESUAI SKOR SISWA & TEMAN KELAS ONLINE
     // ------------------------------------------------------------------------
     const lbGroup = new THREE.Group();
-    const lbPole1 = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 5, 8), new THREE.MeshLambertMaterial({ color: "#78350f" }));
-    lbPole1.position.set(-2.2, 2.5, 0);
+    const lbPole1 = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 5.2, 8), new THREE.MeshLambertMaterial({ color: "#78350f" }));
+    lbPole1.position.set(-2.5, 2.6, 0);
     lbGroup.add(lbPole1);
     const lbPole2 = lbPole1.clone();
-    lbPole2.position.set(2.2, 2.5, 0);
+    lbPole2.position.set(2.5, 2.6, 0);
     lbGroup.add(lbPole2);
 
     const lbCanvas = document.createElement("canvas");
-    lbCanvas.width = 512;
-    lbCanvas.height = 360;
+    lbCanvas.width = 640;
+    lbCanvas.height = 440;
     const lbCtx = lbCanvas.getContext("2d")!;
-    lbCtx.fillStyle = "#1e1b4b";
-    lbCtx.fillRect(0, 0, 512, 360);
-    lbCtx.strokeStyle = "#facc15";
-    lbCtx.lineWidth = 10;
-    lbCtx.strokeRect(5, 5, 502, 350);
+    const lbTexture = new THREE.CanvasTexture(lbCanvas);
+    lbTexture.anisotropy = 8;
 
-    lbCtx.fillStyle = "#facc15";
-    lbCtx.font = "bold 30px sans-serif";
-    lbCtx.textAlign = "center";
-    lbCtx.fillText("🏆 PAPAN SKOR KELAS", 256, 45);
+    const redraw3DLeaderboard = (data: Array<{ rank: number; name: string; points: number; avatar: string; isPlayer?: boolean }>) => {
+      lbCtx.fillStyle = "#0f172a";
+      lbCtx.fillRect(0, 0, 640, 440);
+      lbCtx.strokeStyle = "#facc15";
+      lbCtx.lineWidth = 10;
+      lbCtx.strokeRect(5, 5, 630, 430);
+      lbCtx.strokeStyle = "#38bdf8";
+      lbCtx.lineWidth = 2;
+      lbCtx.strokeRect(14, 14, 612, 412);
 
-    lbCtx.font = "bold 22px sans-serif";
-    lbCtx.fillStyle = "#ffffff";
-    lbCtx.textAlign = "left";
-    lbCtx.fillText("🥇 Siti Rahma: 145 Poin", 40, 110);
-    lbCtx.fillText("🥈 Budi Santoso: 130 Poin", 40, 160);
-    lbCtx.fillText("🥉 Kamu (Siswa): 0 Poin", 40, 210);
-    lbCtx.fillText("4.  Edo Pratama: 95 Poin", 40, 260);
-    lbCtx.fillText("5.  Dayu Kemala: 80 Poin", 40, 310);
+      // Header Papan Skor Kelas
+      drawFittedText(lbCtx, "🏆 PAPAN SKOR KELAS ONLINE", 320, 44, 590, 32, {
+        color: "#facc15",
+        shadowColor: "#ca8a04",
+        shadowBlur: 8,
+      });
+      drawFittedText(lbCtx, "Desa Pancasila • Peringkat Live Siswa 🟢", 320, 80, 580, 20, {
+        color: "#38bdf8",
+      });
+
+      // 5 Baris Siswa Teratas
+      const sorted = [...data].sort((a, b) => b.points - a.points).slice(0, 5);
+      sorted.forEach((item, idx) => {
+        const y = 126 + idx * 58;
+        const isPlayer = item.isPlayer;
+
+        if (isPlayer) {
+          lbCtx.fillStyle = "rgba(234, 179, 8, 0.28)";
+          lbCtx.fillRect(24, y - 22, 592, 50);
+          lbCtx.strokeStyle = "#facc15";
+          lbCtx.lineWidth = 3;
+          lbCtx.strokeRect(24, y - 22, 592, 50);
+        } else {
+          lbCtx.fillStyle = idx % 2 === 0 ? "rgba(30, 41, 59, 0.75)" : "rgba(15, 23, 42, 0.75)";
+          lbCtx.fillRect(24, y - 22, 592, 50);
+        }
+
+        const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${idx + 1}`;
+        const textColor = isPlayer ? "#fef08a" : "#ffffff";
+        const label = `${medal} ${item.name}`;
+
+        drawFittedText(lbCtx, label, 42, y + 3, 420, 24, {
+          align: "left",
+          color: textColor,
+          fontWeight: isPlayer ? "900" : "bold",
+        });
+
+        drawFittedText(lbCtx, `${item.points} Poin`, 596, y + 3, 140, 24, {
+          align: "right",
+          color: isPlayer ? "#facc15" : "#38bdf8",
+          fontWeight: "bold",
+        });
+      });
+
+      lbTexture.needsUpdate = true;
+    };
+
+    lbUpdateRef.current = redraw3DLeaderboard;
+    redraw3DLeaderboard(classLeaderboard);
 
     const lbBoard = new THREE.Mesh(
-      new THREE.PlaneGeometry(5, 3.5),
-      new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(lbCanvas) })
+      new THREE.PlaneGeometry(5.2, 3.6),
+      new THREE.MeshBasicMaterial({ map: lbTexture, side: THREE.DoubleSide })
     );
-    lbBoard.position.set(0, 3.5, 0.05);
+    lbBoard.position.set(0, 3.6, 0.05);
     lbGroup.add(lbBoard);
 
     lbGroup.position.set(4.5, 0, 16);
@@ -1444,35 +1718,26 @@ export default function AdaptiveEduGameModal({
       signPole2.position.set(1.2, 1.6, 0);
       signGroup.add(signPole2);
 
-      const signCanvas = document.createElement("canvas");
-      signCanvas.width = 512;
-      signCanvas.height = 256;
+            const signCanvas = document.createElement("canvas");
+      signCanvas.width = 720;
+      signCanvas.height = 360;
       const sCtx = signCanvas.getContext("2d")!;
       sCtx.fillStyle = "#1e1b4b";
-      sCtx.fillRect(0, 0, 512, 256);
+      sCtx.fillRect(0, 0, 720, 360);
       sCtx.strokeStyle = "#facc15";
-      sCtx.lineWidth = 10;
-      sCtx.strokeRect(5, 5, 502, 246);
+      sCtx.lineWidth = 12;
+      sCtx.strokeRect(6, 6, 708, 348);
+      sCtx.strokeStyle = "#ffffff";
+      sCtx.lineWidth = 2;
+      sCtx.strokeRect(16, 16, 688, 328);
 
-      sCtx.fillStyle = "#facc15";
-      sCtx.font = "bold 28px sans-serif";
-      sCtx.textAlign = "center";
-      sCtx.fillText(`🏷️ ${suku.namaPos.toUpperCase()}`, 256, 48);
-
-      sCtx.fillStyle = "#ffffff";
-      sCtx.font = "bold 26px sans-serif";
-      sCtx.fillText(`📚 ${suku.subMateri}`, 256, 105);
-
-      sCtx.fillStyle = "#38bdf8";
-      sCtx.font = "bold 24px sans-serif";
-      sCtx.fillText(`👨‍🏫 Penunggu: ${suku.guruNama}`, 256, 158);
-
-      sCtx.fillStyle = "#4ade80";
-      sCtx.font = "bold 20px sans-serif";
-      sCtx.fillText("📍 Berdiri di Titik Misi & Tekan 'E'", 256, 215);
+      drawFittedText(sCtx, `🏷️ ${suku.namaPos.toUpperCase()}`, 360, 55, 660, 34, { color: "#facc15" });
+      drawFittedText(sCtx, `📚 Materi: ${suku.subMateri}`, 360, 130, 660, 28, { color: "#ffffff" });
+      drawFittedText(sCtx, `👨‍🏫 Penunggu: ${suku.guruNama}`, 360, 205, 660, 26, { color: "#38bdf8" });
+      drawFittedText(sCtx, "📍 Berdiri di Titik Misi & Tekan 'E' untuk Kuis", 360, 280, 660, 24, { color: "#4ade80" });
 
       const signBoard = new THREE.Mesh(
-        new THREE.PlaneGeometry(3.6, 1.8),
+        new THREE.PlaneGeometry(4.0, 2.0),
         new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(signCanvas), side: THREE.DoubleSide })
       );
       signBoard.position.set(0, 2.2, 0.05);
@@ -1668,18 +1933,21 @@ export default function AdaptiveEduGameModal({
     const playerGroup = playerData.group;
     const { leftArm, rightArm, leftLeg, rightLeg } = playerData;
 
-    // Label Pemain
+        // Label Pemain Auto-Fitted (Menampilkan Nama Siswa Asli)
     const playerNameCanvas = document.createElement("canvas");
-    playerNameCanvas.width = 300;
-    playerNameCanvas.height = 64;
+    playerNameCanvas.width = 380;
+    playerNameCanvas.height = 70;
     const pCtx = playerNameCanvas.getContext("2d")!;
-    pCtx.fillStyle = "#ffffff";
-    pCtx.font = "bold 26px sans-serif";
-    pCtx.textAlign = "center";
-    pCtx.fillText("🎒 Kamu (Siswa Pelajar)", 150, 42);
+    pCtx.fillStyle = "#1e1b4b";
+    pCtx.fillRect(0, 0, 380, 70);
+    pCtx.strokeStyle = "#facc15";
+    pCtx.lineWidth = 5;
+    pCtx.strokeRect(2, 2, 376, 66);
+    drawFittedText(pCtx, `🎒 ${studentName} (Kamu)`, 190, 25, 360, 24, { color: "#ffffff" });
+    drawFittedText(pCtx, "Siswa SD Online 🟢", 190, 52, 360, 18, { color: "#4ade80" });
     const pNameSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(playerNameCanvas) }));
     pNameSprite.position.set(0, 4.6, 0);
-    pNameSprite.scale.set(3.4, 0.75, 1);
+    pNameSprite.scale.set(3.8, 0.8, 1);
     playerGroup.add(pNameSprite);
 
     playerGroup.position.set(0, 0, 18);
@@ -1753,6 +2021,15 @@ export default function AdaptiveEduGameModal({
         }
       }
 
+      
+      // Animasi Gerakan Dadah / Sapa Teman Khas Roblox Online
+      if (isPlayerWavingRef.current) {
+        rightArm.rotation.x = -Math.PI * 0.72;
+        rightArm.rotation.z = Math.sin(Date.now() * 0.016) * 0.45;
+      } else {
+        rightArm.rotation.z = 0;
+      }
+
       playerPosRef.current = {
         x: playerGroup.position.x,
         y: playerGroup.position.y,
@@ -1791,6 +2068,15 @@ export default function AdaptiveEduGameModal({
           if (student.rightLeg) student.rightLeg.rotation.x = -sSwing;
           if (student.leftArm) student.leftArm.rotation.x = -sSwing;
           if (student.rightArm) student.rightArm.rotation.x = sSwing;
+
+          
+          // Animasi membalas lambaian jika disapa pemain
+          if (greetedStudentIdRef.current === student.id && student.rightArm) {
+            student.rightArm.rotation.x = -Math.PI * 0.72;
+            student.rightArm.rotation.z = Math.sin(Date.now() * 0.016) * 0.45;
+          } else if (student.rightArm) {
+            student.rightArm.rotation.z = 0;
+          }
 
           if (student.mesh.position.z > 5) student.dir = -1;
           if (student.mesh.position.z < -290) student.dir = 1;
@@ -2087,6 +2373,129 @@ export default function AdaptiveEduGameModal({
               {activeNotification}
             </div>
           )}
+
+          
+          {/* ROBLOX STYLE CLASS ONLINE CHAT & EMOTE OVERLAY */}
+          <div className="absolute top-20 left-4 z-30 pointer-events-auto flex flex-col items-start gap-2 max-w-xs sm:max-w-sm">
+            {/* Tombol Buka/Tutup Chat */}
+            <button
+              type="button"
+              onClick={() => setIsChatOpen(!isChatOpen)}
+              className="bg-slate-900/90 hover:bg-slate-800 text-white font-bold text-xs px-3.5 py-2 rounded-2xl border border-sky-400/60 shadow-xl backdrop-blur-md flex items-center gap-2 cursor-pointer transition hover:scale-105"
+            >
+              <span className="text-sm">💬</span>
+              <span>Chat Siswa Online (Roblox Style)</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+            </button>
+
+            {/* Kotak Chat Mengambang */}
+            {isChatOpen && (
+              <div className="w-80 bg-slate-950/95 border-2 border-sky-400 rounded-3xl p-3 shadow-2xl backdrop-blur-md text-white flex flex-col gap-2.5 animate-in slide-in-from-top-2 duration-200">
+                <div className="flex items-center justify-between border-b border-slate-700/80 pb-2">
+                  <span className="text-[11px] font-black text-sky-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <span>🎒</span> Obrolan Kelas Desa (4 Siswa Online)
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsChatOpen(false)}
+                    className="text-slate-400 hover:text-white text-xs px-1.5 py-0.5 rounded cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Riwayat Chat */}
+                <div className="max-h-48 overflow-y-auto space-y-2 text-xs pr-1">
+                  {chatMessages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={`p-2 rounded-xl text-[11px] leading-relaxed ${
+                        msg.isPlayer
+                          ? "bg-yellow-400/15 border border-yellow-400/40 text-yellow-200"
+                          : "bg-slate-800/80 border border-slate-700/80 text-slate-200"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between text-[10px] font-black text-sky-400 mb-0.5">
+                        <span>{msg.avatar} {msg.sender}</span>
+                        <span className="text-slate-400 font-normal">{msg.time}</span>
+                      </div>
+                      <p className="font-semibold">{msg.text}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Quick Emote Buttons */}
+                <div className="grid grid-cols-2 gap-1.5 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => triggerPlayerEmote("wave")}
+                    className="p-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/40 border border-amber-400/50 text-[11px] font-bold text-amber-300 transition text-center cursor-pointer"
+                  >
+                    👋 Dadah / Sapa
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => triggerPlayerEmote("race")}
+                    className="p-1.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/40 border border-sky-400/50 text-[11px] font-bold text-sky-300 transition text-center cursor-pointer"
+                  >
+                    🏃 Ayo Balapan!
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => triggerPlayerEmote("gather")}
+                    className="p-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/40 border border-emerald-400/50 text-[11px] font-bold text-emerald-300 transition text-center cursor-pointer"
+                  >
+                    📚 Kumpul di Pos!
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => triggerPlayerEmote("cheer")}
+                    className="p-1.5 rounded-xl bg-purple-500/20 hover:bg-purple-500/40 border border-purple-400/50 text-[11px] font-bold text-purple-300 transition text-center cursor-pointer"
+                  >
+                    ⭐ Semangat Kelas!
+                  </button>
+                </div>
+
+                {/* Form Kirim Chat Sendiri */}
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!customChatInput.trim()) return;
+                    setChatMessages((prev) => [
+                      {
+                        id: String(Date.now()),
+                        sender: studentName,
+                        avatar: "🎒",
+                        text: customChatInput.trim(),
+                        time: "Baru saja",
+                        isPlayer: true,
+                      },
+                      ...prev.slice(0, 20),
+                    ]);
+                    setCustomChatInput("");
+                    setActiveNotification(`💬 Kamu mengirim chat: "${customChatInput.trim()}"`);
+                    setTimeout(() => setActiveNotification(null), 2500);
+                  }}
+                  className="flex items-center gap-1.5 pt-1 border-t border-slate-800"
+                >
+                  <input
+                    type="text"
+                    value={customChatInput}
+                    onChange={(e) => setCustomChatInput(e.target.value)}
+                    placeholder="Ketik pesan chat..."
+                    maxLength={60}
+                    className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-sky-400"
+                  />
+                  <button
+                    type="submit"
+                    className="bg-sky-500 hover:bg-sky-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs cursor-pointer"
+                  >
+                    Kirim
+                  </button>
+                </form>
+              </div>
+            )}
+          </div>
 
           {/* BALON INTERAKSI DADAH MENYAPA TEMAN ONLINE */}
           {friendGreetingBubble && (

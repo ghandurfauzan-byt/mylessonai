@@ -1660,6 +1660,7 @@ export default function PelajarDashboardPage() {
           activeValidatedModule?.title ||
           chapter
         }
+        studentName={currentStudentName}
       />
     </div>
   );
