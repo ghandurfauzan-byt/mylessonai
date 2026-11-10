@@ -1017,7 +1017,7 @@ export default function AiContentPanel({
                                 : "text-slate-700 dark:text-slate-300 group-hover:text-amber-700"
                             }`}
                           >
-                            {m.title.split("&")[0].trim()}
+                            {(m.title.split("&")[0] ?? m.title).trim()}
                           </span>
 
                           {/* Penanda Panah Menunjuk ke Bawah Jika Terpilih */}
@@ -1032,7 +1032,9 @@ export default function AiContentPanel({
 
                 {/* Panggung Kisah Tonggak Sejarah Terpilih */}
                 {(() => {
-                  const activeMilestone = milestones[selectedTimelineIndex] || milestones[0];
+                  const activeMilestone = milestones[selectedTimelineIndex] ?? milestones[0];
+                  if (!activeMilestone) return null;
+
                   return (
                     <div className="bg-white/95 dark:bg-slate-800/95 p-4 sm:p-6 rounded-3xl border-3 border-amber-400 dark:border-amber-600 shadow-md space-y-4 animate-in fade-in zoom-in-95 duration-200">
                       {/* Baris Atas Panggung: Medali Besar, Era, Judul, dan Tombol Suara */}
@@ -1089,11 +1091,14 @@ export default function AiContentPanel({
                             playClickSound();
                             const prev = Math.max(0, selectedTimelineIndex - 1);
                             setSelectedTimelineIndex(prev);
-                            startSpeaking({
-                              text: `${milestones[prev].title}. ${milestones[prev].desc}`,
-                              rate: 0.92,
-                              pitch: 1.05,
-                            });
+                            const target = milestones[prev];
+                            if (target) {
+                              startSpeaking({
+                                text: `${target.title}. ${target.desc}`,
+                                rate: 0.92,
+                                pitch: 1.05,
+                              });
+                            }
                           }}
                           className={`px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition ${
                             selectedTimelineIndex === 0
@@ -1132,11 +1137,14 @@ export default function AiContentPanel({
                             playClickSound();
                             const next = Math.min(milestones.length - 1, selectedTimelineIndex + 1);
                             setSelectedTimelineIndex(next);
-                            startSpeaking({
-                              text: `${milestones[next].title}. ${milestones[next].desc}`,
-                              rate: 0.92,
-                              pitch: 1.05,
-                            });
+                            const target = milestones[next];
+                            if (target) {
+                              startSpeaking({
+                                text: `${target.title}. ${target.desc}`,
+                                rate: 0.92,
+                                pitch: 1.05,
+                              });
+                            }
                           }}
                           className={`px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition ${
                             selectedTimelineIndex === milestones.length - 1
