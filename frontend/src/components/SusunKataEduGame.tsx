@@ -94,6 +94,31 @@ export default function SusunKataEduGame({
       ];
     }
 
+    // 4. TOPIK GEGURITAN (PUISI BASA JAWA)
+    if (id.includes("geguritan") || raw.includes("geguritan") || raw.includes("puisi")) {
+      return [
+        { id: "w1", word: "GEGURITAN", clue: "Puisi Jawa gagrag anyar kang ora kaiket dening paugeran tartamtu...", category: "Sastra Jawa", icon: "📜" },
+        { id: "w2", word: "PURWAKANTHI", clue: "Runtuting swara vokal utawa sastra ing geguritan diarani...", category: "Unsur Geguritan", icon: "🎵" },
+        { id: "w3", word: "MENTES", clue: "Basane geguritan iku endah lan nduweni teges kang jero utawa...", category: "Sifat Basa", icon: "💡" },
+        { id: "w4", word: "GATRA", clue: "Cacahing larik ing sajroning geguritan diarani guru...", category: "Paugeran", icon: "✍️" },
+        { id: "w5", word: "WILANGAN", clue: "Cacahing wanda utawa suku kata ing saben larik diarani guru...", category: "Paugeran", icon: "🔢" },
+        { id: "w6", word: "AMANAT", clue: "Pesen becik kang kinandhut ing geguritan kanggo para pamaca...", category: "Unsur Batin", icon: "🎁" },
+      ];
+    }
+
+    // 5. TOPIK BASA KRAMA & UNGGAH-UNGGUH
+    if (id.includes("unggah") || raw.includes("unggah") || raw.includes("krama") || raw.includes("tata krama")) {
+      return [
+        { id: "w1", word: "DHAHAR", clue: "Basa krama alus saka tembung mangan kagem Bapak/Ibu Guru...", category: "Basa Krama", icon: "🍚" },
+        { id: "w2", word: "SARE", clue: "Basa krama alus saka tembung turu kagem tiyang sepuh...", category: "Basa Krama", icon: "🛏️" },
+        { id: "w3", word: "TINDAK", clue: "Basa krama alus saka tembung lunga kagem Pak Guru...", category: "Basa Krama", icon: "🚶" },
+        { id: "w4", word: "MUNDHUT", clue: "Basa krama alus saka tembung tuku kagem tiyang sepuh...", category: "Basa Krama", icon: "🛍️" },
+        { id: "w5", word: "MIRSANI", clue: "Basa krama alus saka tembung ndeleng utawa ndelok...", category: "Basa Krama", icon: "👀" },
+        { id: "w6", word: "DALEM", clue: "Basa krama alus saka tembung omah kagem sesepuh...", category: "Basa Krama", icon: "🏠" },
+        { id: "w7", word: "ASMA", clue: "Basa krama alus saka tembung jeneng kagem tiyang sepuh...", category: "Basa Krama", icon: "🏷️" },
+      ];
+    }
+
     // 4. TOPIK PANCASILA & GOTONG ROYONG (DEFAULT)
     return [
       { id: "w1", word: "PERSATUAN", clue: "Bunyi sila ke-3 Pancasila adalah: ... Indonesia", category: "Pancasila", icon: "🌳" },

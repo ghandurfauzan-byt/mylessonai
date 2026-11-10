@@ -68,6 +68,8 @@ const chapterProgressDb: ChapterProgress[] = [
   { id: 6, name: "B. Jawa: Bab 2 - Tokoh Wayang Punokawan", percent: 85, tone: "good" },
   { id: 7, name: "B. Jawa: Bab 3 - Pandhawa Lima", percent: 90, tone: "high" },
   { id: 8, name: "B. Jawa: Bab 4 - Aksara Jawa", percent: 65, tone: "warning" },
+  { id: 9, name: "B. Jawa: Bab 5 - Arane Anak Kewan", percent: 82, tone: "good" },
+  { id: 10, name: "B. Jawa: Bab 6 - Pasinaon Geguritan", percent: 80, tone: "good" },
 ];
 
 const studentsNeedingHelpDb: StudentHelp[] = [
@@ -160,21 +162,40 @@ const aiContentLibrary: Record<string, Record<AiMode, { title: string; body: str
   },
   "bjawa-unggahungguh": {
     cerita: {
-      title: "Ringkasan Modul & Trap-Trapan Unggah-Ungguh Basa Jawa",
+      title: "Pemaparan Materi: Trap-Trapan Unggah-Ungguh Basa Jawa & Basa Krama",
       body: [
-        "Pangertosan & Hakekat Unggah-Ungguh Basa: Unggah-ungguh basa yaiku tata krama, subasita, lan tatatertib anggone micara (guneman) kanthi mbedakake basa manut sapa sing diajak guneman. Tujuane murih pawongan bisa ngajeni wong liya lan nduweni budi pakarti kang alus.",
-        "Trap-Trapan Basa & Perangane: Kapérang dadi Basa Ngoko (digunakake marang kanca sebaya utawa wong tuwa marang bocah enom) lan Basa Krama Alus (digunakake nalika matur marang Bapak/Ibu Guru, wong tuwa, lan tiyang ingkang langkung sepuh). Solah bawa kudu selaras: awak rada mbungkuk nalika matur marang wong tuwa.",
-        "Tuladha Tembung Penting: Marang wong tuwa: mangan dadi dhahar, turu dadi sare, lunga dadi tindak. Menawa nyritakake awake dhewe marang wong tuwa: nggunakake nedha lan tilem.",
-        "Penerapan marang Bapak & Ibu Guru: Nalika nyuwun pirsa babagan tugas sekolah, matur kanthi santun: 'Nyuwun sewu Bapak/Ibu Guru, kepareng kula badhe nyuwun pirsa babagan tugas punika'.",
-        "Penerapan ing Griya & Bebrayan: Salim lan ngambung asta nalika pamit bidhal sekolah, mbantu pakaryane wong tuwa, sarta matur 'nderek langkung' nalika mlaku ing sangarepe tiyang sepuh.",
-        "Piweling Luhur Wong Jawa: 'Ajining dhiri dumunung ana ing lathi, ajining raga ana ing busana'—tegese ajining manungsa gumantung saka pocapan lan tindak-tanduke kang becik.",
+        "Pangertosan Basa Krama: Basa Krama yaiku salah siji undha-usuk utawa trap-trapan basa Jawa kang luwih alus lan kurmat, digunakake nalika micara karo wong liya murih bisa ngajeni lan ngurmati.",
+        "Basa Krama Kuwi Kanggo Apa?: Digunakake nalika matur marang Bapak lan Ibu ing omah, matur marang Bapak/Ibu Guru ing sekolah, guneman marang simbah utawa sedulur sepuh, sarta sapa aruh marang tamu supaya tatakramane becik.",
+        "Bedane Tingkatan Basa: Basa Ngoko (kanggo kanca sakelas/sebaya), Basa Krama Lugu (tembunge krama nanging kanggo nyritakake awake dhewe, tuladhane: kula nedha, kula tilem), lan Basa Krama Alus (basa paling kurmat mligi kagem wong tuwa utawa guru, tuladhane: Bapak dhahar, Bu Guru sare).",
+        "Tuladha Tembung Ngoko menyang Krama Alus: Mangan dadi dhahar, turu dadi sare, lunga dadi tindak, tuku dadi mundhut, ndeleng dadi mirsani, omah dadi dalem, jeneng dadi asma, teka dadi rawuh.",
+        "Tuladha Ukara (Kalimat) ing Padintenan: (1) Marang Guru: 'Nyuwun sewu Bu Guru, kepareng kula badhe nyuwun pirsa babagan tugas sekolah'. (2) Nyritakake Wong Tuwa: 'Bapak saweg dhahar sekul, dene Ibu saweg tindak dhateng peken mundhut janganan'.",
+        "Tatakrama Solah Bawa: Nalika matur marang wong tuwa utawa guru, polatan kudu sumeh (grapyak), asta ngapurancang (ditangkepake ing ngarep), awake rada mbungkuk, sarta ora kena mbengok utawa nyela rembug.",
       ],
     },
     kuis_tantangan: {
-      title: "Kuis Tantangan Seru: Unggah-Ungguh Basa",
+      title: "Kuis Tantangan Seru: Basa Krama & Unggah-Ungguh",
       body: [
         "Ayo gladhen unggah-ungguh basa Jawa kanthi mangsuli pitakon saka Robot Pintar!",
         "Pencet tombol 'Mulai Kuis Tantangan' ing sisih kiwa kanggo nguji kawruhmu!",
+      ],
+    },
+  },
+  "bjawa-geguritan": {
+    cerita: {
+      title: "Pemaparan Materi: Pasinaon Geguritan Basa Jawa Gagrag Anyar",
+      body: [
+        "Pangertosan Geguritan: Geguritan yaiku karya sastra puisi basa Jawa gagrag anyar kang medharake rasa pangrasa panganggit kanthi basa kang endah lan mentes. Geguritan gagrag anyar ora kaiket dening paugeran tartamtu kaya tembang macapat.",
+        "Geguritan Kuwi Kanggo Apa?: Kanggo medharake rasa pangrasa ati (katresnan marang wong tuwa, rasa syukur marang Gusti, tresna asih marang alam), aweh piwulang becik (amanat luhur), sarta nguri-uri kaendahan basa Jawa puitis.",
+        "Ciri-Ciri Utama Geguritan Gagrag Anyar: (1) Ora kaiket guru gatra (larik), guru wilangan (suku kata), lan guru lagu (tibaning swara), (2) Basane endah, mentes, lan puitis, (3) Nggunakake purwakanthi (persamaan swara utawa sastra), (4) Tembunge dipilih kanthi cermat (diksi).",
+        "Unsur Pambangun Geguritan: Tema (underaning gagasan pokok), Diksi (pamilihing tembung endah), Purwakanthi (runtuting swara vokal/konsonan), lan Amanat (pesen becik kang kinandhut ing geguritan).",
+        "Tuladha Geguritan 1 (Ibu): 'Ibu... Rina wengi tansah ngusap luh ing pipiku. Ndonga puji marang Gusti Kang Murbeng Dumadi. Kagem putra-putrimu kang tansah mbok trisnani. Tresnamu tanpa upama, ora bakal sirna selawase.' (Tegese: Nggambarake katresnane ibu kang tanpa kendhat).",
+        "Tuladha Geguritan 2 (Sekolahanku): 'Sekolahanku endah asri... Papan kanggo golek ilmu lan wawasan. Bapak Ibu Guru mulang kanthi tulusing ati. Kanca-kancaku padha rukun sesandhingan.' (Tegese: Nggambarake rasa seneng lan syukur sekolah ing papan kang rukun lan asri).",
+      ],
+    },
+    kuis_tantangan: {
+      title: "Kuis Tantangan Seru: Pasinaon Geguritan",
+      body: [
+        "Ayo uji pemahamanmu ngenani geguritan gagrag anyar lan unsur-unsur pambangune!",
       ],
     },
   },

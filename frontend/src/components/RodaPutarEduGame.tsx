@@ -76,8 +76,25 @@ export default function RodaPutarEduGame({
       return [
         { q: "Aksara Jawa legena wutuh cacahe ana pira?", opts: ["15", "18", "20", "24"], correct: 2, exp: "Leres! Cacahe ana 20 aksara legena." },
         { q: "Sandhangan swara kanggo ngowahi vokal dadi 'i' yaiku...", opts: ["Suku", "Wulu", "Pepet", "Taling"], correct: 1, exp: "Bener! Wulu ngowahi dadi swara 'i'." },
-        { q: "Aksara 'ꦲ' manawa diwaca unine...", opts: ["Ha", "Na", "Ca", "Ra"], correct: 0, exp: "Tepat! Iku aksara Ha." },
-        { q: "Sandhangan panyigeg aksara 'r' yaiku...", opts: ["Cecak", "Layar", "Wignyan", "Pangkon"], correct: 1, exp: "Pinter! Layar kanggo sigeg 'r'." },
+        { id: "q4", q: "Sandhangan panyigeg aksara 'r' yaiku...", opts: ["Cecak", "Layar", "Wignyan", "Pangkon"], correct: 1, exp: "Pinter! Layar kanggo sigeg 'r'." },
+      ];
+    }
+
+    if (id.includes("geguritan") || raw.includes("geguritan") || raw.includes("puisi")) {
+      return [
+        { q: "Puisi basa Jawa gagrag anyar kang ora kaiket dening paugeran diarani...", opts: ["Tembang Macapat", "Geguritan", "Parikan", "Wangsalan"], correct: 1, exp: "Leres! Geguritan gagrag anyar bebas ora kaiket paugeran macapat." },
+        { q: "Runtuting swara vokal utawa konsonan ing geguritan diarani...", opts: ["Purwakanthi", "Diksi", "Amanat", "Guru Gatra"], correct: 0, exp: "Tepat! Purwakanthi yaiku runtuting swara utawa sastra." },
+        { q: "Cacahing larik ing sajroning geguritan diarani...", opts: ["Guru Wilangan", "Guru Lagu", "Guru Gatra", "Pada"], correct: 2, exp: "Pinter! Guru gatra yaiku cacahing larik." },
+        { q: "Pesen becik kang kinandhut ing geguritan kanggo pamaca diarani...", opts: ["Tema", "Diksi", "Amanat", "Latar"], correct: 2, exp: "Bagus! Amanat yaiku pesen luhur puitis." },
+      ];
+    }
+
+    if (id.includes("unggah") || raw.includes("unggah") || raw.includes("krama") || raw.includes("tata krama")) {
+      return [
+        { q: "Basa krama alus kagem Bapak/Ibu saka tembung 'mangan' yaiku...", opts: ["Nedha", "Dhahar", "Ngunjuk", "Turu"], correct: 1, exp: "Leres! Dhahar kagem tiyang sepuh utawa guru." },
+        { q: "Basa krama alus saka tembung 'turu' yaiku...", opts: ["Tilem", "Sare", "Mlebu", "Tindak"], correct: 1, exp: "Tepat! Sare kagem tiyang sepuh, tilem kanggo awake dhewe." },
+        { q: "Nalika matur marang Bapak utawa Ibu Guru, basa kang trep yaiku...", opts: ["Basa Ngoko Lugu", "Basa Krama Alus", "Basa Gaul", "Basa Kasar"], correct: 1, exp: "Pinter! Marang guru wajib nggunakake Basa Krama Alus." },
+        { q: "Tembung 'lunga' yen dikramakake alus dadi...", opts: ["Kesah", "Tindak", "Mlayu", "Rawuh"], correct: 1, exp: "Bagus! Bapak/Ibu Guru tindak dhateng kantor." },
       ];
     }
 

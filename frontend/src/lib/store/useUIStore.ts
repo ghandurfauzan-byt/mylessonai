@@ -141,8 +141,12 @@ export function resolveGameTypeForModule(
     return "matching";
   }
 
-  // 2. Prioritas Susun Kata & Huruf Misteri (Susun Kata / Anagram)
+  // 2. Prioritas Susun Kata & Huruf Misteri (Susun Kata / Anagram / Geguritan Puisi)
   if (
+    i.includes("geguritan") ||
+    t.includes("geguritan") ||
+    r.includes("geguritan") ||
+    t.includes("puisi") ||
     i.includes("susun") ||
     t.includes("susun") ||
     t.includes("ejaan") ||

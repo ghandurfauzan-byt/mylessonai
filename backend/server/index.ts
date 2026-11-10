@@ -2400,12 +2400,16 @@ function createTailoredManusGamePayload(params: {
         titleStr.includes("jodoh") ||
         titleStr.includes("pasang")));
 
-  // 2. CEK RUTE SUSUN KATA (WORD SCRAMBLE / ANAGRAM)
+  // 2. CEK RUTE SUSUN KATA (WORD SCRAMBLE / ANAGRAM / GEGURITAN PUISI)
   const isSusunKata =
     params.gameType === "susunkata" ||
     (!params.gameType &&
       !isMatching &&
-      (idStr.includes("susun") ||
+      (idStr.includes("geguritan") ||
+        titleStr.includes("geguritan") ||
+        idStr.includes("puisi") ||
+        titleStr.includes("puisi") ||
+        idStr.includes("susun") ||
         titleStr.includes("susun") ||
         titleStr.includes("ejaan") ||
         titleStr.includes("rangkai") ||

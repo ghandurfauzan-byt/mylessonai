@@ -18,6 +18,8 @@ export const availableChapters = [
   { value: "bjawa-punokawan", label: "B. Jawa: Bab 2 - Mengenal Punokawan" },
   { value: "bjawa-pandhawa", label: "B. Jawa: Bab 3 - Pandhawa Lima" },
   { value: "bjawa-aksara", label: "B. Jawa: Bab 4 - Aksara Jawa" },
+  { value: "bjawa-anakkewan", label: "B. Jawa: Bab 5 - Arane Anak Kewan" },
+  { value: "bjawa-geguritan", label: "B. Jawa: Bab 6 - Pasinaon Geguritan" },
 ];
 
 export const aiModes: { value: AiMode; icon: string; label: string }[] = [

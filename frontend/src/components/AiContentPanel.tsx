@@ -428,6 +428,362 @@ export default function AiContentPanel({
         );
       })()}
 
+      {/* Visual Interaktif Khusus Basa Krama & Unggah-Ungguh Basa */}
+      {(() => {
+        const rawT = (content.title + " " + chapterId).toLowerCase();
+        if (!rawT.includes("unggah") && !rawT.includes("krama") && !rawT.includes("tata krama")) return null;
+
+        const kramaWords = [
+          { ngoko: "Mangan", lugu: "Nedha", alus: "Dhahar", icon: "🍚", label: "Makan" },
+          { ngoko: "Turu", lugu: "Tilem", alus: "Sare", icon: "🛏️", label: "Tidur" },
+          { ngoko: "Lunga", lugu: "Kesah", alus: "Tindak", icon: "🚶", label: "Pergi" },
+          { ngoko: "Tuku", lugu: "Tumbas", alus: "Mundhut", icon: "🛍️", label: "Membeli" },
+          { ngoko: "Ndeleng", lugu: "Ningali", alus: "Mirsani", icon: "👀", label: "Melihat" },
+          { ngoko: "Omah", lugu: "Griya", alus: "Dalem", icon: "🏠", label: "Rumah" },
+          { ngoko: "Jeneng", lugu: "Nama", alus: "Asma", icon: "🏷️", label: "Nama" },
+          { ngoko: "Teka", lugu: "Dugi", alus: "Rawuh", icon: "🚪", label: "Datang" },
+        ];
+
+        return (
+          <div className="bg-gradient-to-br from-indigo-500/10 via-blue-500/10 to-purple-500/10 dark:from-indigo-950/40 dark:to-slate-900 border-3 border-indigo-400 dark:border-indigo-600 rounded-3xl p-4 sm:p-5 space-y-4 shadow-lg shadow-indigo-500/10">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-indigo-300 dark:border-indigo-800 pb-3">
+              <div>
+                <h3 className="text-base sm:text-lg font-black text-indigo-950 dark:text-indigo-200 flex items-center gap-2">
+                  <span>💬</span>
+                  <span>Papan Pasinaon Basa Krama &amp; Unggah-Ungguh Basa</span>
+                </h3>
+                <p className="text-xs font-bold text-indigo-800 dark:text-indigo-400">
+                  Basa Krama digunakake kanggo matur marang Bapak/Ibu Guru, wong tuwa, lan simbah kanggo ngurmati.
+                </p>
+              </div>
+              <span className="text-[11px] font-black bg-indigo-500 text-white px-3 py-1 rounded-full self-start sm:self-auto shadow-xs">
+                Tembung &amp; Ukara
+              </span>
+            </div>
+
+            {/* Kotak Fungsi Basa Krama Buat Apa */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+              <div className="bg-white/90 dark:bg-slate-800/90 p-3 rounded-2xl border border-indigo-200 dark:border-indigo-800 space-y-1">
+                <div className="font-black text-indigo-900 dark:text-indigo-300 flex items-center gap-1.5">
+                  <span>👨‍👩‍👧</span>
+                  <span>1. Kanggo Sapa?</span>
+                </div>
+                <p className="text-[11px] text-slate-700 dark:text-slate-300 font-semibold leading-relaxed">
+                  Digunakake nalika matur marang Bapak/Ibu ing omah, Bapak/Ibu Guru ing sekolah, simbah, lan para sesepuh.
+                </p>
+              </div>
+              <div className="bg-white/90 dark:bg-slate-800/90 p-3 rounded-2xl border border-indigo-200 dark:border-indigo-800 space-y-1">
+                <div className="font-black text-indigo-900 dark:text-indigo-300 flex items-center gap-1.5">
+                  <span>🎯</span>
+                  <span>2. Buat Apa Fungsinya?</span>
+                </div>
+                <p className="text-[11px] text-slate-700 dark:text-slate-300 font-semibold leading-relaxed">
+                  Supaya guneman dadi runtut, santun, lan ngurmati wong liya. Ajining dhiri dumunung ana ing lathi.
+                </p>
+              </div>
+              <div className="bg-white/90 dark:bg-slate-800/90 p-3 rounded-2xl border border-indigo-200 dark:border-indigo-800 space-y-1">
+                <div className="font-black text-indigo-900 dark:text-indigo-300 flex items-center gap-1.5">
+                  <span>✨</span>
+                  <span>3. Bedane Tingkatan</span>
+                </div>
+                <p className="text-[11px] text-slate-700 dark:text-slate-300 font-semibold leading-relaxed">
+                  <b>Ngoko</b> = kanca sakelas. <b>Krama Lugu</b> = kanggo awake dhewe (nedha, tilem). <b>Krama Alus</b> = kagem tiyang sepuh (dhahar, sare).
+                </p>
+              </div>
+            </div>
+
+            {/* Tabel Tembung Ngoko -> Krama Lugu -> Krama Alus */}
+            <div className="space-y-2">
+              <div className="text-xs font-black text-indigo-950 dark:text-indigo-200 flex items-center justify-between">
+                <span>📚 Tabel Tuladha Tembung (Klik kartu untuk mendengarkan lafal 🔊):</span>
+                <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold">Ngoko ➔ Krama Lugu ➔ Krama Alus</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {kramaWords.map((item) => (
+                  <button
+                    key={item.ngoko}
+                    type="button"
+                    onClick={() => {
+                      playClickSound();
+                      startSpeaking({
+                        text: `${item.ngoko}, krama lugune ${item.lugu}, krama aluse ${item.alus}`,
+                        rate: 0.95,
+                        pitch: 1.1,
+                      });
+                    }}
+                    className="p-2.5 rounded-2xl bg-white/90 dark:bg-slate-800/90 hover:bg-indigo-50 dark:hover:bg-slate-750 border-2 border-indigo-200 dark:border-indigo-700/60 text-left transition hover:scale-103 active:scale-95 shadow-xs cursor-pointer group"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-lg">{item.icon}</span>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase">{item.label}</span>
+                    </div>
+                    <div className="text-xs font-bold text-slate-600 dark:text-slate-400">
+                      Ngoko: <span className="text-slate-900 dark:text-slate-100 font-black">{item.ngoko}</span>
+                    </div>
+                    <div className="text-xs font-black text-blue-700 dark:text-blue-300">
+                      Lugu: {item.lugu}
+                    </div>
+                    <div className="text-xs font-black text-indigo-700 dark:text-indigo-300">
+                      Alus: {item.alus} ⭐
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Contoh Kalimat (Ukara) Ngoko vs Krama Alus */}
+            <div className="bg-white/95 dark:bg-slate-800/95 p-3 sm:p-4 rounded-2xl border border-indigo-200 dark:border-indigo-800 space-y-2 text-xs">
+              <h4 className="font-black text-indigo-950 dark:text-indigo-200 flex items-center gap-1.5">
+                <span>📝</span>
+                <span>Tuladha Ukara (Contoh Kalimat Nyata di Keseharian):</span>
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                <div className="p-2.5 rounded-xl bg-indigo-50/80 dark:bg-slate-700/60 border border-indigo-200 dark:border-indigo-700">
+                  <div className="text-slate-500 font-bold mb-0.5">Saat Menyapa / Bertanya ke Guru:</div>
+                  <div className="font-black text-indigo-950 dark:text-indigo-200 leading-snug">
+                    "Nyuwun sewu Bu Guru, kepareng kula badhe nyuwun pirsa babagan tugas sekolah."
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-1">(Bukan: "Bu Guru, aku arep takon tugas")</div>
+                </div>
+                <div className="p-2.5 rounded-xl bg-indigo-50/80 dark:bg-slate-700/60 border border-indigo-200 dark:border-indigo-700">
+                  <div className="text-slate-500 font-bold mb-0.5">Menceritakan Orang Tua:</div>
+                  <div className="font-black text-indigo-950 dark:text-indigo-200 leading-snug">
+                    "Bapak saweg dhahar sekul goreng, dene Ibu saweg tindak dhateng peken."
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-1">(Bukan: "Bapak lagi mangan sega, Ibu lunga pasar")</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Visual Interaktif Khusus Geguritan (Puisi Basa Jawa) */}
+      {(() => {
+        const rawT = (content.title + " " + chapterId).toLowerCase();
+        if (!rawT.includes("geguritan") && !rawT.includes("puisi")) return null;
+
+        return (
+          <div className="bg-gradient-to-br from-amber-500/10 via-yellow-500/10 to-orange-500/10 dark:from-amber-950/40 dark:to-slate-900 border-3 border-amber-400 dark:border-amber-600 rounded-3xl p-4 sm:p-5 space-y-4 shadow-lg shadow-amber-500/10">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-300 dark:border-amber-800 pb-3">
+              <div>
+                <h3 className="text-base sm:text-lg font-black text-amber-950 dark:text-amber-200 flex items-center gap-2">
+                  <span>📜</span>
+                  <span>Papan Pasinaon Geguritan (Puisi Basa Jawa Gagrag Anyar)</span>
+                </h3>
+                <p className="text-xs font-bold text-amber-800 dark:text-amber-400">
+                  Geguritan gagrag anyar yaiku puisi Jawa kang ora kaiket paugeran macapat, basane mentes, endah, lan puitis.
+                </p>
+              </div>
+              <span className="text-[11px] font-black bg-amber-400 text-amber-950 px-3 py-1 rounded-full self-start sm:self-auto shadow-xs">
+                Sastra &amp; Puisi
+              </span>
+            </div>
+
+            {/* 3 Kotak Konsep Dasar Geguritan */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+              <div className="bg-white/90 dark:bg-slate-800/90 p-3 rounded-2xl border border-amber-200 dark:border-amber-800 space-y-1">
+                <div className="font-black text-amber-900 dark:text-amber-300 flex items-center gap-1.5">
+                  <span>📖</span>
+                  <span>1. Geguritan Buat Apa?</span>
+                </div>
+                <p className="text-[11px] text-slate-700 dark:text-slate-300 font-semibold leading-relaxed">
+                  Kanggo medharake rasa pangrasa ati (katresnan marang wong tuwa, rasa syukur marang Gusti, utawa tresna marang alam) kanthi basa kang endah.
+                </p>
+              </div>
+              <div className="bg-white/90 dark:bg-slate-800/90 p-3 rounded-2xl border border-amber-200 dark:border-amber-800 space-y-1">
+                <div className="font-black text-amber-900 dark:text-amber-300 flex items-center gap-1.5">
+                  <span>✨</span>
+                  <span>2. Ciri Khas Gagrag Anyar</span>
+                </div>
+                <p className="text-[11px] text-slate-700 dark:text-slate-300 font-semibold leading-relaxed">
+                  <b>Ora kaiket paugeran</b>: Ora kaiket cacahing larik (guru gatra), suku kata (guru wilangan), utawa tibaning swara (guru lagu). Bebas nanging mentes!
+                </p>
+              </div>
+              <div className="bg-white/90 dark:bg-slate-800/90 p-3 rounded-2xl border border-amber-200 dark:border-amber-800 space-y-1">
+                <div className="font-black text-amber-900 dark:text-amber-300 flex items-center gap-1.5">
+                  <span>🔍</span>
+                  <span>3. Unsur Pambangun</span>
+                </div>
+                <p className="text-[11px] text-slate-700 dark:text-slate-300 font-semibold leading-relaxed">
+                  <b>Tema</b> (ide pokok), <b>Diksi</b> (pilihan tembung endah), <b>Purwakanthi</b> (persamaan rima swara/sastra), lan <b>Amanat</b> (pesen luhur).
+                </p>
+              </div>
+            </div>
+
+            {/* Contoh Teks Geguritan Nyata */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              {/* Geguritan 1: Ibu */}
+              <div className="bg-white/95 dark:bg-slate-800/95 p-3.5 sm:p-4 rounded-2xl border-2 border-amber-300 dark:border-amber-700 space-y-2.5">
+                <div className="flex items-center justify-between border-b border-amber-200 dark:border-amber-800 pb-2">
+                  <div className="font-black text-amber-950 dark:text-amber-200 flex items-center gap-1.5 text-sm">
+                    <span>❤️</span>
+                    <span>Tuladha 1: "Ibu"</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playClickSound();
+                      startSpeaking({
+                        text: "Geguritan kanthi irah-irahan Ibu. Ibu... Rina wengi tansah ngusap luh ing pipiku. Ndonga puji marang Gusti Kang Murbeng Dumadi. Kagem putra-putrimu kang tansah mbok trisnani. Tresnamu tanpa upama, ora bakal sirna selawase.",
+                        rate: 0.9,
+                        pitch: 1.1,
+                      });
+                    }}
+                    className="px-2.5 py-1 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-black text-[10px] flex items-center gap-1 cursor-pointer transition hover:scale-105 active:scale-95 shadow-xs"
+                  >
+                    <span>🔊</span>
+                    <span>Dengarkan Puisi</span>
+                  </button>
+                </div>
+                <div className="font-serif italic text-amber-950 dark:text-amber-100 space-y-1 text-xs leading-relaxed bg-amber-50/60 dark:bg-slate-700/50 p-3 rounded-xl border border-amber-200/60">
+                  <p>Ibu...</p>
+                  <p>Rina wengi tansah ngusap luh ing pipiku</p>
+                  <p>Ndonga puji marang Gusti Kang Murbeng Dumadi</p>
+                  <p>Kagem putra-putrimu kang tansah mbok trisnani</p>
+                  <p>Tresnamu tanpa upama, ora bakal sirna selawase...</p>
+                </div>
+                <div className="text-[11px] text-slate-600 dark:text-slate-400 font-semibold">
+                  💡 <b>Makna Geguritan:</b> Nggambarake katresnane ibu kang tanpa kendhat, tulus, lan tansah ndongakake anake rina lan wengi.
+                </div>
+              </div>
+
+              {/* Geguritan 2: Sekolahanku */}
+              <div className="bg-white/95 dark:bg-slate-800/95 p-3.5 sm:p-4 rounded-2xl border-2 border-amber-300 dark:border-amber-700 space-y-2.5">
+                <div className="flex items-center justify-between border-b border-amber-200 dark:border-amber-800 pb-2">
+                  <div className="font-black text-amber-950 dark:text-amber-200 flex items-center gap-1.5 text-sm">
+                    <span>🏫</span>
+                    <span>Tuladha 2: "Sekolahanku"</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playClickSound();
+                      startSpeaking({
+                        text: "Geguritan Sekolahanku. Sekolahanku endah asri. Papan kanggo golek ilmu lan wawasan. Bapak Ibu Guru mulang kanthi tulusing ati. Kanca-kancaku padha rukun sesandhingan.",
+                        rate: 0.9,
+                        pitch: 1.1,
+                      });
+                    }}
+                    className="px-2.5 py-1 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-black text-[10px] flex items-center gap-1 cursor-pointer transition hover:scale-105 active:scale-95 shadow-xs"
+                  >
+                    <span>🔊</span>
+                    <span>Dengarkan Puisi</span>
+                  </button>
+                </div>
+                <div className="font-serif italic text-amber-950 dark:text-amber-100 space-y-1 text-xs leading-relaxed bg-amber-50/60 dark:bg-slate-700/50 p-3 rounded-xl border border-amber-200/60">
+                  <p>Sekolahanku endah asri...</p>
+                  <p>Papan kanggo golek ilmu lan wawasan</p>
+                  <p>Bapak Ibu Guru mulang kanthi tulusing ati</p>
+                  <p>Kanca-kancaku padha rukun sesandhingan...</p>
+                </div>
+                <div className="text-[11px] text-slate-600 dark:text-slate-400 font-semibold">
+                  💡 <b>Makna Geguritan:</b> Nggambarake rasa seneng, syukur, lan semangat sinau ing sekolah amarga gurune tulus lan kancane rukun.
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Visual Interaktif Khusus Pancasila & Norma */}
+      {(() => {
+        const rawT = (content.title + " " + chapterId).toLowerCase();
+        if (!rawT.includes("pancasila") && !rawT.includes("norma") && !rawT.includes("sila")) return null;
+
+        const pancasilaSilas = [
+          { sila: 1, simbol: "⭐", nama: "Bintang Emas", bunyi: "Ketuhanan Yang Maha Esa", makna: "Toleransi & ketaatan beragama" },
+          { sila: 2, simbol: "🔗", nama: "Rantai Emas", bunyi: "Kemanusiaan yang Adil dan Beradab", makna: "Tolong-menolong & anti perundungan" },
+          { sila: 3, simbol: "🌳", nama: "Pohon Beringin", bunyi: "Persatuan Indonesia", makna: "Rukun bersatu di atas keberagaman" },
+          { sila: 4, simbol: "🐂", nama: "Kepala Banteng", bunyi: "Kerakyatan yang Dipimpin oleh Hikmat...", makna: "Musyawarah mufakat & gotong royong" },
+          { sila: 5, simbol: "🌾", nama: "Padi dan Kapas", bunyi: "Keadilan Sosial bagi Seluruh Rakyat...", makna: "Bersikap adil & tidak mementingkan diri" },
+        ];
+
+        return (
+          <div className="bg-gradient-to-br from-rose-500/10 via-red-500/10 to-amber-500/10 dark:from-rose-950/40 dark:to-slate-900 border-3 border-rose-400 dark:border-rose-600 rounded-3xl p-4 sm:p-5 space-y-4 shadow-lg shadow-rose-500/10">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-rose-300 dark:border-rose-800 pb-3">
+              <div>
+                <h3 className="text-base sm:text-lg font-black text-rose-950 dark:text-rose-200 flex items-center gap-2">
+                  <span>🇮🇩</span>
+                  <span>Papan Konsep: Pancasila Dasar Negara &amp; 4 Jenis Norma</span>
+                </h3>
+                <p className="text-xs font-bold text-rose-800 dark:text-rose-400">
+                  Pancasila dirumuskan pada 1 Juni 1945 sebagai dasar negara dan pemersatu bangsa Indonesia.
+                </p>
+              </div>
+              <span className="text-[11px] font-black bg-rose-500 text-white px-3 py-1 rounded-full self-start sm:self-auto shadow-xs">
+                5 Sila &amp; 4 Norma
+              </span>
+            </div>
+
+            {/* Grid 5 Sila & Simbolnya */}
+            <div className="space-y-2">
+              <div className="text-xs font-black text-rose-950 dark:text-rose-200">
+                5 Simbol Perisai Garuda Pancasila (Klik untuk mendengarkan lafal 🔊):
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
+                {pancasilaSilas.map((s) => (
+                  <button
+                    key={s.sila}
+                    type="button"
+                    onClick={() => {
+                      playClickSound();
+                      startSpeaking({
+                        text: `Sila ke ${s.sila}, simbol ${s.nama}, berbunyi ${s.bunyi}. Makna utamanya: ${s.makna}.`,
+                        rate: 0.95,
+                        pitch: 1.1,
+                      });
+                    }}
+                    className="p-3 rounded-2xl bg-white/90 dark:bg-slate-800/90 hover:bg-rose-50 dark:hover:bg-slate-750 border-2 border-rose-200 dark:border-rose-700/60 text-center transition hover:scale-103 active:scale-95 shadow-xs cursor-pointer group"
+                  >
+                    <div className="text-3xl mb-1 group-hover:scale-120 transition-transform">{s.simbol}</div>
+                    <div className="text-[10px] font-extrabold text-rose-600 dark:text-rose-400">Sila Ke-{s.sila}</div>
+                    <div className="text-xs font-black text-slate-800 dark:text-slate-100">{s.nama}</div>
+                    <div className="text-[10px] text-slate-600 dark:text-slate-400 font-medium mt-1 line-clamp-2">
+                      {s.bunyi}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 4 Macam Norma & Contohnya */}
+            <div className="bg-white/95 dark:bg-slate-800/95 p-3.5 sm:p-4 rounded-2xl border border-rose-200 dark:border-rose-800 space-y-2 text-xs">
+              <h4 className="font-black text-rose-950 dark:text-rose-200 flex items-center gap-1.5">
+                <span>⚖️</span>
+                <span>4 Macam Norma Aturan Hidup (Sanksi &amp; Contoh Konkret):</span>
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 text-[11px]">
+                <div className="p-2.5 rounded-xl bg-amber-50/80 dark:bg-slate-700/60 border border-amber-200 dark:border-amber-700">
+                  <div className="font-black text-amber-900 dark:text-amber-300">1. Norma Agama</div>
+                  <div className="text-slate-600 dark:text-slate-400 mt-0.5">Sumber: Wahyu Tuhan YME</div>
+                  <div className="font-bold text-slate-800 dark:text-slate-200 mt-1">Contoh: Sholat / ibadah tepat waktu, tidak boleh mencuri</div>
+                  <div className="text-[10px] text-red-600 font-extrabold mt-1">Sanksi: Dosa &amp; balasan Tuhan</div>
+                </div>
+                <div className="p-2.5 rounded-xl bg-sky-50/80 dark:bg-slate-700/60 border border-sky-200 dark:border-sky-700">
+                  <div className="font-black text-sky-900 dark:text-sky-300">2. Norma Kesusilaan</div>
+                  <div className="text-slate-600 dark:text-slate-400 mt-0.5">Sumber: Hati nurani manusia</div>
+                  <div className="font-bold text-slate-800 dark:text-slate-200 mt-1">Contoh: Jujur saat ulangan, tidak menyontek, tidak berbohong</div>
+                  <div className="text-[10px] text-red-600 font-extrabold mt-1">Sanksi: Rasa malu &amp; penyesalan</div>
+                </div>
+                <div className="p-2.5 rounded-xl bg-purple-50/80 dark:bg-slate-700/60 border border-purple-200 dark:border-purple-700">
+                  <div className="font-black text-purple-900 dark:text-purple-300">3. Norma Kesopanan</div>
+                  <div className="text-slate-600 dark:text-slate-400 mt-0.5">Sumber: Tata krama adat warga</div>
+                  <div className="font-bold text-slate-800 dark:text-slate-200 mt-1">Contoh: Salim tangan guru/orang tua, mengetuk pintu saat bertamu</div>
+                  <div className="text-[10px] text-red-600 font-extrabold mt-1">Sanksi: Ditegur atau dicap tak sopan</div>
+                </div>
+                <div className="p-2.5 rounded-xl bg-emerald-50/80 dark:bg-slate-700/60 border border-emerald-200 dark:border-emerald-700">
+                  <div className="font-black text-emerald-900 dark:text-emerald-300">4. Norma Hukum</div>
+                  <div className="text-slate-600 dark:text-slate-400 mt-0.5">Sumber: Undang-undang negara</div>
+                  <div className="font-bold text-slate-800 dark:text-slate-200 mt-1">Contoh: Memakai helm motor, taat rambu lampu merah</div>
+                  <div className="text-[10px] text-red-600 font-extrabold mt-1">Sanksi: Tilang, denda, penjara</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Main Content Body */}
       <div className="space-y-3 text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-medium">
         {content.body.map((paragraph, idx) => {

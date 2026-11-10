@@ -295,16 +295,27 @@ export default function AdaptiveEduGameModal({
         { id: "p7", a: "Sikil Jinjit", b: "Kudu Waspada", subA: "Ciri Gareng", subB: "Piwulange", icon: "👣" },
         { id: "p8", a: "Awak Bunder", b: "Grapyak Semanak", subA: "Ciri Bagong", subB: "Maknane", icon: "🤝" },
       ];
-    } else if (id.includes("unggah") || raw.includes("unggah") || raw.includes("tata krama")) {
+    } else if (id.includes("geguritan") || raw.includes("geguritan") || raw.includes("puisi")) {
       rawPairs = [
-        { id: "p1", a: "Mangan (Ngoko)", b: "Dhahar (Krama)", subA: "Basa Padinan", subB: "Marang Guru", icon: "🍚" },
-        { id: "p2", a: "Turu (Ngoko)", b: "Sare (Krama)", subA: "Basa Padinan", subB: "Marang Guru", icon: "🛏️" },
-        { id: "p3", a: "Lunga (Ngoko)", b: "Tindak (Krama)", subA: "Basa Padinan", subB: "Marang Guru", icon: "🚶" },
-        { id: "p4", a: "Ndeleng (Ngoko)", b: "Mirsani (Krama)", subA: "Basa Padinan", subB: "Marang Guru", icon: "👀" },
-        { id: "p5", a: "Nyuwun Sewu", b: "Permisi Santun", subA: "Unggah-Ungguh", subB: "Tegese", icon: "🙇" },
-        { id: "p6", a: "Matur Nuwun", b: "Terima Kasih", subA: "Unggah-Ungguh", subB: "Tegese", icon: "🙏" },
-        { id: "p7", a: "Ndherek Langkung", b: "Nyuwun Izin Mlaku", subA: "Unggah-Ungguh", subB: "Tegese", icon: "👣" },
-        { id: "p8", a: "Ngoko Lugu", b: "Kanca Sakelas", subA: "Tingkat Basa", subB: "Trep Kanggo", icon: "🗣️" },
+        { id: "p1", a: "Purwakanthi", b: "Runtuting Swara / Sastra", subA: "Unsur Geguritan", subB: "Tegese", icon: "🎵" },
+        { id: "p2", a: "Guru Gatra", b: "Cacahing Larik", subA: "Paugeran Puisi", subB: "Tegese", icon: "📜" },
+        { id: "p3", a: "Guru Wilangan", b: "Cacahing Wanda (Suku Kata)", subA: "Paugeran Puisi", subB: "Tegese", icon: "🔢" },
+        { id: "p4", a: "Guru Lagu", b: "Tibaning Swara Pungkasan", subA: "Paugeran Puisi", subB: "Tegese", icon: "🎶" },
+        { id: "p5", a: "Gagrag Anyar", b: "Ora Kaiket Paugeran", subA: "Ciri Geguritan", subB: "Sifat Puisi", icon: "✨" },
+        { id: "p6", a: "Diksi", b: "Pamilihing Tembung Endah", subA: "Unsur Geguritan", subB: "Tegese", icon: "💎" },
+        { id: "p7", a: "Mentes", b: "Nduweni Makna Jero", subA: "Sifat Basa", subB: "Tegese", icon: "💡" },
+        { id: "p8", a: "Amanat", b: "Pesen Becik Kang Kinandhut", subA: "Unsur Geguritan", subB: "Tegese", icon: "🎁" },
+      ];
+    } else if (id.includes("unggah") || raw.includes("unggah") || raw.includes("krama") || raw.includes("tata krama")) {
+      rawPairs = [
+        { id: "p1", a: "Mangan", b: "Dhahar", subA: "Tembung Ngoko", subB: "Krama Alus (Guru)", icon: "🍚" },
+        { id: "p2", a: "Turu", b: "Sare", subA: "Tembung Ngoko", subB: "Krama Alus (Guru)", icon: "🛏️" },
+        { id: "p3", a: "Lunga", b: "Tindak", subA: "Tembung Ngoko", subB: "Krama Alus (Guru)", icon: "🚶" },
+        { id: "p4", a: "Tuku", b: "Mundhut", subA: "Tembung Ngoko", subB: "Krama Alus (Guru)", icon: "🛍️" },
+        { id: "p5", a: "Ndeleng", b: "Mirsani", subA: "Tembung Ngoko", subB: "Krama Alus (Guru)", icon: "👀" },
+        { id: "p6", a: "Omah", b: "Dalem", subA: "Tembung Ngoko", subB: "Krama Alus (Guru)", icon: "🏠" },
+        { id: "p7", a: "Jeneng", b: "Asma", subA: "Tembung Ngoko", subB: "Krama Alus (Guru)", icon: "🏷️" },
+        { id: "p8", a: "Teka", b: "Rawuh", subA: "Tembung Ngoko", subB: "Krama Alus (Guru)", icon: "🚪" },
       ];
     } else if (id.includes("pandhawa") || raw.includes("pandhawa")) {
       rawPairs = [
