@@ -1743,6 +1743,158 @@ export default function AdaptiveEduGameModal({
 }, [chapter, activeValidatedModule, chapterTitle, resolvedTitle, currentModule]);
 
   // --------------------------------------------------------------------------
+  // ARAHAN & PENJELASAN MATERI AWAL DARI PAK GURU
+  // DINAMIS 100% SESUAI MATERI AKTIF YANG SEDANG DIMAINKAN OLEH SISWA
+  // --------------------------------------------------------------------------
+  const cleanTopicTitle = resolvedTitle || (isJawaTopic ? "Basa Jawa" : "Pendidikan Pancasila");
+
+  const guruBriefing = useMemo(() => {
+    const rawTitle = (resolvedTitle || currentModule?.title || chapter || "").toLowerCase();
+    const rawId = (chapter || currentModule?.id || "").toLowerCase();
+
+    // 1. Norma & Aturan
+    if (rawId.includes("norma") || rawTitle.includes("norma") || rawTitle.includes("aturan")) {
+      return {
+        subject: "Pendidikan Pancasila",
+        submateri: "4 Macam Norma & Aturan Masyarakat",
+        salam: "Halo anak-anak pintar! Selamat datang di Petualangan Desa Norma Nusantara.",
+        arahan: "Hari ini Pak Guru mengajak kalian mempelajari 4 macam norma penting: Norma Agama, Norma Kesusilaan, Norma Kesopanan, dan Norma Hukum. Aturan ditaati agar hidup kita tertib, aman, dan damai.",
+        misi: "Di sepanjang jalan desa ini, kunjungi 5 Pos Belajar untuk memahami contoh nyata norma dalam kehidupan sehari-hari, menjawab kuis pemahaman, dan mengumpulkan koin prestasi!",
+        speech: "Halo murid-murid hebat! Hari ini kita berpetualang mempelajari materi Norma dan Aturan Masyarakat. Di sepanjang jalan desa ini, kalian akan belajar empat macam norma yaitu Norma Agama, Norma Kesusilaan, Norma Kesopanan, dan Norma Hukum. Kunjungi kelima pos belajar, taati aturan, dan kumpulkan skor terbaikmu!",
+      };
+    }
+
+    // 2. Sila Ke-3 / Pancasila
+    if (rawId.includes("sila3") || rawId.includes("sila-3") || rawTitle.includes("sila 3") || rawTitle.includes("sila ke-3") || rawTitle.includes("persatuan")) {
+      return {
+        subject: "Pendidikan Pancasila",
+        submateri: "Pancasila Sila Ke-3: Persatuan Indonesia",
+        salam: "Halo penjelajah Pancasila cilik! Selamat datang di Desa Bhinneka Nusantara.",
+        arahan: "Hari ini Pak Guru mengajak kalian mengamalkan Sila Ke-3: 'Persatuan Indonesia' bersimbol Pohon Beringin. Kita belajar menjaga kerukunan, toleransi, cinta tanah air, dan persaudaraan sebangsa.",
+        misi: "Jelajahi 5 Pos Rumah Adat suku bangsa, pelajari keragaman budaya Nusantara, jawab kuis pengamalan sila ketiga, dan raih poin tertinggi!",
+        speech: "Halo penjelajah muda! Di petualangan ini kita belajar mengamalkan nilai luhur Pancasila Sila Ketiga, Persatuan Indonesia. Pohon beringin yang rindang menaungi keragaman suku bangsa kita. Kunjungi lima pos rumah adat dan amalkan nilai persatuan!",
+      };
+    }
+
+    // 3. Bhinneka Tunggal Ika
+    if (rawId.includes("bhinneka") || rawTitle.includes("bhinneka") || rawTitle.includes("keragaman")) {
+      return {
+        subject: "Pendidikan Pancasila",
+        submateri: "Semboyan Bhinneka Tunggal Ika & Kebudayaan",
+        salam: "Halo penjelajah budaya! Selamat datang di Desa Bhinneka Tunggal Ika.",
+        arahan: "Semboyan suci dari Kakawin Sutasoma karya Mpu Tantular mengajarkan bahwa walau berbeda-beda suku, adat, bahasa, dan agama, kita tetap satu kesatuan Indonesia yang rukun.",
+        misi: "Kalian akan singgah di rumah adat Joglo, Rumah Panggung Sunda, Rumah Gadang Minang, Rumah Betang Dayak, dan Honai Papua. Jawab kuis tiap pos untuk mengamalkannya!",
+        speech: "Selamat datang di Desa Budaya Bhinneka Tunggal Ika! Hari ini Pak Guru mengajak kalian mengenal kekayaan rumah adat, pakaian daerah, dan kesenian Nusantara dari Sabang sampai Merauke. Belajarlah saling menghargai perbedaan!",
+      };
+    }
+
+    // 4. Gotong Royong
+    if (rawId.includes("gotong") || rawTitle.includes("gotong") || rawTitle.includes("kerja sama")) {
+      return {
+        subject: "Pendidikan Pancasila",
+        submateri: "Semangat Gotong Royong & Kerja Sama",
+        salam: "Halo anak-anak tangguh! Selamat datang di Desa Gotong Royong Nusantara.",
+        arahan: "Gotong royong adalah warisan luhur nenek moyang bangsa. Seperti kata pepatah 'Berat sama dipikul, ringan sama dijinjing', pekerjaan yang berat akan terasa ringan jika dikerjakan bersama.",
+        misi: "Kunjungi 5 Pos Belajar tentang piket kelas, kerja bakti lingkungan RT, tolong-menolong musibah, dan solidaritas sosial!",
+        speech: "Halo anak-anak hebat! Hari ini kita belajar semangat gotong royong. Bersama-sama kita lebih kuat! Kunjungi lima pos belajar untuk memahami indahnya tolong-menolong dan kerja sama di sekolah dan masyarakat.",
+      };
+    }
+
+    // 5. Nasionalisme & Sumpah Pemuda
+    if (rawId.includes("nasionalisme") || rawTitle.includes("nasionalisme") || rawTitle.includes("pemuda") || rawTitle.includes("bangsa")) {
+      return {
+        subject: "Pendidikan Pancasila",
+        submateri: "Semangat Kebangsaan & Sumpah Pemuda 1928",
+        salam: "Halo para tunas bangsa! Selamat datang di Jalur Perjuangan Kebangsaan.",
+        arahan: "Hari ini kita belajar semangat persatuan pemuda dari Kongres Pemuda II 1928, sejarah lagu Indonesia Raya ciptaan W.R. Supratman, dan Sang Saka Merah Putih.",
+        misi: "Temukan 5 pos tonggak kebangsaan, pahami perjuangan para pahlawan kemerdekaan, dan jawab kuisnya!",
+        speech: "Halo para tunas bangsa! Hari ini Pak Guru mengajak kalian meneladani semangat persatuan para pemuda pejuang bangsa. Ikrar satu nusa, satu bangsa, dan satu bahasa Indonesia. Mari kita jelajahi lima pos kebangsaan!",
+      };
+    }
+
+    // 6. Basa Jawa: Aksara Jawa
+    if (rawId.includes("aksara") || rawTitle.includes("aksara")) {
+      return {
+        subject: "Basa Jawa",
+        submateri: "20 Aksara Jawa Legena Hanacaraka & Sandhangan Swara",
+        salam: "Sugeng rawuh para siswa ing Desa Kasusastran Aksara Jawa!",
+        arahan: "Dina iki Pak Guru ngajak kowe kabeh sinau 20 aksara Jawa legena (Ha-Na-Ca-Ra-Ka, Da-Ta-Sa-Wa-La, Pa-Dha-Ja-Ya-Nya, Ma-Ga-Ba-Tha-Nga) kang diciptakake dening Prabu Aji Saka kanggo ngurmati abdine Dora lan Sembada.",
+        misi: "Ing saben pos omah adat, kowe bakal nemoni aksara Jawa legena lan sandhangan swara wulu, suku, taling, pepet. Wangsulana pitakon kuis kanthi bener!",
+        speech: "Sugeng rawuh para siswa ing Desa Pasinaon Aksara Jawa! Dina iki awake dhewe bakal sinau rong puluh aksara Jawa Hanacaraka lan sandhangan swara. Ayo jelajahi saben pos lan tuntasake kuis aksara Jawa kanthi gembira!",
+      };
+    }
+
+    // 7. Basa Jawa: Punokawan
+    if (rawId.includes("punokawan") || rawTitle.includes("punokawan")) {
+      return {
+        subject: "Basa Jawa",
+        submateri: "Watak Luhur Wayang Punokawan (Semar, Gareng, Petruk, Bagong)",
+        salam: "Sugeng rawuh para siswa ing Padhepokan Wayang Punokawan!",
+        arahan: "Kanjeng Sunan Kalijaga nyampurnakake tokoh Punokawan minangka tuntunan budi pekerti luhur. Semar kang wicaksana, Gareng kang ngati-ati, Petruk kang loman lan seneng tetulung, sarta Bagong kang jujur apa anane.",
+        misi: "Kunjungi 5 Pos Padhepokan Punokawan, sinau watak luhur saben paraga, lan wangsulana kuis kanggo nglumpukake poin!",
+        speech: "Sugeng rawuh para siswa! Dina iki Pak Guru ngajak kowe kabeh sinau watak luhur para paraga wayang Punokawan: Semar, Gareng, Petruk, lan Bagong. Tirua watak andhap asor, guyub rukun, lan jujur ing saben pos desa iki!",
+      };
+    }
+
+    // 8. Basa Jawa: Pandhawa & Bharatayudha
+    if (rawId.includes("pandhawa") || rawTitle.includes("pandhawa") || rawTitle.includes("bharatayudha") || rawTitle.includes("baratayuda")) {
+      return {
+        subject: "Basa Jawa",
+        submateri: "Crita Kepahlawanan & Ksatria Pandhawa Lima",
+        salam: "Sugeng rawuh para siswa ing Ksatryan Pandhawa Lima!",
+        arahan: "Awake dhewe sinau kepahlawanan Pandhawa Lima (Puntadewa, Werkudara, Janaka, Nakula, Sadewa). Falsafah luhur 'Sura Dira Jayaningrat Lebur Dening Pangastuti' mulangake yen kabecikan mesthi ngalahake angkara murka.",
+        misi: "Jelajahi 5 pos ksatryan, pahami watak ksatria sejati kang jujur lan kukuh, sarta rampungake kuis materi!",
+        speech: "Sugeng rawuh ing Ksatryan Pandhawa! Dina iki kita sinau tuladha ksatria sejati kang jujur, kukuh bakuh, fokus sinau, lan guyub rukun. Kabecikan mesthi bakal menang nglawan angkara murka!",
+      };
+    }
+
+    // 9. Basa Jawa: Unggah-Ungguh Basa
+    if (rawId.includes("unggah") || rawTitle.includes("unggah") || rawTitle.includes("tata krama")) {
+      return {
+        subject: "Basa Jawa",
+        submateri: "Unggah-Ungguh Basa Jawa & Tata Krama Subasita",
+        salam: "Sugeng rawuh para siswa ing Bale Tata Krama Basa Jawa!",
+        arahan: "Basa Jawa ngemot piwulang subasita lan tata krama kang adiluhung. Kowe bakal sinau mbedakake Basa Ngoko Lugu marang kanca sapadha umur, sarta Basa Krama Alus marang bapak/ibu guru sarta wong tuwa.",
+        misi: "Ing 5 pos desa, gladhen tata krama lumaku (ndherek langkung), tembung krama nedha vs dhahar, lan budi pekerti luhur!",
+        speech: "Sugeng rawuh para siswa! Dina iki Pak Guru bakal mbimbing kowe kabeh sinau unggah-ungguh basa Jawa lan tata krama subasita marang tiyang sepuh lan bapak ibu guru. Ayo sinau kanthi trapsila!",
+      };
+    }
+
+    // 10. Basa Jawa: Geguritan
+    if (rawId.includes("geguritan") || rawTitle.includes("geguritan")) {
+      return {
+        subject: "Basa Jawa",
+        submateri: "Kaendahan Seni Puisi Jawa (Geguritan Gagrag Anyar)",
+        salam: "Sugeng rawuh para siswa ing Taman Kasusastran Geguritan!",
+        arahan: "Geguritan yaiku puisi Jawa gagrag anyar kang endah lan mardika, nggambarake rasa tresna marang alam pertiwi, pahlawan, guru, lan kabudayan luhur.",
+        misi: "Kunjungi 5 pos sastra kanggo nyinaoni wirama, wirasa, wiraga, lan wicara nalika maca geguritan!",
+        speech: "Sugeng rawuh ing Taman Geguritan Jawa! Pak Guru ngajak kowe kabeh ngresapi kaendahan tembung lan rasa ing geguritan Jawa. Ayo jelajahi saben pos desa iki!",
+      };
+    }
+
+    // Fallback Dinamis (misal modul baru yang divalidasi guru)
+    const dynamicDesc = currentModule?.ragSummary?.[0] || (currentModule as any)?.description;
+    const isJawa = isJawaTopic;
+    return {
+      subject: isJawa ? "Basa Jawa" : "Pendidikan Pancasila",
+      submateri: cleanTopicTitle,
+      salam: isJawa ? `Sugeng rawuh para siswa ing Desa Pasinaon ${cleanTopicTitle}!` : `Halo murid hebat! Selamat datang di petualangan edukasi materi ${cleanTopicTitle}.`,
+      arahan: dynamicDesc || (isJawa
+        ? `Ing petualangan iki awake dhewe bakal nyinaoni intisari materi ${cleanTopicTitle} kanthi trapsila lan gembira.`
+        : `Hari ini Pak Guru mengajak kalian menjelajahi dan mengamalkan nilai-nilai penting dalam materi ${cleanTopicTitle}.`),
+      misi: "Kunjungi 5 Pos Belajar yang ada di desa, pahami materinya, jawab kuis untuk mengumpulkan skor game, dan sapa teman sekelasmu!",
+      speech: isJawa
+        ? `Sugeng rawuh para siswa! Dina iki awake dhewe bakal sinau materi ${cleanTopicTitle}. Kunjungi limang pos belajar ing desa iki lan wangsulana kuis kanthi bener!`
+        : `Halo murid-murid hebat! Selamat datang di petualangan materi ${cleanTopicTitle}. Pak Guru sudah menyiapkan lima pos belajar untuk kalian jelajahi. Kumpulkan koin dan jawab kuisnya!`,
+    };
+  }, [resolvedTitle, currentModule, chapter, isJawaTopic, cleanTopicTitle]);
+
+  const posVoiceList = sukuList
+    .slice(0, 5)
+    .map((p, i) => `Pos ${i + 1} ${p.subMateri || p.namaPos}`)
+    .join(", ");
+
+  // --------------------------------------------------------------------------
   // SISWA ONLINE (KOSTUM BERBEDA DENGAN MODEL ANATOMI SERAGAM)
   // --------------------------------------------------------------------------
   const [onlineStudents, setOnlineStudents] = useState<OnlineStudent[]>([
@@ -3135,11 +3287,8 @@ export default function AdaptiveEduGameModal({
           setShowGuruDialog(true);
           setHasTalkedToGuru(true);
           setGuruTab("apa_itu");
-          // Otomatis bunyikan voice Pak Guru pertama kali
-          const welcomeVoice = isJawaTopic
-            ? `Sugeng rawuh ing Desa Pasinaon Basa Jawa! Ayo sinau materi '${resolvedTitle}' kanthi trapsila lan gembira.`
-            : `Halo Penjelajah Muda! Selamat datang di petualangan edukasi materi: ${resolvedTitle}. Kunjungi 5 pos belajar untuk mengamalkan intisari materinya dan kumpulkan koin emas!`;
-          speakGuruVoice(welcomeVoice);
+          // Otomatis bunyikan voice Pak Guru pertama kali sesuai materi aktif
+          speakGuruVoice(guruBriefing.speech);
           return;
         }
 
@@ -3205,19 +3354,8 @@ export default function AdaptiveEduGameModal({
     handleGreetClassmate,
     speakGuruVoice,
     stopGuruVoice,
+    guruBriefing,
   ]);
-
-  const cleanTopicTitle = resolvedTitle || (isJawaTopic ? "Basa Jawa" : "Pendidikan Pancasila");
-  const topicIntroText =
-    currentModule?.ragSummary?.[0] ||
-    (isJawaTopic
-      ? `Materi ${cleanTopicTitle} mulangake subasita, tata krama, lan unggah-ungguh basa marang tiyang sepuh sarta guru minangka piwulang kabudayan Jawa.`
-      : `Materi ${cleanTopicTitle} menuntun kita memahami dan mengamalkan nilai budi pekerti, disiplin, toleransi, dan persatuan dalam kehidupan sehari-hari.`);
-
-  const posVoiceList = sukuList
-    .slice(0, 5)
-    .map((p, i) => `Pos ${i + 1} ${p.subMateri || p.namaPos}`)
-    .join(", ");
 
   if (!isOpen) return null;
 
@@ -3429,42 +3567,117 @@ export default function AdaptiveEduGameModal({
                 </div>
               )}
 
-              {/* OVERLAY AWAL MULAI MAIN */}
+              {/* OVERLAY AWAL MULAI MAIN: BRIEFING & ARAHAN LANGSUNG PAK GURU SESUAI MATERI AKTIF */}
               {!gameStarted && (
-                <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-5 animate-in fade-in">
-                  <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-yellow-400 via-amber-500 to-orange-500 flex items-center justify-center text-5xl shadow-2xl border-4 border-white animate-bounce">
-                    🎒
-                  </div>
-                  <div className="space-y-2 max-w-lg">
-                    <h3 className="font-black text-2xl sm:text-3xl text-yellow-300 tracking-wide">
-                      AYO MASUK KE DESA NUSANTARA! 🇮🇩
-                    </h3>
-                    <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-                      Teman-teman sekelasmu sudah online! Di awalan ada <b>Papan Skor Kelas</b> dan <b>Pak Guru Virtual</b> yang siap membimbingmu lewat suara. Kumpulkan koin dan selesaikan tantangan di 5 Pos Rumah Adat!
-                    </p>
-                    <div className="bg-slate-900/90 p-3.5 rounded-2xl border border-yellow-400/40 text-xs text-yellow-200 flex flex-wrap items-center justify-center gap-3">
+                <div className="absolute inset-0 z-40 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center p-4 sm:p-6 text-center animate-in fade-in overflow-y-auto">
+                  <div className="max-w-2xl w-full bg-slate-900/95 border-3 border-yellow-400/80 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 text-white my-auto">
+                    {/* Header Arahan Pak Guru */}
+                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 border-b border-slate-700/80 pb-4 text-center sm:text-left">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-amber-400 via-orange-500 to-yellow-400 flex items-center justify-center text-3xl sm:text-4xl shadow-xl shrink-0 ring-4 ring-yellow-400/40">
+                        👨‍🏫
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
+                          <span className="text-[10px] font-black uppercase tracking-wider bg-yellow-400 text-slate-950 px-2.5 py-0.5 rounded-md shadow-xs">
+                            {guruBriefing.subject}
+                          </span>
+                          <span className="text-[10px] font-extrabold uppercase bg-sky-500/30 text-sky-300 border border-sky-400/40 px-2.5 py-0.5 rounded-md">
+                            Materi Aktif Sedang Dimainkan 🎮
+                          </span>
+                        </div>
+                        <h3 className="font-black text-lg sm:text-2xl text-yellow-300 leading-tight">
+                          Arahan Awal Pak Guru: {guruBriefing.submateri}
+                        </h3>
+                        <p className="text-xs text-slate-300 font-semibold mt-1">
+                          {guruBriefing.salam}
+                        </p>
+                      </div>
+
+                      {/* Tombol Dengar Arahan Suara Pak Guru */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (isGuruSpeaking) {
+                            stopGuruVoice();
+                          } else {
+                            speakGuruVoice(guruBriefing.speech);
+                          }
+                        }}
+                        className={`px-3.5 py-2 rounded-2xl text-xs font-black transition flex items-center justify-center gap-2 cursor-pointer shadow-md shrink-0 ${
+                          isGuruSpeaking
+                            ? "bg-rose-600 text-white animate-pulse"
+                            : "bg-sky-500 hover:bg-sky-600 active:scale-95 text-white"
+                        }`}
+                      >
+                        <span>{isGuruSpeaking ? "⏹️ Hentikan Suara" : "🔊 Dengarkan Arahan"}</span>
+                      </button>
+                    </div>
+
+                    {/* Isi Arahan Materi & Misi Petualangan */}
+                    <div className="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/80 text-left space-y-2.5 text-xs sm:text-sm">
+                      <div>
+                        <span className="text-yellow-300 font-black text-xs block mb-1">
+                          📖 Penjelasan Materi dari Pak Guru:
+                        </span>
+                        <p className="text-slate-200 leading-relaxed font-medium">
+                          {guruBriefing.arahan}
+                        </p>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-700/60">
+                        <span className="text-emerald-300 font-black text-xs block mb-1.5">
+                          📍 5 Pos Belajar yang Harus Kamu Kunjungi di Desa:
+                        </span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                          {sukuList.slice(0, 5).map((pos, idx) => (
+                            <div key={`pos-intro-${pos.id}`} className="p-2 rounded-xl bg-slate-900/60 border border-slate-700/60 flex items-center gap-2">
+                              <span className="w-6 h-6 rounded-lg bg-yellow-400/20 text-yellow-300 font-black flex items-center justify-center text-xs shrink-0">
+                                {idx + 1}
+                              </span>
+                              <div className="min-w-0">
+                                <span className="font-bold text-slate-200 block truncate">
+                                  {pos.subMateri || pos.namaPos}
+                                </span>
+                                <span className="text-[10px] text-slate-400 block truncate">
+                                  {pos.namaPos}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Panduan Tombol Kontrol Permainan */}
+                    <div className="bg-slate-950/60 p-3 rounded-2xl border border-slate-800 text-xs text-yellow-200 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
                       <span>🎮 <b>WASD / Panah</b>: Jalan</span>
                       <span>•</span>
                       <span>🟡 <b>Spasi</b>: Lompat</span>
                       <span>•</span>
                       <span>⚡ <b>Shift</b>: Sprint Lari</span>
                       <span>•</span>
-                      <span>🎯 <b>E</b>: Interaksi / Kuis Pos</span>
+                      <span>🎯 <b>E</b>: Kuis Pos (+25 Poin)</span>
                       <span>•</span>
-                      <span>👋 <b>Q</b>: Sapa / Dadah Teman</span>
+                      <span>🪙 <b>Koin Emas</b> (+5 Poin)</span>
+                      <span>•</span>
+                      <span>👋 <b>Q</b>: Sapa Teman</span>
                     </div>
+
+                    {/* Tombol Mulai Petualangan */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        playClickSound();
+                        stopGuruVoice();
+                        setGameStarted(true);
+                        startAdventureBgm();
+                      }}
+                      className="w-full bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-sm sm:text-base py-3.5 px-6 rounded-2xl shadow-xl hover:scale-[1.02] active:scale-95 transition border-2 border-white/60 flex items-center justify-center gap-2.5 cursor-pointer"
+                    >
+                      <span>🚀</span>
+                      <span>SIAP PAK GURU, MULAI PETUALANGAN (DENGAN MUSIK 🎵)</span>
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      playClickSound();
-                      setGameStarted(true);
-                      startAdventureBgm();
-                    }}
-                    className="bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-base sm:text-lg py-4 px-10 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition border-4 border-white flex items-center gap-3 cursor-pointer"
-                  >
-                    <span>▶️ MULAI MASUK DESA (DENGAN MUSIK 🎵)</span>
-                  </button>
                 </div>
               )}
 
@@ -3494,7 +3707,7 @@ export default function AdaptiveEduGameModal({
                             Pak Guru Virtual
                           </h3>
                           <p className="text-xs text-slate-300">
-                            Pemandu Materi & Petualangan Siswa
+                            Pemandu Materi {guruBriefing.submateri}
                           </p>
                         </div>
                       </div>
@@ -3505,32 +3718,18 @@ export default function AdaptiveEduGameModal({
                             if (isGuruSpeaking) {
                               stopGuruVoice();
                             } else {
-                              if (isJawaTopic) {
-                                if (guruTab === "apa_itu") {
-                                  speakGuruVoice(
-                                    "Materi Basa Jawa ngemot piwulang luhur babagan unggah-ungguh, tata krama, aksara Jawa, lan watak pewayangan Punokawan sarta Pandhawa minangka paugeran urip kang becik."
-                                  );
-                                } else if (guruTab === "makna_sila") {
-                                  speakGuruVoice(
-                                    "Piwulang Utama: Aksara Jawa kanggo nguri-uri kabudayan, Punokawan mulangake guyub rukun lan andhap asor, sarta unggah-ungguh basa kanggo ngurmati sesama."
-                                  );
-                                } else {
-                                  speakGuruVoice(
-                                    "Cara main: Kowe bisa mlaku ing Desa Nusantara nganggo WASD, njawab kuis ing 5 pos, utawa nyoba game teka-teki njodohake kertu aksara lan wayang ing tab ndhuwur!"
-                                  );
-                                }
+                              if (guruTab === "apa_itu") {
+                                speakGuruVoice(guruBriefing.speech);
+                              } else if (guruTab === "makna_sila") {
+                                speakGuruVoice(
+                                  `Intisari 5 Pos Materi ${guruBriefing.submateri}: ${posVoiceList}. Selesaikan kuis di setiap pos untuk mengamalkannya!`
+                                );
                               } else {
-                                if (guruTab === "apa_itu") {
-                                  speakGuruVoice(topicIntroText);
-                                } else if (guruTab === "makna_sila") {
-                                  speakGuruVoice(
-                                    `Intisari 5 Pos Materi ${cleanTopicTitle}: ${posVoiceList}. Selesaikan misi di setiap pos untuk mengamalkannya!`
-                                  );
-                                } else {
-                                  speakGuruVoice(
-                                    "Cara mainnya mudah: jalan dengan WASD atau panah, ambil koin emas di jalan, kunjungi 5 pos di kiri dan kanan jalan lalu tekan E untuk menjawab kuis dan sapa teman sekelasmu!"
-                                  );
-                                }
+                                speakGuruVoice(
+                                  isJawaTopic
+                                    ? "Cara main: Kowe bisa mlaku ing Desa Nusantara nganggo WASD, njupuk koin emas, lan nekani 5 pos omah adat banjur pencet E kanggo mangsuli kuis materi!"
+                                    : "Cara mainnya mudah: jalan dengan tombol WASD atau panah, ambil koin emas di jalan, kunjungi 5 pos rumah adat lalu tekan E untuk menjawab kuis dan sapa teman sekelasmu!"
+                                );
                               }
                             }
                           }}
@@ -3551,7 +3750,7 @@ export default function AdaptiveEduGameModal({
                         type="button"
                         onClick={() => {
                           setGuruTab("apa_itu");
-                          speakGuruVoice(topicIntroText);
+                          speakGuruVoice(guruBriefing.speech);
                         }}
                         className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
                           guruTab === "apa_itu"
@@ -3559,22 +3758,18 @@ export default function AdaptiveEduGameModal({
                             : "text-slate-300 hover:text-white"
                         }`}
                       >
-                        {isJawaTopic ? "📖 Piwulang Basa Jawa" : `📖 Apa Itu ${cleanTopicTitle.length > 18 ? cleanTopicTitle.slice(0, 16) + "..." : cleanTopicTitle}?`}
+                        {isJawaTopic
+                          ? `📖 Piwulang ${guruBriefing.submateri.length > 14 ? guruBriefing.submateri.slice(0, 12) + "..." : guruBriefing.submateri}`
+                          : `📖 Apa Itu ${guruBriefing.submateri.length > 18 ? guruBriefing.submateri.slice(0, 16) + "..." : guruBriefing.submateri}?`}
                       </button>
 
                       <button
                         type="button"
                         onClick={() => {
                           setGuruTab("makna_sila");
-                          if (isJawaTopic) {
-                            speakGuruVoice(
-                              "Piwulang Utama: Aksara Jawa kanggo nguri-uri kabudayan, Punokawan mulangake guyub rukun lan andhap asor, sarta unggah-ungguh basa kanggo ngurmati sesama."
-                            );
-                          } else {
-                            speakGuruVoice(
-                              `Intisari 5 Pos Materi ${cleanTopicTitle}: ${posVoiceList}.`
-                            );
-                          }
+                          speakGuruVoice(
+                            `Intisari 5 Pos Materi ${guruBriefing.submateri}: ${posVoiceList}.`
+                          );
                         }}
                         className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
                           guruTab === "makna_sila"
@@ -3582,7 +3777,7 @@ export default function AdaptiveEduGameModal({
                             : "text-slate-300 hover:text-white"
                         }`}
                       >
-                        {isJawaTopic ? "⭐ Titikan & Piwulang" : "⭐ 5 Intisari Pos Materi"}
+                        {isJawaTopic ? "⭐ 5 Intisari Pos" : "⭐ 5 Intisari Pos Materi"}
                       </button>
 
                       <button
@@ -3607,10 +3802,13 @@ export default function AdaptiveEduGameModal({
                     <div className="bg-slate-800/90 p-4 rounded-2xl border border-slate-700 text-xs sm:text-sm leading-relaxed text-slate-200 space-y-2">
                       {guruTab === "apa_itu" && (
                         <div className="space-y-2">
-                          <b className="text-yellow-300 block">
-                            {isJawaTopic ? "Piwulang Luhur Kabudayan Jawa:" : `Intisari Pembelajaran: ${cleanTopicTitle}`}
+                          <b className="text-yellow-300 block text-xs sm:text-sm">
+                            {isJawaTopic ? "Piwulang Luhur:" : "Intisari Pembelajaran:"} {guruBriefing.submateri}
                           </b>
-                          <p>{topicIntroText}</p>
+                          <p className="text-slate-200 leading-relaxed font-medium">{guruBriefing.arahan}</p>
+                          <div className="pt-2 border-t border-slate-700/60 text-emerald-300 text-xs font-semibold">
+                            🎯 Misi Kamu: {guruBriefing.misi}
+                          </div>
                         </div>
                       )}
 
@@ -3643,6 +3841,7 @@ export default function AdaptiveEduGameModal({
                         </div>
                       )}
                     </div>
+
 
                     <div className="flex justify-between items-center pt-2">
                       <span className="text-[11px] text-slate-400">
