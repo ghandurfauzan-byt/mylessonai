@@ -59,12 +59,14 @@ export default function AiContentPanel({
   ]);
 
   const [isPlaying, setIsPlaying] = useState(false);
+  const [selectedTimelineIndex, setSelectedTimelineIndex] = useState<number | null>(null);
 
   // Membersihkan suara jika berganti bab/mode atau komponen di-unmount
   useEffect(() => {
     return () => {
       stopSpeaking();
       setIsPlaying(false);
+      setSelectedTimelineIndex(null);
     };
   }, [chapterId, mode]);
 
@@ -784,6 +786,195 @@ export default function AiContentPanel({
         );
       })()}
 
+      {/* Visual Interaktif: Linimasa Sejarah & Kronologi Peristiwa Bangsa / Kebudayaan */}
+      {(() => {
+        const hasHistory = content.body.some((p) => {
+          const l = p.toLowerCase();
+          return (
+            l.includes("sejarah") ||
+            l.includes("kronologi") ||
+            l.includes("asal-usul") ||
+            l.includes("legenda") ||
+            l.includes("majapahit") ||
+            l.includes("bpupki") ||
+            l.includes("sumpah pemuda")
+          );
+        });
+
+        if (!hasHistory) return null;
+
+        const milestones = [
+          {
+            year: "Abad XIV (1365)",
+            era: "Kerajaan Majapahit",
+            title: "Kakawin Sutasoma & Bhinneka Tunggal Ika",
+            desc: "Pujangga Mpu Tantular menulis bait suci dalam Kakawin Sutasoma: 'Bhinneka Tunggal Ika tan hana dharma mangrwa' sebagai pedoman kerukunan bangsa di era Prabu Hayam Wuruk dan Mahapatih Gajah Mada.",
+            icon: "📜",
+            color: "from-amber-500 to-yellow-600",
+            speech: "Abad ke-14 pada era Kerajaan Majapahit. Pujangga Mpu Tantular menulis Kakawin Sutasoma yang melahirkan semboyan suci Bhinneka Tunggal Ika."
+          },
+          {
+            year: "Abad XV-XVI",
+            era: "Kasultanan Demak",
+            title: "Sunan Kalijaga & Wayang Punokawan",
+            desc: "Kanjeng Sunan Kalijaga menyempurnakan 4 tokoh Punokawan (Semar, Gareng, Petruk, Bagong) sebagai media dakwah Islam dan tuntunan watak budi pekerti luhur bagi rakyat dan para ksatria.",
+            icon: "🎭",
+            color: "from-orange-500 to-amber-600",
+            speech: "Abad ke-15 hingga 16 di Kasultanan Demak. Kanjeng Sunan Kalijaga menciptakan tokoh Punokawan sebagai tuntunan akhlak luhur masyarakat Nusantara."
+          },
+          {
+            year: "Legenda Jawa",
+            era: "Medang Kamulan",
+            title: "Aji Saka & 20 Aksara Jawa Hanacaraka",
+            desc: "Prabu Aji Saka menciptakan 20 aksara Jawa legena untuk mengabadikan kesetiaan abdinya, Dora dan Sembada, yang gugur membela amanah keris pusaka di Gunung Kendeng.",
+            icon: "✍️",
+            color: "from-yellow-600 to-amber-700",
+            speech: "Legenda Medang Kamulan Tanah Jawa. Prabu Aji Saka menciptakan 20 aksara Jawa untuk mengenang kesetiaan Dora dan Sembada."
+          },
+          {
+            year: "28 Okt 1928",
+            era: "Gedung Kramat 106",
+            title: "Kongres Pemuda II & Sumpah Pemuda",
+            desc: "Para pemuda pelajar dari Jong Java, Sumatra, Batak, Celebes, Ambon, dan Betawi mengikrarkan Sumpah Pemuda dan pertama kali mendengarkan alunan biola lagu Indonesia Raya ciptaan W.R. Supratman.",
+            icon: "🎻",
+            color: "from-emerald-600 to-teal-700",
+            speech: "28 Oktober 1928 di Gedung Kramat 106 Jakarta. Kongres Pemuda II melahirkan ikrar Sumpah Pemuda dan lagu kebangsaan Indonesia Raya ciptaan Wage Rudolf Supratman."
+          },
+          {
+            year: "1 Juni 1945",
+            era: "Sidang BPUPKI",
+            title: "Pidato Bung Karno & Lahir Pancasila",
+            desc: "Dalam sidang BPUPKI di Gedung Chuo Sangi In, Ir. Soekarno berpidato membakar semangat tanpa teks mengusulkan lima prinsip dasar falsafah negara yang dinamai Pancasila.",
+            icon: "⭐",
+            color: "from-rose-500 to-red-600",
+            speech: "1 Juni 1945 dalam sidang BPUPKI. Bung Karno berpidato dengan penuh semangat mencetuskan falsafah dasar negara Pancasila."
+          },
+          {
+            year: "17-18 Ags 1945",
+            era: "Proklamasi & PPKI",
+            title: "Kemerdekaan RI & Pengesahan UUD",
+            desc: "Sang Saka Merah Putih dijahit tangan oleh Ibu Fatmawati berkibar saat proklamasi. Keesokan harinya sidang PPKI 18 Agustus mengesahkan UUD 1945 dan menetapkan Pancasila sebagai Dasar Negara.",
+            icon: "🇮🇩",
+            color: "from-red-600 to-rose-700",
+            speech: "17 dan 18 Agustus 1945. Proklamasi Kemerdekaan RI dengan bendera jahitan tangan Ibu Fatmawati serta pengesahan UUD 1945 dan Pancasila oleh PPKI."
+          },
+          {
+            year: "11 Feb 1950",
+            era: "Kabinet RIS",
+            title: "Peresmian Lambang Garuda Pancasila",
+            desc: "Dirancang oleh Sultan Hamid II dari Pontianak dan disempurnakan langsung Bung Karno dengan menambahkan jambul gagah serta pita semboyan Bhinneka Tunggal Ika yang dicengkeram di depan kedua kaki garuda.",
+            icon: "🦅",
+            color: "from-amber-600 to-yellow-600",
+            speech: "11 Februari 1950. Peresmian Lambang Garuda Pancasila rancangan Sultan Hamid II yang disempurnakan Presiden Soekarno."
+          }
+        ];
+
+        return (
+          <div className="bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-yellow-500/15 dark:from-amber-950/40 dark:to-slate-900 border-3 border-amber-400 dark:border-amber-600 rounded-3xl p-4 sm:p-5 space-y-4 shadow-lg shadow-amber-500/10">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-300 dark:border-amber-800 pb-3">
+              <div>
+                <h3 className="text-base sm:text-lg font-black text-amber-950 dark:text-amber-200 flex items-center gap-2">
+                  <span>🏛️</span>
+                  <span>Linimasa Sejarah &amp; Kronologi Peristiwa Bangsa / Sastra</span>
+                </h3>
+                <p className="text-xs font-bold text-amber-800 dark:text-amber-400">
+                  Klik tiap tonggak peristiwa untuk mendengarkan alur sejarahnya secara runtut! 🎧
+                </p>
+              </div>
+              <span className="text-[11px] font-black bg-amber-400 text-amber-950 px-3 py-1 rounded-full self-start sm:self-auto shadow-xs">
+                Linimasa Bersejarah
+              </span>
+            </div>
+
+            {/* Horizontal Timeline Bar */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+              {milestones.map((m, mIdx) => {
+                const isSelected = selectedTimelineIndex === mIdx;
+                return (
+                  <button
+                    key={m.title}
+                    type="button"
+                    onClick={() => {
+                      playClickSound();
+                      setSelectedTimelineIndex(isSelected ? null : mIdx);
+                      startSpeaking({
+                        text: `${m.title}. ${m.desc}`,
+                        rate: 0.92,
+                        pitch: 1.05,
+                      });
+                    }}
+                    className={`p-2.5 rounded-2xl border-2 text-left transition-all hover:scale-103 active:scale-95 cursor-pointer shadow-xs flex flex-col justify-between ${
+                      isSelected
+                        ? "bg-amber-100 dark:bg-amber-900/60 border-amber-500 dark:border-amber-400 ring-2 ring-amber-400"
+                        : "bg-white/90 dark:bg-slate-800/90 border-amber-200 dark:border-amber-800/60 hover:bg-amber-50/80"
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between text-lg mb-1">
+                        <span>{m.icon}</span>
+                        <span className="text-[9px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-300 bg-amber-200/60 dark:bg-slate-700 px-1.5 py-0.5 rounded-md">
+                          {m.year}
+                        </span>
+                      </div>
+                      <div className="text-[11px] font-black text-slate-900 dark:text-slate-100 line-clamp-2 leading-tight">
+                        {m.title}
+                      </div>
+                    </div>
+                    <div className="text-[10px] text-amber-800 dark:text-amber-400 font-semibold mt-1.5 flex items-center gap-1">
+                      <span>🔊</span>
+                      <span>Dengar</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Detail Expandable Card if Selected */}
+            {(() => {
+              const activeMilestone =
+                selectedTimelineIndex !== null ? milestones[selectedTimelineIndex] : null;
+              if (!activeMilestone) return null;
+
+              return (
+                <div className="bg-white/95 dark:bg-slate-800/95 p-4 rounded-2xl border-2 border-amber-400 dark:border-amber-600 shadow-md space-y-2 animate-in fade-in zoom-in-95 duration-200">
+                  <div className="flex items-center justify-between border-b border-amber-200 dark:border-amber-800 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{activeMilestone.icon}</span>
+                      <div>
+                        <span className="text-[10px] font-extrabold uppercase bg-amber-100 text-amber-900 dark:bg-amber-900 dark:text-amber-200 px-2 py-0.5 rounded-md">
+                          {activeMilestone.era} • {activeMilestone.year}
+                        </span>
+                        <h4 className="font-black text-sm sm:text-base text-amber-950 dark:text-amber-100">
+                          {activeMilestone.title}
+                        </h4>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        playClickSound();
+                        startSpeaking({
+                          text: activeMilestone.desc,
+                          rate: 0.92,
+                          pitch: 1.05,
+                        });
+                      }}
+                      className="px-3 py-1 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-black text-xs flex items-center gap-1 cursor-pointer transition shadow-xs"
+                    >
+                      <span>🔊</span>
+                      <span>Ulangi Suara</span>
+                    </button>
+                  </div>
+                  <p className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 leading-relaxed">
+                    {activeMilestone.desc}
+                  </p>
+                </div>
+              );
+            })()}
+          </div>
+        );
+      })()}
+
       {/* Main Content Body */}
       <div className="space-y-3 text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-medium">
         {content.body.map((paragraph, idx) => {
@@ -795,12 +986,24 @@ export default function AiContentPanel({
           const prefix = rawPrefix ? stripEmojis(rawPrefix) : null;
           const bodyText = cleanChildFriendlyBody(rawBody);
 
+          // Kartu sejarah lengkap dideteksi dari kata kunci sejarah / riwayat / asal-usul
+          const isHistoryCard = Boolean(
+            prefix &&
+              (prefix.toLowerCase().includes("sejarah") ||
+                prefix.toLowerCase().includes("asal-usul") ||
+                prefix.toLowerCase().includes("asal usul") ||
+                prefix.toLowerCase().includes("riwayat") ||
+                prefix.toLowerCase().includes("kronologi") ||
+                prefix.toLowerCase().includes("legenda"))
+          );
+
           // Kartu pertama / Pengertian dibuat menonjol sebagai dasar pemahaman
           const isDefinitionCard =
-            idx === 0 ||
-            (prefix && prefix.toLowerCase().includes("pengertian")) ||
-            (prefix && prefix.toLowerCase().includes("pangertosan")) ||
-            (prefix && prefix.toLowerCase().includes("arti kata"));
+            !isHistoryCard &&
+            (idx === 0 ||
+              (prefix && prefix.toLowerCase().includes("pengertian")) ||
+              (prefix && prefix.toLowerCase().includes("pangertosan")) ||
+              (prefix && prefix.toLowerCase().includes("arti kata")));
 
           const colors = [
             "bg-blue-50/95 dark:bg-blue-950/40 border-blue-400 dark:border-blue-700 text-blue-950 dark:text-blue-100",
@@ -810,7 +1013,10 @@ export default function AiContentPanel({
             "bg-pink-50/90 dark:bg-pink-950/35 border-pink-300 dark:border-pink-700/60 text-pink-950 dark:text-pink-100",
             "bg-emerald-50/90 dark:bg-emerald-950/35 border-emerald-300 dark:border-emerald-700/60 text-emerald-950 dark:text-emerald-100",
           ];
-          const style = isDefinitionCard
+
+          const style = isHistoryCard
+            ? "bg-gradient-to-br from-amber-50 via-orange-50/70 to-yellow-50/90 dark:from-amber-950/45 dark:via-orange-950/35 dark:to-slate-800 border-amber-400 dark:border-amber-600 shadow-md ring-2 ring-amber-300/40 dark:ring-amber-700/40"
+            : isDefinitionCard
             ? "bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-50 dark:from-slate-800 dark:via-blue-950/40 dark:to-slate-800 border-blue-400 dark:border-blue-600 shadow-md ring-2 ring-blue-300/40 dark:ring-blue-800/40"
             : colors[idx % colors.length];
 
@@ -821,15 +1027,41 @@ export default function AiContentPanel({
             >
               {prefix ? (
                 <div className="space-y-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    {isDefinitionCard && (
-                      <span className="inline-flex items-center whitespace-nowrap text-[11px] font-extrabold bg-blue-600 text-white px-3 py-1 rounded-lg shadow-xs tracking-wide">
-                        Pengertian Dasar
-                      </span>
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/5 dark:border-white/5 pb-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {isHistoryCard ? (
+                        <span className="inline-flex items-center gap-1 whitespace-nowrap text-[11px] font-extrabold bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1 rounded-lg shadow-xs tracking-wide">
+                          <span>🏛️</span>
+                          <span>Sejarah Lengkap &amp; Kronologi</span>
+                        </span>
+                      ) : isDefinitionCard ? (
+                        <span className="inline-flex items-center whitespace-nowrap text-[11px] font-extrabold bg-blue-600 text-white px-3 py-1 rounded-lg shadow-xs tracking-wide">
+                          Pengertian Dasar
+                        </span>
+                      ) : null}
+                      <h4 className="font-black text-sm sm:text-base text-slate-900 dark:text-white">
+                        {prefix}
+                      </h4>
+                    </div>
+
+                    {isHistoryCard && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          playClickSound();
+                          startSpeaking({
+                            text: `${prefix}. ${bodyText}`,
+                            rate: 0.92,
+                            pitch: 1.05,
+                          });
+                        }}
+                        className="px-2.5 py-1 rounded-full bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white font-black text-[11px] flex items-center gap-1.5 cursor-pointer transition hover:scale-105 active:scale-95 shadow-xs"
+                        title="Dengarkan narasi kisah sejarah ini"
+                      >
+                        <span>🔊</span>
+                        <span>Dengarkan Kisah Ini</span>
+                      </button>
                     )}
-                    <h4 className="font-black text-sm sm:text-base text-slate-900 dark:text-white">
-                      {prefix}
-                    </h4>
                   </div>
                   <p className="leading-relaxed whitespace-pre-wrap text-xs sm:text-sm font-semibold opacity-95">
                     {bodyText}
