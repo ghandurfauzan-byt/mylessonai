@@ -982,6 +982,7 @@ export default function AdaptiveEduGameModal({
     label: string;
     sukuData?: PosTematik;
     isGuru?: boolean;
+    isBoard?: boolean;
     studentData?: OnlineStudent;
   }
   const [nearHotspot, setNearHotspot] = useState<HotspotItem | null>(null);
@@ -1286,9 +1287,10 @@ export default function AdaptiveEduGameModal({
     gateGroup.add(gateSignFront);
     scene.add(gateGroup);
 
-    // 5. PAK GURU VIRTUAL DI SAMPING GAPURA
+    // 5. PAK GURU VIRTUAL DI DEPAN SAMPING KANAN GAPURA
     const guruGroup = new THREE.Group();
-    guruGroup.position.set(7.5, 0, 14);
+    guruGroup.position.set(6.8, 0, 21);
+    guruGroup.rotation.y = -0.22;
 
     const guruPedestal = new THREE.Mesh(
       new THREE.CylinderGeometry(2.4, 2.7, 0.35, 24),
@@ -1359,53 +1361,82 @@ export default function AdaptiveEduGameModal({
     guruGroup.add(guruLabelMesh);
     scene.add(guruGroup);
 
-    // 6. PAPAN SKOR / LEADERBOARD AWAL DI SAMPING KIRI GAPURA
+    // 6. PAPAN SKOR & DAFTAR SISWA MASUK DI DEPAN SAMPING KIRI GAPURA
     const boardGroup = new THREE.Group();
-    boardGroup.position.set(-8.5, 0, 14);
+    boardGroup.position.set(-6.8, 0, 21);
+    boardGroup.rotation.y = 0.22;
 
-    const bPost1 = new THREE.Mesh(new THREE.BoxGeometry(0.3, 4, 0.3), new THREE.MeshLambertMaterial({ color: "#78350f" }));
-    bPost1.position.set(-1.8, 2, 0);
+    const bPost1 = new THREE.Mesh(new THREE.BoxGeometry(0.32, 4.4, 0.32), new THREE.MeshLambertMaterial({ color: "#78350f" }));
+    bPost1.position.set(-2.0, 2.2, 0);
     boardGroup.add(bPost1);
 
-    const bPost2 = new THREE.Mesh(new THREE.BoxGeometry(0.3, 4, 0.3), new THREE.MeshLambertMaterial({ color: "#78350f" }));
-    bPost2.position.set(1.8, 2, 0);
+    const bPost2 = new THREE.Mesh(new THREE.BoxGeometry(0.32, 4.4, 0.32), new THREE.MeshLambertMaterial({ color: "#78350f" }));
+    bPost2.position.set(2.0, 2.2, 0);
     boardGroup.add(bPost2);
 
     const boardCanvas = document.createElement("canvas");
-    boardCanvas.width = 512;
-    boardCanvas.height = 512;
+    boardCanvas.width = 1024;
+    boardCanvas.height = 1024;
     const bctx = boardCanvas.getContext("2d");
     if (bctx) {
       bctx.fillStyle = "#0f172a";
-      bctx.fillRect(0, 0, 512, 512);
+      bctx.fillRect(0, 0, 1024, 1024);
       bctx.strokeStyle = "#eab308";
-      bctx.lineWidth = 12;
-      bctx.strokeRect(10, 10, 492, 492);
+      bctx.lineWidth = 18;
+      bctx.strokeRect(12, 12, 1000, 1000);
 
-      bctx.fillStyle = "#facc15";
-      bctx.font = "bold 32px sans-serif";
+      bctx.fillStyle = "#eab308";
+      bctx.fillRect(16, 16, 992, 140);
+      bctx.fillStyle = "#0f172a";
+      bctx.font = "bold 52px sans-serif";
       bctx.textAlign = "center";
-      bctx.fillText("🏆 SKOR KELAS ONLINE 🏆", 256, 50);
+      bctx.textBaseline = "middle";
+      bctx.fillText("🏆 PAPAN SKOR & SISWA MASUK 🏆", 512, 85);
 
-      bctx.font = "bold 24px sans-serif";
-      bctx.textAlign = "left";
-      bctx.fillStyle = "#f8fafc";
-      bctx.fillText("1. Siti Rahma (Pramuka) - 145 Poin", 30, 120);
-      bctx.fillText("2. Budi Santoso (Batik)  - 130 Poin", 30, 175);
       bctx.fillStyle = "#38bdf8";
-      bctx.fillText("3. Kamu (Pelajar)       - Ayo Main!", 30, 230);
-      bctx.fillStyle = "#f8fafc";
-      bctx.fillText("4. Edo Pratama (Biru)   - 95 Poin", 30, 285);
-      bctx.fillText("5. Dayu Kemala (Ungu)   - 80 Poin", 30, 340);
+      bctx.font = "bold 34px sans-serif";
+      bctx.fillText("🟢 5 Siswa Bergabung di Ruang Belajar Online", 512, 205);
 
-      bctx.fillStyle = "#a855f7";
-      bctx.font = "italic 20px sans-serif";
+      const studentRanks = [
+        { rank: "1", name: "Siti Rahma", costume: "Pramuka Cokelat", pts: "145 Poin", isMe: false },
+        { rank: "2", name: "Budi Santoso", costume: "Batik Nusantara Hijau", pts: "130 Poin", isMe: false },
+        { rank: "3", name: "Kamu (Pelajar)", costume: "Seragam Merah Putih", pts: adventureScore > 0 ? `${adventureScore} Poin` : "Siap Main ⭐", isMe: true },
+        { rank: "4", name: "Edo Pratama", costume: "Baju Olahraga Biru", pts: "95 Poin", isMe: false },
+        { rank: "5", name: "Dayu Kemala", costume: "Batik Nusantara Ungu", pts: "80 Poin", isMe: false },
+      ];
+
+      studentRanks.forEach((st, idx) => {
+        const y = 300 + idx * 115;
+        bctx.fillStyle = st.isMe ? "rgba(56, 189, 248, 0.22)" : "rgba(30, 41, 59, 0.9)";
+        bctx.roundRect ? bctx.roundRect(40, y - 45, 944, 90, 18) : bctx.fillRect(40, y - 45, 944, 90);
+        bctx.fill();
+        bctx.strokeStyle = st.isMe ? "#38bdf8" : "#475569";
+        bctx.lineWidth = st.isMe ? 6 : 3;
+        bctx.stroke();
+
+        bctx.textAlign = "left";
+        bctx.fillStyle = st.isMe ? "#38bdf8" : "#f8fafc";
+        bctx.font = "bold 40px sans-serif";
+        bctx.fillText(`🟢 #${st.rank} ${st.name}`, 65, y + 12);
+
+        bctx.fillStyle = "#94a3b8";
+        bctx.font = "bold 28px sans-serif";
+        bctx.fillText(`(${st.costume})`, 520, y + 12);
+
+        bctx.textAlign = "right";
+        bctx.fillStyle = "#facc15";
+        bctx.font = "bold 38px sans-serif";
+        bctx.fillText(st.pts, 955, y + 12);
+      });
+
       bctx.textAlign = "center";
-      bctx.fillText("👉 Dekati Pak Guru untuk Arahan!", 256, 430);
+      bctx.fillStyle = "#4ade80";
+      bctx.font = "bold 34px sans-serif";
+      bctx.fillText("👉 Dekati Pak Guru & Masuk Gapura untuk Mulai Jelajah!", 512, 925);
     }
     const boardTex = new THREE.CanvasTexture(boardCanvas);
-    const boardMesh = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 3.2), new THREE.MeshBasicMaterial({ map: boardTex }));
-    boardMesh.position.set(0, 2.6, 0.16);
+    const boardMesh = new THREE.Mesh(new THREE.PlaneGeometry(4.4, 4.4), new THREE.MeshBasicMaterial({ map: boardTex }));
+    boardMesh.position.set(0, 2.7, 0.18);
     boardGroup.add(boardMesh);
     scene.add(boardGroup);
 
@@ -1622,14 +1653,24 @@ export default function AdaptiveEduGameModal({
       });
     });
 
-    // Hotspot Pak Guru
+    // Hotspot Pak Guru (Di Depan Kanan Gapura)
     hotspotList.push({
       id: "guru",
-      x: 7.5,
-      z: 14,
-      radius: 4.2,
+      x: 6.8,
+      z: 21,
+      radius: 4.5,
       label: "Pak Guru Virtual",
       isGuru: true,
+    });
+
+    // Hotspot Papan Skor & Daftar Siswa Masuk (Di Depan Kiri Gapura)
+    hotspotList.push({
+      id: "board",
+      x: -6.8,
+      z: 21,
+      radius: 4.5,
+      label: "🏆 Buka Papan Skor & Siswa Masuk",
+      isBoard: true,
     });
 
     // 9. SISWA ONLINE BERKELILING DI JALUR DESA
@@ -2322,7 +2363,7 @@ export default function AdaptiveEduGameModal({
                 className="absolute top-4 left-1/2 -translate-x-1/2 z-20 pointer-events-auto bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 px-4 py-2.5 rounded-full shadow-2xl border-2 border-white flex items-center gap-2.5 animate-bounce font-black text-xs sm:text-sm"
               >
                 <span className="text-lg">👉</span>
-                <span>Temui Pak Guru Virtual di sebelah kanan gapura terlebih dahulu!</span>
+                <span>Temui Pak Guru & Cek Papan Skor Siswa Masuk di depan gapura terlebih dahulu!</span>
                 <button
                   type="button"
                   onClick={() => {
@@ -2370,6 +2411,8 @@ export default function AdaptiveEduGameModal({
                       setHasTalkedToGuru(true);
                       setGuruTab("apa_itu");
                       speakGuruVoice(guruBriefing.apaItuText);
+                    } else if (nearHotspot.isBoard) {
+                      setShowLeaderboard(true);
                     } else if (nearHotspot.sukuData) {
                       setActiveSukuDialog(nearHotspot.sukuData);
                       setSelectedAnswer(null);
@@ -2381,7 +2424,7 @@ export default function AdaptiveEduGameModal({
                   className="bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-500 text-slate-950 font-black px-6 py-3 rounded-full text-sm shadow-2xl border-3 border-white hover:scale-105 active:scale-95 transition flex items-center gap-2 cursor-pointer animate-pulse"
                 >
                   <span className="text-base">
-                    {nearHotspot.isGuru ? "👨‍🏫" : nearHotspot.studentData ? "👋" : "🎯"}
+                    {nearHotspot.isGuru ? "👨‍🏫" : nearHotspot.isBoard ? "🏆" : nearHotspot.studentData ? "👋" : "🎯"}
                   </span>
                   <span>{nearHotspot.label}</span>
                   <span className="bg-slate-950 text-yellow-300 text-[10px] px-2 py-0.5 rounded-full font-black">
