@@ -93,6 +93,8 @@ export interface ValidatedModuleSummary {
   subjectLabel: string;
   source: string;
   validatedAt: string;
+  grade?: string;
+  learningGoal?: string;
   ragSummary?: string[];
   quizQuestions?: Record<number, Question[]>;
 }

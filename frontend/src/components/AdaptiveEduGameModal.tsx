@@ -170,6 +170,68 @@ export default function AdaptiveEduGameModal({
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [allSukuCompleted, setAllSukuCompleted] = useState(false);
 
+  // Tipe Game Interaktif: "adventure" (3D Pos Desa) | "matching" (Menjodohkan Kartu) | "manus" (Manus AI Game)
+  const isJawaTopic = useMemo(() => {
+    const raw = (activeValidatedModule?.title || chapterTitle || chapter || "").toLowerCase();
+    const id = (chapter || activeValidatedModule?.id || "").toLowerCase();
+    return (
+      id.includes("bjawa") ||
+      id.includes("aksara") ||
+      id.includes("punokawan") ||
+      id.includes("pandhawa") ||
+      id.includes("unggah") ||
+      raw.includes("jawa") ||
+      raw.includes("aksara") ||
+      raw.includes("wayang") ||
+      raw.includes("punokawan") ||
+      raw.includes("pandhawa") ||
+      raw.includes("unggah")
+    );
+  }, [chapter, chapterTitle, activeValidatedModule]);
+
+  const [gameMode, setGameMode] = useState<"adventure" | "matching" | "manus">("adventure");
+
+  // State Integrasi Generator Manus AI
+  const [manusGameData, setManusGameData] = useState<{
+    gameType?: string;
+    prompt?: string;
+    specs?: any;
+    directLauncherUrl?: string;
+    isLoading?: boolean;
+  }>({});
+
+  const recommendedGameMode = useMemo(() => {
+    if (manusGameData.gameType === "matching" || isJawaTopic) return "matching";
+    return "adventure";
+  }, [manusGameData.gameType, isJawaTopic]);
+
+  // Otomatis arahkan ke mode game yang paling pas saat topik berubah
+  useEffect(() => {
+    if (recommendedGameMode === "matching") {
+      setGameMode("matching");
+    } else {
+      setGameMode("adventure");
+    }
+  }, [recommendedGameMode]);
+
+  // State Game Menjodohkan Kartu Pasangan Interaktif
+  interface MatchingCard {
+    id: string;
+    pairId: string;
+    text: string;
+    subText?: string;
+    icon?: string;
+    isFlipped: boolean;
+    isMatched: boolean;
+  }
+
+  const [matchingCards, setMatchingCards] = useState<MatchingCard[]>([]);
+  const [flippedCards, setFlippedCards] = useState<string[]>([]);
+  const [matchingScore, setMatchingScore] = useState(0);
+  const [matchingCombo, setMatchingCombo] = useState(0);
+  const [matchingTimer, setMatchingTimer] = useState(0);
+  const [isMatchingWon, setIsMatchingWon] = useState(false);
+
   // Skor Kawan Sekelas Online Dinamis (Multiplayer)
   const [peerScores, setPeerScores] = useState<{ [id: string]: number }>({
     siti: 145,
@@ -178,7 +240,214 @@ export default function AdaptiveEduGameModal({
     dayu: 80,
   });
 
-    // Ref Animasi Dada & Interaksi Teman Online (Lambaikan Tangan)
+    // --------------------------------------------------------------------------
+  // LOGIKA GAME MENJODOHKAN KARTU PASANGAN INTERAKTIF (MATCHING CARDS)
+  // --------------------------------------------------------------------------
+  const generateDeckForCurrentTopic = useCallback(() => {
+    const raw = (activeValidatedModule?.title || chapterTitle || chapter || "").toLowerCase();
+    const id = (chapter || activeValidatedModule?.id || "").toLowerCase();
+
+    let rawPairs: Array<{ id: string; a: string; b: string; subA?: string; subB?: string; icon: string }> = [];
+
+    if (id.includes("aksara") || raw.includes("aksara")) {
+      rawPairs = [
+        { id: "p1", a: "ꦲ", b: "Ha", subA: "Aksara", subB: "Huruf Latin", icon: "📜" },
+        { id: "p2", a: "ꦤ", b: "Na", subA: "Aksara", subB: "Huruf Latin", icon: "📜" },
+        { id: "p3", a: "ꦕ", b: "Ca", subA: "Aksara", subB: "Huruf Latin", icon: "📜" },
+        { id: "p4", a: "ꦫ", b: "Ra", subA: "Aksara", subB: "Huruf Latin", icon: "📜" },
+        { id: "p5", a: "ꦏ", b: "Ka", subA: "Aksara", subB: "Huruf Latin", icon: "📜" },
+        { id: "p6", a: "ꦢ", b: "Da", subA: "Aksara", subB: "Huruf Latin", icon: "📜" },
+        { id: "p7", a: "ꦠ", b: "Ta", subA: "Aksara", subB: "Huruf Latin", icon: "📜" },
+        { id: "p8", a: "ꦱ", b: "Sa", subA: "Aksara", subB: "Huruf Latin", icon: "📜" },
+      ];
+    } else if (id.includes("punokawan") || raw.includes("punokawan")) {
+      rawPairs = [
+        { id: "p1", a: "Semar", b: "Wicaksana & Sabar", subA: "Tokoh Wayang", subB: "Watak Luhur", icon: "👴" },
+        { id: "p2", a: "Gareng", b: "Ngati-Ati & Cermat", subA: "Tokoh Wayang", subB: "Watak Luhur", icon: "👦" },
+        { id: "p3", a: "Petruk", b: "Loman & Sumeh", subA: "Tokoh Wayang", subB: "Watak Luhur", icon: "🧔" },
+        { id: "p4", a: "Bagong", b: "Jujur & Kritis", subA: "Tokoh Wayang", subB: "Watak Luhur", icon: "🧒" },
+        { id: "p5", a: "Kanthong Bolong", b: "Ikhlas Tetulung", subA: "Julukan Petruk", subB: "Tegese", icon: "🎁" },
+        { id: "p6", a: "Semar Mesem", b: "Pamong Ksatria", subA: "Piwulang Semar", subB: "Maknane", icon: "⭐" },
+        { id: "p7", a: "Sikil Jinjit", b: "Kudu Waspada", subA: "Ciri Gareng", subB: "Piwulange", icon: "👣" },
+        { id: "p8", a: "Awak Bunder", b: "Grapyak Semanak", subA: "Ciri Bagong", subB: "Maknane", icon: "🤝" },
+      ];
+    } else if (id.includes("unggah") || raw.includes("unggah") || raw.includes("tata krama")) {
+      rawPairs = [
+        { id: "p1", a: "Mangan (Ngoko)", b: "Dhahar (Krama)", subA: "Basa Padinan", subB: "Marang Guru", icon: "🍚" },
+        { id: "p2", a: "Turu (Ngoko)", b: "Sare (Krama)", subA: "Basa Padinan", subB: "Marang Guru", icon: "🛏️" },
+        { id: "p3", a: "Lunga (Ngoko)", b: "Tindak (Krama)", subA: "Basa Padinan", subB: "Marang Guru", icon: "🚶" },
+        { id: "p4", a: "Ndeleng (Ngoko)", b: "Mirsani (Krama)", subA: "Basa Padinan", subB: "Marang Guru", icon: "👀" },
+        { id: "p5", a: "Nyuwun Sewu", b: "Permisi Santun", subA: "Unggah-Ungguh", subB: "Tegese", icon: "🙇" },
+        { id: "p6", a: "Matur Nuwun", b: "Terima Kasih", subA: "Unggah-Ungguh", subB: "Tegese", icon: "🙏" },
+        { id: "p7", a: "Ndherek Langkung", b: "Nyuwun Izin Mlaku", subA: "Unggah-Ungguh", subB: "Tegese", icon: "👣" },
+        { id: "p8", a: "Ngoko Lugu", b: "Kanca Sakelas", subA: "Tingkat Basa", subB: "Trep Kanggo", icon: "🗣️" },
+      ];
+    } else if (id.includes("pandhawa") || raw.includes("pandhawa")) {
+      rawPairs = [
+        { id: "p1", a: "Puntadewa", b: "Jujur & Getih Putih", subA: "Pandhawa 1", subB: "Watak Utama", icon: "👑" },
+        { id: "p2", a: "Werkudara", b: "Kuku Pancanaka", subA: "Pandhawa 2", subB: "Gaman Ampuh", icon: "💪" },
+        { id: "p3", a: "Janaka", b: "Panah Pasopati", subA: "Pandhawa 3", subB: "Gaman Ampuh", icon: "🏹" },
+        { id: "p4", a: "Nakula", b: "Pinter Ngrumat Jaran", subA: "Pandhawa Kembar", subB: "Keahlian", icon: "🐎" },
+        { id: "p5", a: "Sadewa", b: "Wasis Ilmu Falak/Lintang", subA: "Pandhawa Kembar", subB: "Keahlian", icon: "✨" },
+        { id: "p6", a: "Amarta", b: "Kraton Puntadewa", subA: "Negara", subB: "Ratu Kang Mrentah", icon: "🏛️" },
+        { id: "p7", a: "Jodhipati", b: "Kraton Bima", subA: "Ksatryan", subB: "Ksatria", icon: "🏰" },
+        { id: "p8", a: "Madukara", b: "Ksatryan Arjuna", subA: "Ksatryan", subB: "Ksatria", icon: "🌸" },
+      ];
+    } else {
+      // Materi PKn: Gotong Royong / Norma / Bhinneka / Pancasila
+      rawPairs = [
+        { id: "p1", a: "Bintang Emas", b: "Sila 1: Ketuhanan YME", subA: "Simbol Garuda", subB: "Sila Pancasila", icon: "⭐" },
+        { id: "p2", a: "Rantai Emas", b: "Sila 2: Kemanusiaan Adil", subA: "Simbol Garuda", subB: "Sila Pancasila", icon: "🔗" },
+        { id: "p3", a: "Pohon Beringin", b: "Sila 3: Persatuan Indonesia", subA: "Simbol Garuda", subB: "Sila Pancasila", icon: "🌳" },
+        { id: "p4", a: "Kepala Banteng", b: "Sila 4: Musyawarah Mufakat", subA: "Simbol Garuda", subB: "Sila Pancasila", icon: "🐂" },
+        { id: "p5", a: "Padi dan Kapas", b: "Sila 5: Keadilan Sosial", subA: "Simbol Garuda", subB: "Sila Pancasila", icon: "🌾" },
+        { id: "p6", a: "Gotong Royong", b: "Berat Sama Dipikul", subA: "Nilai Luhur", subB: "Semboyan", icon: "🤝" },
+        { id: "p7", a: "Bhinneka Tunggal Ika", b: "Berbeda Tetap Satu", subA: "Semboyan Bangsa", subB: "Arti Luhur", icon: "🇮🇩" },
+        { id: "p8", a: "Norma Kesopanan", b: "Tata Krama & Hormat Guru", subA: "Aturan Hidup", subB: "Penerapan", icon: "💡" },
+      ];
+    }
+
+    const cards: MatchingCard[] = [];
+    rawPairs.forEach((pair) => {
+      cards.push({
+        id: `card_${pair.id}_A`,
+        pairId: pair.id,
+        text: pair.a,
+        subText: pair.subA,
+        icon: pair.icon,
+        isFlipped: false,
+        isMatched: false,
+      });
+      cards.push({
+        id: `card_${pair.id}_B`,
+        pairId: pair.id,
+        text: pair.b,
+        subText: pair.subB,
+        icon: pair.icon,
+        isFlipped: false,
+        isMatched: false,
+      });
+    });
+
+    // Acak Kartu Secara Merata
+    return cards.sort(() => Math.random() - 0.5);
+  }, [activeValidatedModule, chapterTitle, chapter]);
+
+  const restartMatchingGame = useCallback(() => {
+    playClickSound();
+    setMatchingCards(generateDeckForCurrentTopic());
+    setFlippedCards([]);
+    setMatchingScore(0);
+    setMatchingCombo(0);
+    setMatchingTimer(0);
+    setIsMatchingWon(false);
+  }, [generateDeckForCurrentTopic]);
+
+  // Inisialisasi kartu saat modal dibuka atau materi berubah
+  useEffect(() => {
+    restartMatchingGame();
+  }, [restartMatchingGame]);
+
+  // Timer game mencocokkan
+  useEffect(() => {
+    if (gameMode !== "matching" || isMatchingWon) return;
+    const t = setInterval(() => setMatchingTimer((prev) => prev + 1), 1000);
+    return () => clearInterval(t);
+  }, [gameMode, isMatchingWon]);
+
+  // Klik Kartu Menjodohkan
+  function handleCardClick(cardId: string) {
+    if (flippedCards.length >= 2) return;
+    const target = matchingCards.find((c) => c.id === cardId);
+    if (!target || target.isFlipped || target.isMatched) return;
+
+    playCoinPickupSound();
+    const newFlipped = [...flippedCards, cardId];
+    setFlippedCards(newFlipped);
+
+    setMatchingCards((prev) =>
+      prev.map((c) => (c.id === cardId ? { ...c, isFlipped: true } : c))
+    );
+
+    if (newFlipped.length === 2) {
+      const first = matchingCards.find((c) => c.id === newFlipped[0]);
+      const second = target;
+
+      if (first && second && first.pairId === second.pairId) {
+        // Cocok!
+        playCorrectSound();
+        const earned = 15 + matchingCombo * 5;
+        setMatchingScore((s) => s + earned);
+        setMatchingCombo((c) => c + 1);
+        addPoints(earned, `Keren! Pasangan cocok: ${first.text} ↔ ${second.text} (+${earned} ⭐)`);
+
+        setTimeout(() => {
+          setMatchingCards((prev) => {
+            const updated = prev.map((c) =>
+              c.id === first.id || c.id === second.id
+                ? { ...c, isMatched: true, isFlipped: true }
+                : c
+            );
+            if (updated.every((c) => c.isMatched)) {
+              setIsMatchingWon(true);
+              playBadgeFanfareSound();
+            }
+            return updated;
+          });
+          setFlippedCards([]);
+        }, 500);
+      } else {
+        // Belum Cocok
+        setMatchingCombo(0);
+        setTimeout(() => {
+          setMatchingCards((prev) =>
+            prev.map((c) =>
+              c.id === newFlipped[0] || c.id === newFlipped[1]
+                ? { ...c, isFlipped: false }
+                : c
+            )
+          );
+          setFlippedCards([]);
+        }, 900);
+      }
+    }
+  }
+
+  // Tarik Spesifikasi & Prompt Game Manus AI secara Otomatis Sesuai Materi
+  useEffect(() => {
+    const fetchManusGameSpec = async () => {
+      try {
+        setManusGameData((p) => ({ ...p, isLoading: true }));
+        const res = await fetch("/api/games/manus-generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chapterId: chapter || activeValidatedModule?.id,
+            chapterTitle: activeValidatedModule?.title || chapterTitle || chapter,
+            subject: activeValidatedModule?.subject || (isJawaTopic ? "bjawa" : "pkn"),
+            grade: (activeValidatedModule as any)?.grade || "Kelas 4",
+            learningGoal: (activeValidatedModule as any)?.learningGoal,
+            ragSummary: activeValidatedModule?.ragSummary,
+          }),
+        });
+        if (res.ok) {
+          const json = await res.json();
+          setManusGameData({
+            gameType: json.gameType,
+            prompt: json.prompt,
+            specs: json.specs,
+            directLauncherUrl: json.directLauncherUrl,
+            isLoading: false,
+          });
+        }
+      } catch {
+        setManusGameData((p) => ({ ...p, isLoading: false }));
+      }
+    };
+    fetchManusGameSpec();
+  }, [chapter, activeValidatedModule, chapterTitle, isJawaTopic]);
+
+  // Ref Animasi Dada & Interaksi Teman Online (Lambaikan Tangan)
   const isPlayerWavingRef = useRef(false);
   const greetedStudentIdRef = useRef<string | null>(null);
   const waveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -270,7 +539,355 @@ export default function AdaptiveEduGameModal({
     const rawTitle = (activeValidatedModule?.title || chapterTitle || chapter || "").toLowerCase();
     const rawChapter = (chapter || activeValidatedModule?.id || "").toLowerCase();
 
-    // 1. MATERI BAB 2: GOTONG ROYONG
+    // 1. MATERI BASA JAWA: PUNOKAWAN
+    if (rawChapter.includes("punokawan") || rawTitle.includes("punokawan")) {
+      return [
+        {
+          id: "punokawan_pos1",
+          namaPos: "Pos 1: Kyahi Semar (Sang Pamong)",
+          namaSuku: "Suku Jawa (Rumah Joglo Kulon)",
+          rumahAdat: "Padhepokan Joglo Semar",
+          tokohNama: "Kyai Semar Badranaya",
+          tokohAvatar: "👴",
+          guruNama: "Pak Guru Subroto",
+          subMateri: "Watak Wicaksana & Ngayomi",
+          penjelasanGuru: "Semar nggambarake bapa kang wicaksana, sabar ngemong anak-anake, ora tau nesu, lan tansah ngelingake tumindak becik.",
+          silaKe: 1,
+          simbolSila: "🌟",
+          zPos: -45,
+          xPos: 14,
+          warnaKhas: "#38bdf8",
+          pertanyaan: "Kyai Semar minangka tetunggule Punokawan nduweni watak utama kang luhur, yaiku:",
+          opsi: [
+            { id: "A", teks: "Wicaksana, sabar, lan tansah paring pituduh becik marang para ksatria.", benar: true, penjelasan: "Bener banget! Semar iku pamong sejati kang tansah ngemong kanthi ikhlas." },
+            { id: "B", teks: "Seneng golek mungsuh lan nesunan.", benar: false, penjelasan: "Semar ora tau nesu lan tansah njaga katentreman." },
+            { id: "C", teks: "Mung mikirake awake dhewe.", benar: false, penjelasan: "Semar ngayomi kabeh titah kanthi adil." },
+          ],
+        },
+        {
+          id: "punokawan_pos2",
+          namaPos: "Pos 2: Nala Gareng (Ngati-Ati)",
+          namaSuku: "Suku Jawa (Gubug Panggung)",
+          rumahAdat: "Gubug Panggung Gareng",
+          tokohNama: "Nala Gareng",
+          tokohAvatar: "👦",
+          guruNama: "Pak Guru Sutejo",
+          subMateri: "Sikil Pincang Tegese Waspada",
+          penjelasanGuru: "Sikile Gareng kang pincang nglambangake manungsa kudu ngati-ati nalika lumaku utawa tumindak ing bebrayan.",
+          silaKe: 2,
+          simbolSila: "👣",
+          zPos: -105,
+          xPos: -14,
+          warnaKhas: "#fb923c",
+          pertanyaan: "Ciri fisike Nala Gareng yaiku sikile jinjit/pincang. Piwulang luhur ing mburine yaiku:",
+          opsi: [
+            { id: "A", teks: "Nalika lumaku lan nindakake pakaryan kudu tansah ngati-ati lan waspada.", benar: true, penjelasan: "Pinter! Jinjit tegese tansah nimbang bener lan lupute tumindak." },
+            { id: "B", teks: "Supaya ora usah melu sinau ing kelas.", benar: false, penjelasan: "Iku dudu piwulang luhur Gareng." },
+            { id: "C", teks: "Kareben diwenehi hadiah dening liyan.", benar: false, penjelasan: "Piwulang Gareng nuntun marang kawaspadan batin." },
+          ],
+        },
+        {
+          id: "punokawan_pos3",
+          namaPos: "Pos 3: Petruk (Sumeh & Loman)",
+          namaSuku: "Suku Jawa (Bale Kencana)",
+          rumahAdat: "Bale Petruk Kantong Bolong",
+          tokohNama: "Petruk Kanthong Bolong",
+          tokohAvatar: "🧔",
+          guruNama: "Pak Guru Harjono",
+          subMateri: "Seneng Tetulung Tanpa Pamrih",
+          penjelasanGuru: "Petruk irunge dawa lan eseme sumeh. Julukane 'Kanthong Bolong' tegese loman, seneng menehi lan tetulung tanpa ngarep-arep piwales.",
+          silaKe: 3,
+          simbolSila: "🎁",
+          zPos: -165,
+          xPos: 14,
+          warnaKhas: "#4ade80",
+          pertanyaan: "Petruk asring sinebut 'Kanthong Bolong'. Tegese sesebutan kasebut yaiku:",
+          opsi: [
+            { id: "A", teks: "Kanthong klambine suwek amarga ora dijait.", benar: false, penjelasan: "Iku mung teges lugas, dudu pralambang luhur." },
+            { id: "B", teks: "Watake loman, seneng tetulung, lan ora eman menehi marang wong kang butuhake.", benar: true, penjelasan: "Luar biasa! Petruk tansah ikhlas mbiyantu kanca tanpa pamrih." },
+            { id: "C", teks: "Seneng ngentekake dhuwit kanggo jajan dhewe.", benar: false, penjelasan: "Petruk dudu bocah boros, nanging loman tetulung." },
+          ],
+        },
+        {
+          id: "punokawan_pos4",
+          namaPos: "Pos 4: Bagong (Jujur & Kritis)",
+          namaSuku: "Suku Jawa (Pendhapa Asri)",
+          rumahAdat: "Pendhapa Bagong Ceria",
+          tokohNama: "Bagong",
+          tokohAvatar: "🧒",
+          guruNama: "Pak Guru Sumardi",
+          subMateri: "Wani Ngomongake Bebener",
+          penjelasanGuru: "Bagong iku awake bunder lan mripate amba. Watake jujur apa anane, grapyak, lan wani ngandhani yen ana bab kang kurang trep.",
+          silaKe: 4,
+          simbolSila: "👁️",
+          zPos: -225,
+          xPos: -14,
+          warnaKhas: "#f87171",
+          pertanyaan: "Watake Bagong kang paling pantes ditiru dening murid sekolah yaiku:",
+          opsi: [
+            { id: "A", teks: "Jujur apa anane, seneng guyon nanging wani mbelani bebener.", benar: true, penjelasan: "Jos tenan! Bagong mulangake kejujuran lan keberanian moral." },
+            { id: "B", teks: "Seneng ngapusi kanca nalika dolanan.", benar: false, penjelasan: "Bagong iku jujur banget, ora tau culika." },
+            { id: "C", teks: "Meneng wae sanadyan weruh kancane salah.", benar: false, penjelasan: "Bagong kritis lan ngelingake kanthi cara becik." },
+          ],
+        },
+        {
+          id: "punokawan_pos5",
+          namaPos: "Pos 5: Guyub Rukun Punokawan",
+          namaSuku: "Suku Jawa (Sasana Kridha)",
+          rumahAdat: "Sasana Guyub Rukun",
+          tokohNama: "Raden Janaka",
+          tokohAvatar: "🏹",
+          guruNama: "Pak Guru Darmawan",
+          subMateri: "Tuladha Rukun ing Bebrayan",
+          penjelasanGuru: "Papat sedulur Punokawan tansah guyub rukun, gotong royong, lan ora tau tukaran. Iku tuladha luhur urip bebarengan.",
+          silaKe: 5,
+          simbolSila: "🤝",
+          zPos: -285,
+          xPos: 14,
+          warnaKhas: "#facc15",
+          pertanyaan: "Piwulang utama saka crita pewayangan Punokawan kanggo para murid yaiku:",
+          opsi: [
+            { id: "A", teks: "Urip guyub rukun, tulung-tinulung, lan njaga budi pekerti marang sapa wae.", benar: true, penjelasan: "Sampurna! Punokawan mulangake kerukunan lan andhap asor." },
+            { id: "B", teks: "Sapa sing paling pinter kudu pamer marang kancane.", benar: false, penjelasan: "Punokawan ora tau pamer utawa gumede." },
+            { id: "C", teks: "Golek bener dhewe nalika beda panemu.", benar: false, penjelasan: "Punokawan ngutamakake musyawarah lan guyub." },
+          ],
+        },
+      ];
+    }
+
+    // 2. MATERI BASA JAWA: AKSARA JAWA & SANDHANGAN
+    if (rawChapter.includes("aksara") || rawTitle.includes("aksara")) {
+      return [
+        {
+          id: "aksara_pos1",
+          namaPos: "Pos 1: Hanacaraka (ꦲ ꦤ ꦕ ꦫ ꦏ)",
+          namaSuku: "Suku Jawa (Sanggar Aksara)",
+          rumahAdat: "Pura Sastra Hanacaraka",
+          tokohNama: "Ki Ageng Sastra",
+          tokohAvatar: "📜",
+          guruNama: "Pak Guru Sutrisno",
+          subMateri: "Aksara Legena Baris 1: Ha Na Ca Ra Ka",
+          penjelasanGuru: "Aksara Legena tegese aksara wutuh kang durung oleh sandhangan swara. Baris kapisan yaiku Ha, Na, Ca, Ra, Ka kang tegese 'Ana Utusan'.",
+          silaKe: 1,
+          simbolSila: "ꦲ",
+          zPos: -45,
+          xPos: 14,
+          warnaKhas: "#38bdf8",
+          pertanyaan: "Aksara Jawa 'ꦲ' lan 'ꦏ' unine yaiku:",
+          opsi: [
+            { id: "A", teks: "Ha lan Ka", benar: true, penjelasan: "Bener! 'ꦲ' iku Ha, lan 'ꦏ' iku Ka." },
+            { id: "B", teks: "Na lan Ca", benar: false, penjelasan: "'ꦤ' iku Na, 'ꦕ' iku Ca." },
+            { id: "C", teks: "Ra lan Sa", benar: false, penjelasan: "'ꦫ' iku Ra, 'ꦱ' iku Sa." },
+          ],
+        },
+        {
+          id: "aksara_pos2",
+          namaPos: "Pos 2: Datasawala (ꦢ ꦠ ꦱ ꦮ ꦭ)",
+          namaSuku: "Suku Jawa (Bale Pustaka)",
+          rumahAdat: "Bale Pustaka Datasawala",
+          tokohNama: "Empu Sedah",
+          tokohAvatar: "✍️",
+          guruNama: "Pak Guru Martono",
+          subMateri: "Aksara Legena Baris 2: Da Ta Sa Wa La",
+          penjelasanGuru: "Baris kapindho yaiku Da, Ta, Sa, Wa, La kang nduweni teges filosofis 'Padha Padudon' utawa padha setya nindakake dhawuh.",
+          silaKe: 2,
+          simbolSila: "ꦢ",
+          zPos: -105,
+          xPos: -14,
+          warnaKhas: "#fb923c",
+          pertanyaan: "Aksara Jawa 'ꦱ' manawa ditulis latin unine:",
+          opsi: [
+            { id: "A", teks: "Sa", benar: true, penjelasan: "Pinter! 'ꦱ' iku aksara Sa." },
+            { id: "B", teks: "Ta", benar: false, penjelasan: "'ꦠ' iku aksara Ta." },
+            { id: "C", teks: "Wa", benar: false, penjelasan: "'ꦮ' iku aksara Wa." },
+          ],
+        },
+        {
+          id: "aksara_pos3",
+          namaPos: "Pos 3: Padhadjayanya (ꦥ ꦝ ꦗ ꦪ ꦚ)",
+          namaSuku: "Suku Jawa (Griya Sinau)",
+          rumahAdat: "Griya Sinau Padhadjayanya",
+          tokohNama: "Raden Panji",
+          tokohAvatar: "🧑",
+          guruNama: "Pak Guru Suwandi",
+          subMateri: "Aksara Legena Baris 3: Pa Dha Ja Ya Nya",
+          penjelasanGuru: "Baris katelu Pa, Dha, Ja, Ya, Nya tegese 'Padha Digdayane' utawa padha sektine.",
+          silaKe: 3,
+          simbolSila: "ꦥ",
+          zPos: -165,
+          xPos: 14,
+          warnaKhas: "#4ade80",
+          pertanyaan: "Aksara Jawa 'ꦗ' unine yaiku:",
+          opsi: [
+            { id: "A", teks: "Ja", benar: true, penjelasan: "Tepat! 'ꦗ' iku aksara Ja." },
+            { id: "B", teks: "Pa", benar: false, penjelasan: "'ꦥ' iku aksara Pa." },
+            { id: "C", teks: "Nya", benar: false, penjelasan: "'ꦚ' iku aksara Nya." },
+          ],
+        },
+        {
+          id: "aksara_pos4",
+          namaPos: "Pos 4: Magabathanga (ꦩ ꦒ ꦧ ꦛ ꦔ)",
+          namaSuku: "Suku Jawa (Sasana Sastra)",
+          rumahAdat: "Sasana Magabathanga",
+          tokohNama: "Ki Hajar Dewan",
+          tokohAvatar: "👴",
+          guruNama: "Pak Guru Prayitno",
+          subMateri: "Aksara Legena Baris 4: Ma Ga Ba Tha Nga",
+          penjelasanGuru: "Baris pungkasan Ma, Ga, Ba, Tha, Nga tegese 'Padha dadi Bathang' (mati bebarengan amarga setya marang janji).",
+          silaKe: 4,
+          simbolSila: "ꦩ",
+          zPos: -225,
+          xPos: -14,
+          warnaKhas: "#f87171",
+          pertanyaan: "Aksara Jawa 'ꦒ' unine yaiku:",
+          opsi: [
+            { id: "A", teks: "Ga", benar: true, penjelasan: "Bener! 'ꦒ' iku aksara Ga." },
+            { id: "B", teks: "Ba", benar: false, penjelasan: "'ꦧ' iku aksara Ba." },
+            { id: "C", teks: "Nga", benar: false, penjelasan: "'ꦔ' iku aksara Nga." },
+          ],
+        },
+        {
+          id: "aksara_pos5",
+          namaPos: "Pos 5: Sandhangan Swara (Wulu, Suku, Taling)",
+          namaSuku: "Suku Jawa (Kraton Kasusastran)",
+          rumahAdat: "Kraton Sandhangan Swara",
+          tokohNama: "Prabu Aji Saka",
+          tokohAvatar: "👑",
+          guruNama: "Pak Guru Darmawan",
+          subMateri: "Pangowah Swara: i, u, e, o",
+          penjelasanGuru: "Sandhangan swara ngowahi swara 'a': Wulu kanggo swara 'i', Suku kanggo swara 'u', Pepet kanggo 'e', Taling kanggo 'é', lan Taling Tarung kanggo 'o'.",
+          silaKe: 5,
+          simbolSila: "🔤",
+          zPos: -285,
+          xPos: 14,
+          warnaKhas: "#facc15",
+          pertanyaan: "Sandhangan swara kang gunane ngowahi swara dadi 'u' yaiku:",
+          opsi: [
+            { id: "A", teks: "Suku", benar: true, penjelasan: "Luar biasa! Suku gunane ngganti swara dadi 'u' (tuladhane: buku)." },
+            { id: "B", teks: "Wulu", benar: false, penjelasan: "Wulu kanggo swara 'i'." },
+            { id: "C", teks: "Pepet", benar: false, penjelasan: "Pepet kanggo swara 'e'." },
+          ],
+        },
+      ];
+    }
+
+    // 3. MATERI BASA JAWA: UNGGAH-UNGGUH BASA
+    if (rawChapter.includes("unggah") || rawTitle.includes("unggah") || rawTitle.includes("tata krama")) {
+      return [
+        {
+          id: "unggah_pos1",
+          namaPos: "Pos 1: Basa Ngoko Lugu",
+          namaSuku: "Suku Jawa (Joglo Wetan)",
+          rumahAdat: "Omah Paseduluran",
+          tokohNama: "Bocah Bagus",
+          tokohAvatar: "👦",
+          guruNama: "Pak Guru Suwito",
+          subMateri: "Kanca Sapadha Umur",
+          penjelasanGuru: "Basa Ngoko Lugu digunakake kanggo pacelathon marang kanca sapadha umur utawa wong kang luwih enom.",
+          silaKe: 1,
+          simbolSila: "🗣️",
+          zPos: -45,
+          xPos: 14,
+          warnaKhas: "#38bdf8",
+          pertanyaan: "Basa Ngoko Lugu trep digunakake nalika matur utawa omongan marang:",
+          opsi: [
+            { id: "A", teks: "Kanca sakelas utawa kanca dolanan sapadha-padha.", benar: true, penjelasan: "Bener! Kanca sakelas nggunakake ngoko lugu." },
+            { id: "B", teks: "Bapak utawa Ibu Guru ing sekolah.", benar: false, penjelasan: "Marang guru kudu nggunakake basa krama alus." },
+            { id: "C", teks: "Simbah kakung lan putri ing omah.", benar: false, penjelasan: "Marang simbah wajib nggunakake krama alus." },
+          ],
+        },
+        {
+          id: "unggah_pos2",
+          namaPos: "Pos 2: Basa Krama Alus marang Guru",
+          namaSuku: "Suku Jawa (Pendhapa Kasatriyan)",
+          rumahAdat: "Pendhapa Tata Krama",
+          tokohNama: "Mbak Ayu",
+          tokohAvatar: "👧",
+          guruNama: "Pak Guru Hartono",
+          subMateri: "Pakurmatan marang Pendidik",
+          penjelasanGuru: "Nalika matur marang Bapak/Ibu Guru, wajib nggunakake Basa Krama Alus minangka tandha pakurmatan lan tata krama murid marang guru.",
+          silaKe: 2,
+          simbolSila: "🙏",
+          zPos: -105,
+          xPos: -14,
+          warnaKhas: "#fb923c",
+          pertanyaan: "Ukara matur marang Ibu Guru kang bener miturut unggah-ungguh yaiku:",
+          opsi: [
+            { id: "A", teks: "Nyuwun sewu Bu Guru, kula badhe nyuwun pirsa tugas matematika.", benar: true, penjelasan: "Santun sanget! Iku tuladha krama alus kang endah lan bener." },
+            { id: "B", teks: "He Bu, aku tak takon tugasku mau apa ya?", benar: false, penjelasan: "Kasar banget lan ora duwe tata krama marang guru." },
+            { id: "C", teks: "Bu Guru kon nerangne maneh saiki.", benar: false, penjelasan: "Ora sopan mrentah guru." },
+          ],
+        },
+        {
+          id: "unggah_pos3",
+          namaPos: "Pos 3: Nyuwun Sewu & Ndherek Langkung",
+          namaSuku: "Suku Jawa (Bale Subasita)",
+          rumahAdat: "Bale Andhap Asor",
+          tokohNama: "Mas Dhimas",
+          tokohAvatar: "🧑",
+          guruNama: "Pak Guru Widodo",
+          subMateri: "Tata Krama Nalika Lumaku",
+          penjelasanGuru: "Nalika mlaku ing sangarepe wong tuwa utawa bapak/ibu guru, awake mbungkuk sithik karo matur 'Ndherek langkung' utawa 'Nyuwun sewu'.",
+          silaKe: 3,
+          simbolSila: "🙇",
+          zPos: -165,
+          xPos: 14,
+          warnaKhas: "#4ade80",
+          pertanyaan: "Sikap kang bener nalika mlaku ing ngarepe bapak lan ibu guru kang lagi lenggah yaiku:",
+          opsi: [
+            { id: "A", teks: "Mbungkukake awak sethithik karo ngaturake 'ndherek langkung'.", benar: true, penjelasan: "Luar biasa! Subasita Jawa kang luhur lan adem ing ati." },
+            { id: "B", teks: "Mlayu banter karo mbengok-mbengok.", benar: false, penjelasan: "Mlayu ing ngarepe guru ora sopan." },
+            { id: "C", teks: "Mlaku karo nginguk munggah ora preduli.", benar: false, penjelasan: "Iku tumindak gumede." },
+          ],
+        },
+        {
+          id: "unggah_pos4",
+          namaPos: "Pos 4: Tembung Mangan vs Dahar",
+          namaSuku: "Suku Jawa (Griya Dhahar)",
+          rumahAdat: "Griya Budi Pekerti",
+          tokohNama: "Simbah Kakung",
+          tokohAvatar: "👴",
+          guruNama: "Pak Guru Slamet",
+          subMateri: "Mbedakake Tembung Krama marang Dhiri & Liyan",
+          penjelasanGuru: "Kanggo awake dhewe nggunakake 'nedha/mangan', dene kanggo bapak/ibu guru lan tiyang sepuh nggunakake tembung 'dhahar'.",
+          silaKe: 4,
+          simbolSila: "🍚",
+          zPos: -225,
+          xPos: -14,
+          warnaKhas: "#f87171",
+          pertanyaan: "Tembung krama alus kanggo 'mangan' tumrap Bapak/Ibu Guru yaiku:",
+          opsi: [
+            { id: "A", teks: "Dhahar", benar: true, penjelasan: "Tepat! Tuladhane: 'Bapak Guru saweg dhahar ing kantor'." },
+            { id: "B", teks: "Mangan", benar: false, penjelasan: "Mangan iku ngoko lugu." },
+            { id: "C", teks: "Nguntal", benar: false, penjelasan: "Nguntal iku tembung kasar kanggo kewan." },
+          ],
+        },
+        {
+          id: "unggah_pos5",
+          namaPos: "Pos 5: Budi Pekerti marang Tiyang Sepuh",
+          namaSuku: "Suku Jawa (Dalem Kulawarga)",
+          rumahAdat: "Dalem Ageng Guyub",
+          tokohNama: "Ibu Guru Rahayu",
+          tokohAvatar: "👩‍🏫",
+          guruNama: "Pak Guru Darmawan",
+          subMateri: "Mikul Dhuwur Mendhem Jero",
+          penjelasanGuru: "Budi pekerti marang wong tuwa diwujudake kanthi manut pituduhe, sregep sinau, lan ora wani mbantah kanthi swara seru.",
+          silaKe: 5,
+          simbolSila: "❤️",
+          zPos: -285,
+          xPos: 14,
+          warnaKhas: "#facc15",
+          pertanyaan: "Nalika diparingi weling utawa dhawuh dening wong tuwa ing omah, sikep kita yaiku:",
+          opsi: [
+            { id: "A", teks: "Ngrungokake kanthi gemati lan nindakake kanthi ikhlas.", benar: true, penjelasan: "Bocah bekti! Mikul dhuwur mendhem jero marang asmane tiyang sepuh." },
+            { id: "B", teks: "Mbantah lan muring-muring.", benar: false, penjelasan: "Ora pareng mbantah wong tuwa." },
+            { id: "C", teks: "Mung ethok-ethok krungu banjur ditinggal dolan.", benar: false, penjelasan: "Ora netepi dhawuh wong tuwa iku tumindak ora becik." },
+          ],
+        },
+      ];
+    }
+
+    // 4. MATERI PKN: GOTONG ROYONG
     if (rawChapter.includes("gotong") || rawTitle.includes("gotong")) {
       return [
         {
@@ -386,7 +1003,7 @@ export default function AdaptiveEduGameModal({
       ];
     }
 
-    // 2. MATERI BAB 3: NORMA & ATURAN
+    // 5. MATERI PKN: NORMA & ATURAN
     if (rawChapter.includes("norma") || rawTitle.includes("norma") || rawTitle.includes("aturan")) {
       return [
         {
@@ -502,7 +1119,7 @@ export default function AdaptiveEduGameModal({
       ];
     }
 
-    // 3. MATERI BAB 4: BHINNEKA TUNGGAL IKA
+    // 6. MATERI PKN: BHINNEKA TUNGGAL IKA
     if (rawChapter.includes("bhinneka") || rawTitle.includes("bhinneka") || rawTitle.includes("keragaman")) {
       return [
         {
@@ -618,8 +1235,7 @@ export default function AdaptiveEduGameModal({
       ];
     }
 
-    // 4. MATERI DEFAULT (BAB 1: MAKNA SILA KE-3 PANCASILA & PENGAMALAN 5 SILA)
-    // TERTAMPIL OTOMATIS SESUAI DASHBOARD SISWA SAAT MEMILIH BAB 1 / SILA KE-3
+    // 7. MATERI DEFAULT: BAB 1 SILA KE-3 & 5 SILA PANCASILA
     return [
       {
         id: "sila3_pos1",
@@ -2173,72 +2789,175 @@ export default function AdaptiveEduGameModal({
         aria-modal="true"
         aria-labelledby="game-title"
       >
-        {/* HUD ATAS MODERN & ROUNDED */}
-        <header className="h-16 bg-slate-900/90 backdrop-blur-md border-b border-yellow-400/40 text-white px-4 sm:px-6 flex items-center justify-between shrink-0 shadow-xl z-20">
-          <div className="flex items-center gap-3 min-w-0">
-            <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-2xl shadow-lg shrink-0">
-              🇮🇩
-            </span>
-            <div className="min-w-0">
-              <h2 id="game-title" className="font-black text-sm sm:text-base text-yellow-300 truncate tracking-wide">
-                PETUALANGAN PANCASILA: JELAJAH DESA NUSANTARA ONLINE
-              </h2>
-              <p className="text-[11px] text-slate-300 truncate">
-                Materi: <b className="text-emerald-400">{resolvedTitle}</b> • Teman Online: <b className="text-emerald-400">4 Siswa 🟢</b>
-              </p>
+        {/* HUD ATAS MODERN & ROUNDED DENGAN TAB PILIHAN TIPE GAME */}
+        <header className="bg-slate-900/95 backdrop-blur-md border-b border-yellow-400/40 text-white px-3 sm:px-6 py-2 flex flex-col sm:flex-row items-center justify-between gap-2.5 shrink-0 shadow-xl z-20">
+          <div className="flex items-center gap-3 min-w-0 w-full sm:w-auto justify-between sm:justify-start">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-2xl shadow-lg shrink-0">
+                {isJawaTopic ? "📜" : "🇮🇩"}
+              </span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h2 id="game-title" className="font-black text-xs sm:text-sm text-yellow-300 truncate tracking-wide">
+                    {isJawaTopic ? "SINAU BASA JAWA INTERAKTIF" : "PETUALANGAN PANCASILA: JELAJAH DESA NUSANTARA"}
+                  </h2>
+                  <span className="hidden md:inline-flex text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold border border-emerald-400/30">
+                    🟢 4 Siswa Online
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-300 truncate">
+                  Materi: <b className="text-emerald-400">{resolvedTitle}</b>
+                </p>
+              </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            {/* Papan Skor Kelas */}
+            {/* Tombol Keluar Mobile */}
             <button
               type="button"
               onClick={() => {
                 playClickSound();
-                setShowLeaderboard(true);
+                stopAdventureBgm();
+                stopGuruVoice();
+                onClose();
               }}
-              className="bg-indigo-600/90 hover:bg-indigo-600 text-white font-bold px-3.5 py-2 rounded-2xl text-xs shadow-md transition hover:scale-105 active:scale-95 flex items-center gap-1.5 cursor-pointer border border-indigo-400/40"
+              className="sm:hidden bg-red-600/90 hover:bg-red-700 text-white font-black px-2.5 py-1.5 rounded-xl text-xs shadow-md"
             >
-              <span>🏆</span>
-              <span className="hidden sm:inline">Papan Skor Kelas</span>
+              ✕
             </button>
+          </div>
 
-            {/* Poin Koin di Jalan */}
-            <div className="flex items-center gap-2 bg-slate-800/90 px-3.5 py-1.5 rounded-2xl border border-yellow-400/50 shadow-inner">
-              <span className="text-xs font-black text-yellow-300">
-                🪙 {adventureScore} Poin
-              </span>
-              <span className="text-[10px] bg-amber-500/30 text-amber-300 px-2 py-0.5 rounded-full font-bold">
-                ⭐ {coinsCollectedCount} Koin
-              </span>
-            </div>
-
-            {/* Progres 5 Pos Materi */}
-            <div className="hidden md:flex items-center gap-1 bg-slate-800/90 px-3 py-1.5 rounded-2xl border border-emerald-500/40 text-xs font-bold text-emerald-300">
-              <span>🏠</span>
-              <span>{visitedSukuIds.length}/5 Pos Selesai</span>
-            </div>
-
-            {/* Tombol Musik */}
+          {/* TAB SWITCHER TIPE GAME (SINKRON DENGAN TIPE MATERI) */}
+          <div className="flex items-center bg-slate-950/80 p-1 rounded-2xl border border-yellow-400/30 gap-1 shadow-inner">
             <button
               type="button"
               onClick={() => {
-                if (bgmEnabled) {
-                  stopAdventureBgm();
-                  setBgmEnabled(false);
-                } else {
-                  startAdventureBgm();
-                  setBgmEnabled(true);
-                }
+                playClickSound();
+                setGameMode("adventure");
               }}
-              className={`p-2 rounded-2xl text-xs font-bold transition flex items-center justify-center cursor-pointer ${
-                bgmEnabled
-                  ? "bg-teal-600 hover:bg-teal-700 text-white shadow-sm"
-                  : "bg-slate-700 hover:bg-slate-600 text-slate-300"
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                gameMode === "adventure"
+                  ? "bg-amber-500 text-slate-950 shadow-md font-black"
+                  : "text-slate-300 hover:text-white"
               }`}
             >
-              <span>{bgmEnabled ? "🔊" : "🔇"}</span>
+              <span>🏰</span>
+              <span className="hidden md:inline">Petualangan 3D</span>
             </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                playClickSound();
+                setGameMode("matching");
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                gameMode === "matching"
+                  ? "bg-amber-500 text-slate-950 shadow-md font-black"
+                  : "text-slate-300 hover:text-white"
+              }`}
+            >
+              <span>🧩</span>
+              <span className="hidden md:inline">Menjodohkan Kartu</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                playClickSound();
+                setGameMode("manus");
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                gameMode === "manus"
+                  ? "bg-cyan-500 text-slate-950 shadow-md font-black"
+                  : "text-slate-300 hover:text-white"
+              }`}
+            >
+              <span>🤖</span>
+              <span className="hidden md:inline">Generator Manus AI</span>
+            </button>
+          </div>
+
+          {/* HUD STATUS & KONTROL KANAN */}
+          <div className="hidden sm:flex items-center gap-2 sm:gap-2.5 shrink-0">
+            {gameMode === "adventure" && (
+              <>
+                {/* Papan Skor Kelas */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    playClickSound();
+                    setShowLeaderboard(true);
+                  }}
+                  className="bg-indigo-600/90 hover:bg-indigo-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow-md transition hover:scale-105 active:scale-95 flex items-center gap-1 cursor-pointer border border-indigo-400/40"
+                >
+                  <span>🏆</span>
+                  <span>Skor Kelas</span>
+                </button>
+
+                {/* Poin Koin di Jalan */}
+                <div className="flex items-center gap-1.5 bg-slate-800/90 px-3 py-1.5 rounded-xl border border-yellow-400/50 shadow-inner">
+                  <span className="text-xs font-black text-yellow-300">
+                    🪙 {adventureScore}
+                  </span>
+                  <span className="text-[10px] bg-amber-500/30 text-amber-300 px-1.5 py-0.5 rounded-md font-bold">
+                    ⭐ {coinsCollectedCount}
+                  </span>
+                </div>
+
+                {/* Progres 5 Pos Materi */}
+                <div className="hidden lg:flex items-center gap-1 bg-slate-800/90 px-2.5 py-1.5 rounded-xl border border-emerald-500/40 text-xs font-bold text-emerald-300">
+                  <span>🏠</span>
+                  <span>{visitedSukuIds.length}/5 Pos</span>
+                </div>
+
+                {/* Tombol Musik */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (bgmEnabled) {
+                      stopAdventureBgm();
+                      setBgmEnabled(false);
+                    } else {
+                      startAdventureBgm();
+                      setBgmEnabled(true);
+                    }
+                  }}
+                  className={`p-2 rounded-xl text-xs font-bold transition flex items-center justify-center cursor-pointer ${
+                    bgmEnabled
+                      ? "bg-teal-600 hover:bg-teal-700 text-white shadow-sm"
+                      : "bg-slate-700 hover:bg-slate-600 text-slate-300"
+                  }`}
+                  title="Musik Latar Game"
+                >
+                  <span>{bgmEnabled ? "🔊" : "🔇"}</span>
+                </button>
+              </>
+            )}
+
+            {gameMode === "matching" && (
+              <>
+                <div className="flex items-center gap-1.5 bg-slate-800 px-3 py-1.5 rounded-xl border border-yellow-400/40 text-xs font-bold text-yellow-300">
+                  <span>⏱️ {Math.floor(matchingTimer / 60)}:{(matchingTimer % 60).toString().padStart(2, "0")}</span>
+                </div>
+                <div className="flex items-center gap-1.5 bg-slate-800 px-3 py-1.5 rounded-xl border border-emerald-400/40 text-xs font-bold text-emerald-300">
+                  <span>⭐ {matchingScore} Poin</span>
+                </div>
+                {matchingCombo > 1 && (
+                  <div className="flex items-center gap-1 bg-amber-500/20 text-amber-300 border border-amber-400/50 px-2 py-1 rounded-xl text-xs font-black animate-pulse">
+                    🔥 {matchingCombo}x
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => restartMatchingGame()}
+                  className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-600 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                  title="Acak Ulang Kartu"
+                >
+                  <span>🔄</span>
+                  <span>Acak</span>
+                </button>
+              </>
+            )}
 
             {/* Tombol Keluar */}
             <button
@@ -2249,7 +2968,7 @@ export default function AdaptiveEduGameModal({
                 stopGuruVoice();
                 onClose();
               }}
-              className="bg-red-600 hover:bg-red-700 text-white font-black px-4 py-2 rounded-2xl text-xs shadow-md transition hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-1"
+              className="bg-red-600 hover:bg-red-700 text-white font-black px-3.5 py-1.5 rounded-xl text-xs shadow-md transition hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-1"
             >
               <span>✕</span>
               <span>Keluar</span>
@@ -2257,558 +2976,867 @@ export default function AdaptiveEduGameModal({
           </div>
         </header>
 
-        {/* CONTAINER ARENA FULLSCREEN 3D */}
+        {/* CONTAINER ARENA FULLSCREEN */}
         <div className="flex-1 w-full relative overflow-hidden flex flex-col items-center justify-center bg-slate-900">
-          {/* THREE.JS CANVAS MOUNT */}
-          <div ref={setMountEl} className="absolute inset-0 w-full h-full block" />
+          {/* THREE.JS CANVAS MOUNT (TETAP TERPASANG AGAR TIDAK CRASH SAAT TOGGLE MODE) */}
+          <div ref={setMountEl} className={gameMode === "adventure" ? "absolute inset-0 w-full h-full block" : "hidden"} />
 
-          {/* PETUNJUK LAYAR AWAL MENGARAHKAN KE PAK GURU (SESUAI REQUEST) */}
-          {!hasTalkedToGuru && gameStarted && (
-            <div className="absolute top-20 inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-30 max-w-lg bg-yellow-400 text-slate-950 p-3 rounded-2xl shadow-2xl text-center animate-bounce font-black text-xs sm:text-sm border-2 border-white flex items-center justify-center gap-2">
-              <span>👉</span>
-              <span>
-                PETUNJUK: Temui <b>Pak Guru Virtual</b> (di sebelah kiri gapura) lalu tekan <b>'E'</b> untuk penjelasan suara & cara bermain!
-              </span>
-            </div>
-          )}
-
-          {/* OVERLAY AWAL MULAI MAIN */}
-          {!gameStarted && (
-            <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-5 animate-in fade-in">
-              <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-yellow-400 via-amber-500 to-orange-500 flex items-center justify-center text-5xl shadow-2xl border-4 border-white animate-bounce">
-                🎒
-              </div>
-              <div className="space-y-2 max-w-lg">
-                <h3 className="font-black text-2xl sm:text-3xl text-yellow-300 tracking-wide">
-                  AYO MASUK KE DESA PANCASILA! 🇮🇩
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-                  Teman-teman sekelasmu sudah online! Di awal ada <b>Papan Skor Kelas</b> dan <b>Pak Guru Virtual</b> yang siap menjelaskan materi lewat suara. Kumpulkan koin di jalan dan kunjungi 5 rumah suku adat!
-                </p>
-                <div className="bg-slate-900/90 p-3.5 rounded-2xl border border-yellow-400/40 text-xs text-yellow-200 flex flex-wrap items-center justify-center gap-3">
-                  <span>🎮 <b>WASD / Panah</b>: Jalan</span>
-                  <span>•</span>
-                  <span>🟡 <b>Spasi</b>: Lompat</span>
-                  <span>•</span>
-                  <span>⚡ <b>Shift</b>: Sprint Lari</span>
-                  <span>•</span>
-                  <span>🎯 <b>E</b>: Bicara / Sapa Teman</span>
+          {/* ============================================================ */}
+          {/* MODE 1: PETUALANGAN 3D DESA & POS SUKU ADAT */}
+          {/* ============================================================ */}
+          {gameMode === "adventure" && (
+            <>
+              {/* PETUNJUK LAYAR AWAL MENGARAHKAN KE PAK GURU */}
+              {!hasTalkedToGuru && gameStarted && (
+                <div className="absolute top-4 inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-30 max-w-lg bg-yellow-400 text-slate-950 p-3 rounded-2xl shadow-2xl text-center animate-bounce font-black text-xs sm:text-sm border-2 border-white flex items-center justify-center gap-2">
+                  <span>👉</span>
+                  <span>
+                    PETUNJUK: Temui <b>Pak Guru Virtual</b> (di kiri gapura) lalu tekan <b>'E'</b> untuk panduan materi lewat suara!
+                  </span>
                 </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  playClickSound();
-                  setGameStarted(true);
-                  startAdventureBgm();
-                }}
-                className="bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-base sm:text-lg py-4 px-10 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition border-4 border-white flex items-center gap-3 cursor-pointer"
-              >
-                <span>▶️ MULAI MASUK DESA (DENGAN MUSIK 🎵)</span>
-              </button>
-            </div>
-          )}
+              )}
 
-          {/* NOTIFIKASI DI LAYAR */}
-          {activeNotification && (
-            <div className="absolute top-20 inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-30 max-w-md bg-slate-900/95 border-2 border-yellow-400 p-3.5 rounded-2xl shadow-2xl text-center animate-in fade-in zoom-in text-white text-xs sm:text-sm font-bold backdrop-blur-md">
-              {activeNotification}
-            </div>
-          )}
-
-          
-          {/* BALON INTERAKSI DADAH MENYAPA TEMAN ONLINE */}
-          {friendGreetingBubble && (
-            <div className="absolute bottom-28 inset-x-6 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-30 max-w-md bg-emerald-950/95 border-3 border-emerald-400 p-4 rounded-3xl shadow-2xl text-center animate-in zoom-in-95 text-white space-y-1 backdrop-blur-md">
-              <span className="text-xs text-emerald-400 font-black uppercase tracking-wider block">
-                👋 Sapaan dari {friendGreetingBubble.name} (Online)
-              </span>
-              <p className="text-xs sm:text-sm font-bold text-slate-100">
-                {friendGreetingBubble.text}
-              </p>
-            </div>
-          )}
-
-          {/* DIALOG PAK GURU VIRTUAL DENGAN VOICE SUARA ASLI INDONESIA */}
-          {showGuruDialog && (
-            <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
-              <div className="bg-slate-900/95 border-3 border-sky-400 rounded-3xl max-w-lg w-full p-6 text-white space-y-4 shadow-2xl">
-                <div className="flex items-center justify-between border-b border-slate-700 pb-3">
-                  <div className="flex items-center gap-3">
-                    <span className="w-14 h-14 rounded-2xl bg-sky-500/20 border border-sky-400 flex items-center justify-center text-3xl shadow-md">
-                      👨‍🏫
-                    </span>
-                    <div>
-                      <h3 className="font-black text-base sm:text-lg text-sky-300">
-                        Pak Guru Virtual
-                      </h3>
-                      <p className="text-xs text-slate-300">
-                        Pemandu Materi & Petualangan Pancasila
-                      </p>
+              {/* OVERLAY AWAL MULAI MAIN */}
+              {!gameStarted && (
+                <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-5 animate-in fade-in">
+                  <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-yellow-400 via-amber-500 to-orange-500 flex items-center justify-center text-5xl shadow-2xl border-4 border-white animate-bounce">
+                    🎒
+                  </div>
+                  <div className="space-y-2 max-w-lg">
+                    <h3 className="font-black text-2xl sm:text-3xl text-yellow-300 tracking-wide">
+                      AYO MASUK KE DESA NUSANTARA! 🇮🇩
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                      Teman-teman sekelasmu sudah online! Di awalan ada <b>Papan Skor Kelas</b> dan <b>Pak Guru Virtual</b> yang siap membimbingmu lewat suara. Kumpulkan koin dan selesaikan tantangan di 5 Pos Rumah Adat!
+                    </p>
+                    <div className="bg-slate-900/90 p-3.5 rounded-2xl border border-yellow-400/40 text-xs text-yellow-200 flex flex-wrap items-center justify-center gap-3">
+                      <span>🎮 <b>WASD / Panah</b>: Jalan</span>
+                      <span>•</span>
+                      <span>🟡 <b>Spasi</b>: Lompat</span>
+                      <span>•</span>
+                      <span>⚡ <b>Shift</b>: Sprint Lari</span>
+                      <span>•</span>
+                      <span>🎯 <b>E</b>: Interaksi / Kuis Pos</span>
+                      <span>•</span>
+                      <span>👋 <b>Q</b>: Sapa / Dadah Teman</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (isGuruSpeaking) {
-                          stopGuruVoice();
-                        } else {
-                          if (guruTab === "apa_itu") {
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playClickSound();
+                      setGameStarted(true);
+                      startAdventureBgm();
+                    }}
+                    className="bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-base sm:text-lg py-4 px-10 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition border-4 border-white flex items-center gap-3 cursor-pointer"
+                  >
+                    <span>▶️ MULAI MASUK DESA (DENGAN MUSIK 🎵)</span>
+                  </button>
+                </div>
+              )}
+
+              {/* BALON INTERAKSI DADAH MENYAPA TEMAN ONLINE */}
+              {friendGreetingBubble && (
+                <div className="absolute bottom-28 inset-x-6 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-30 max-w-md bg-emerald-950/95 border-3 border-emerald-400 p-4 rounded-3xl shadow-2xl text-center animate-in zoom-in-95 text-white space-y-1 backdrop-blur-md">
+                  <span className="text-xs text-emerald-400 font-black uppercase tracking-wider block">
+                    👋 Sapaan dari {friendGreetingBubble.name} (Online)
+                  </span>
+                  <p className="text-xs sm:text-sm font-bold text-slate-100">
+                    {friendGreetingBubble.text}
+                  </p>
+                </div>
+              )}
+
+              {/* DIALOG PAK GURU VIRTUAL DENGAN VOICE SUARA DINAMIS SESUAI TOPIK */}
+              {showGuruDialog && (
+                <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+                  <div className="bg-slate-900/95 border-3 border-sky-400 rounded-3xl max-w-lg w-full p-6 text-white space-y-4 shadow-2xl">
+                    <div className="flex items-center justify-between border-b border-slate-700 pb-3">
+                      <div className="flex items-center gap-3">
+                        <span className="w-14 h-14 rounded-2xl bg-sky-500/20 border border-sky-400 flex items-center justify-center text-3xl shadow-md">
+                          👨‍🏫
+                        </span>
+                        <div>
+                          <h3 className="font-black text-base sm:text-lg text-sky-300">
+                            Pak Guru Virtual
+                          </h3>
+                          <p className="text-xs text-slate-300">
+                            Pemandu Materi & Petualangan Siswa
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (isGuruSpeaking) {
+                              stopGuruVoice();
+                            } else {
+                              if (isJawaTopic) {
+                                if (guruTab === "apa_itu") {
+                                  speakGuruVoice(
+                                    "Materi Basa Jawa ngemot piwulang luhur babagan unggah-ungguh, tata krama, aksara Jawa, lan watak pewayangan Punokawan sarta Pandhawa minangka paugeran urip kang becik."
+                                  );
+                                } else if (guruTab === "makna_sila") {
+                                  speakGuruVoice(
+                                    "Piwulang Utama: Aksara Jawa kanggo nguri-uri kabudayan, Punokawan mulangake guyub rukun lan andhap asor, sarta unggah-ungguh basa kanggo ngurmati sesama."
+                                  );
+                                } else {
+                                  speakGuruVoice(
+                                    "Cara main: Kowe bisa mlaku ing Desa Nusantara nganggo WASD, njawab kuis ing 5 pos, utawa nyoba game teka-teki njodohake kertu aksara lan wayang ing tab ndhuwur!"
+                                  );
+                                }
+                              } else {
+                                if (guruTab === "apa_itu") {
+                                  speakGuruVoice(
+                                    "Pancasila adalah lima dasar dan pedoman hidup luhur bangsa Indonesia yang menyatukan kita semua dari Sabang sampai Merauke."
+                                  );
+                                } else if (guruTab === "makna_sila") {
+                                  speakGuruVoice(
+                                    "Sila 1 Ketuhanan: saling menghormati ibadah teman. Sila 2 Kemanusiaan: tolong menolong tanpa pamrih. Sila 3 Persatuan: rukun berbeda suku. Sila 4 Kerakyatan: musyawarah mufakat. Sila 5 Keadilan: bersikap adil dan gotong royong."
+                                  );
+                                } else {
+                                  speakGuruVoice(
+                                    "Cara mainnya mudah: jalan dengan WASD atau panah, ambil koin emas di jalan, kunjungi 5 rumah suku adat di kiri dan kanan jalan lalu tekan E untuk menjawab kuis dan sapa teman sekelasmu!"
+                                  );
+                                }
+                              }
+                            }
+                          }}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                            isGuruSpeaking
+                              ? "bg-rose-600 text-white animate-pulse"
+                              : "bg-sky-500 hover:bg-sky-600 text-white"
+                          }`}
+                        >
+                          <span>{isGuruSpeaking ? "⏹️ Hentikan Suara" : "🔊 Putar Suara Guru"}</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Tab Pilihan Penjelasan Pak Guru */}
+                    <div className="flex items-center gap-2 p-1 bg-slate-800 rounded-2xl border border-slate-700">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setGuruTab("apa_itu");
+                          if (isJawaTopic) {
+                            speakGuruVoice(
+                              "Basa Jawa mulangake subasita, tata krama, lan unggah-ungguh basa marang tiyang sepuh sarta bapak/ibu guru. Uga nepangake watak satria luhur pewayangan lan aksara Jawa."
+                            );
+                          } else {
                             speakGuruVoice(
                               "Pancasila adalah lima dasar dan pedoman hidup luhur bangsa Indonesia yang menyatukan kita semua dari Sabang sampai Merauke."
                             );
-                          } else if (guruTab === "makna_sila") {
+                          }
+                        }}
+                        className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+                          guruTab === "apa_itu"
+                            ? "bg-sky-500 text-white shadow-md"
+                            : "text-slate-300 hover:text-white"
+                        }`}
+                      >
+                        {isJawaTopic ? "📖 Piwulang Basa Jawa" : "📖 Apa Itu Pancasila?"}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setGuruTab("makna_sila");
+                          if (isJawaTopic) {
+                            speakGuruVoice(
+                              "Piwulang Utama: Aksara Jawa kanggo nguri-uri kabudayan, Punokawan mulangake guyub rukun lan andhap asor, sarta unggah-ungguh basa kanggo ngurmati sesama."
+                            );
+                          } else {
                             speakGuruVoice(
                               "Sila 1 Ketuhanan: saling menghormati ibadah teman. Sila 2 Kemanusiaan: tolong menolong tanpa pamrih. Sila 3 Persatuan: rukun berbeda suku. Sila 4 Kerakyatan: musyawarah mufakat. Sila 5 Keadilan: bersikap adil dan gotong royong."
+                            );
+                          }
+                        }}
+                        className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+                          guruTab === "makna_sila"
+                            ? "bg-sky-500 text-white shadow-md"
+                            : "text-slate-300 hover:text-white"
+                        }`}
+                      >
+                        {isJawaTopic ? "⭐ Titikan & Piwulang" : "⭐ Makna 5 Sila & Aksi"}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setGuruTab("cara_main");
+                          if (isJawaTopic) {
+                            speakGuruVoice(
+                              "Cara main: Kowe bisa mlaku ing Desa Nusantara nganggo WASD, njawab kuis ing 5 pos, utawa nyoba game teka-teki njodohake kertu aksara lan wayang ing tab ndhuwur!"
                             );
                           } else {
                             speakGuruVoice(
                               "Cara mainnya mudah: jalan dengan WASD atau panah, ambil koin emas di jalan, kunjungi 5 rumah suku adat di kiri dan kanan jalan lalu tekan E untuk menjawab kuis dan sapa teman sekelasmu!"
                             );
                           }
-                        }
-                      }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                        isGuruSpeaking
-                          ? "bg-rose-600 text-white animate-pulse"
-                          : "bg-sky-500 hover:bg-sky-600 text-white"
-                      }`}
-                    >
-                      <span>{isGuruSpeaking ? "⏹️ Hentikan Suara" : "🔊 Putar Suara Guru"}</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Tab Pilihan Penjelasan Pak Guru */}
-                <div className="flex items-center gap-2 p-1 bg-slate-800 rounded-2xl border border-slate-700">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setGuruTab("apa_itu");
-                      speakGuruVoice(
-                        "Pancasila adalah lima dasar dan pedoman hidup luhur bangsa Indonesia yang menyatukan kita semua dari Sabang sampai Merauke."
-                      );
-                    }}
-                    className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
-                      guruTab === "apa_itu"
-                        ? "bg-sky-500 text-white shadow-md"
-                        : "text-slate-300 hover:text-white"
-                    }`}
-                  >
-                    📖 Apa Itu Pancasila?
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setGuruTab("makna_sila");
-                      speakGuruVoice(
-                        "Sila 1 Ketuhanan: saling menghormati ibadah teman. Sila 2 Kemanusiaan: tolong menolong tanpa pamrih. Sila 3 Persatuan: rukun berbeda suku. Sila 4 Kerakyatan: musyawarah mufakat. Sila 5 Keadilan: bersikap adil dan gotong royong."
-                      );
-                    }}
-                    className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
-                      guruTab === "makna_sila"
-                        ? "bg-sky-500 text-white shadow-md"
-                        : "text-slate-300 hover:text-white"
-                    }`}
-                  >
-                    ⭐ Makna 5 Sila & Aksi
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setGuruTab("cara_main");
-                      speakGuruVoice(
-                        "Cara mainnya mudah: jalan dengan WASD atau panah, ambil koin emas di jalan, kunjungi 5 rumah suku adat di kiri dan kanan jalan lalu tekan E untuk menjawab kuis dan sapa teman sekelasmu!"
-                      );
-                    }}
-                    className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
-                      guruTab === "cara_main"
-                        ? "bg-sky-500 text-white shadow-md"
-                        : "text-slate-300 hover:text-white"
-                    }`}
-                  >
-                    🎮 Cara Main Game
-                  </button>
-                </div>
-
-                {/* Konten Penjelasan Sesuai Tab */}
-                <div className="bg-slate-800/90 p-4 rounded-2xl border border-slate-700 text-xs sm:text-sm leading-relaxed text-slate-200 space-y-2">
-                  {guruTab === "apa_itu" && (
-                    <div className="space-y-2">
-                      <b className="text-yellow-300 block">Pondasi Luhur Bangsa Indonesia:</b>
-                      <p>
-                        "Pancasila adalah lima dasar dan pedoman hidup luhur bangsa Indonesia yang dirumuskan oleh para pendiri bangsa. Nilai-nilai ini menjadi perekat persatuan di tengah keberagaman ratusan suku bangsa dan budaya Nusantara."
-                      </p>
+                        }}
+                        className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+                          guruTab === "cara_main"
+                            ? "bg-sky-500 text-white shadow-md"
+                            : "text-slate-300 hover:text-white"
+                        }`}
+                      >
+                        🎮 Cara Main Game
+                      </button>
                     </div>
-                  )}
 
-                  {guruTab === "makna_sila" && (
-                    <div className="space-y-1.5 text-xs">
-                      <div>⭐ <b>Sila 1</b>: Menghormati teman beribadah & rukun antarumat beragama.</div>
-                      <div>⛓️ <b>Sila 2</b>: Gemar menolong sesama & tidak mengejek teman (anti-bullying).</div>
-                      <div>🌳 <b>Sila 3</b>: Bangga bermain rukun dengan teman dari berbagai suku daerah.</div>
-                      <div>🐂 <b>Sila 4</b>: Mengutamakan musyawarah mufakat dalam mengambil keputusan bersama.</div>
-                      <div>🌾 <b>Sila 5</b>: Bersikap adil, tidak pilih kasih, dan suka gotong royong.</div>
+                    {/* Konten Penjelasan Sesuai Tab */}
+                    <div className="bg-slate-800/90 p-4 rounded-2xl border border-slate-700 text-xs sm:text-sm leading-relaxed text-slate-200 space-y-2">
+                      {guruTab === "apa_itu" && (
+                        <div className="space-y-2">
+                          <b className="text-yellow-300 block">
+                            {isJawaTopic ? "Piwulang Luhur Kabudayan Jawa:" : "Pondasi Luhur Bangsa Indonesia:"}
+                          </b>
+                          <p>
+                            {isJawaTopic
+                              ? "Basa Jawa mulangake subasita, tata krama, lan unggah-ungguh basa marang tiyang sepuh sarta bapak/ibu guru. Uga nepangake watak satria luhur pewayangan (Punokawan & Pandhawa) sarta aksara Jawa minangka warisan adi luhung bangsa."
+                              : "Pancasila adalah lima dasar dan pedoman hidup luhur bangsa Indonesia yang dirumuskan oleh para pendiri bangsa. Nilai-nilai ini menjadi perekat persatuan di tengah keberagaman ratusan suku bangsa dan budaya Nusantara."}
+                          </p>
+                        </div>
+                      )}
+
+                      {guruTab === "makna_sila" && (
+                        <div className="space-y-1.5 text-xs">
+                          {isJawaTopic ? (
+                            <>
+                              <div>📜 <b>Aksara Jawa</b>: Nguri-uri aksara legena (Ha-Na-Ca-Ra-Ka) lan sandhangan swara.</div>
+                              <div>🎭 <b>Punokawan</b>: Semar (wicaksana), Gareng (ngati-ati), Petruk (loman), Bagong (jujur).</div>
+                              <div>👑 <b>Pandhawa Lima</b>: Puntadewa, Werkudara, Janaka, Nakula, Sadewa minangka tuladha satria.</div>
+                              <div>🗣️ <b>Unggah-Ungguh Basa</b>: Ngoko lugu kanca sakelas, Krama Alus marang bapak/ibu guru.</div>
+                            </>
+                          ) : (
+                            <>
+                              <div>⭐ <b>Sila 1</b>: Menghormati teman beribadah & rukun antarumat beragama.</div>
+                              <div>⛓️ <b>Sila 2</b>: Gemar menolong sesama & tidak mengejek teman (anti-bullying).</div>
+                              <div>🌳 <b>Sila 3</b>: Bangga bermain rukun dengan teman dari berbagai suku daerah.</div>
+                              <div>🐂 <b>Sila 4</b>: Mengutamakan musyawarah mufakat dalam mengambil keputusan bersama.</div>
+                              <div>🌾 <b>Sila 5</b>: Bersikap adil, tidak pilih kasih, dan suka gotong royong.</div>
+                            </>
+                          )}
+                        </div>
+                      )}
+
+                      {guruTab === "cara_main" && (
+                        <div className="space-y-2">
+                          <b className="text-emerald-300 block">Panduan Petualangan & Game:</b>
+                          <p>
+                            1. <b>Jalan</b> melewati Gapura Nusantara dengan tombol WASD atau Panah.<br />
+                            2. <b>Kumpulkan Koin Emas (+5 Poin)</b> yang bertebaran di sepanjang jalan desa.<br />
+                            3. <b>Kunjungi 5 Rumah Pos Adat</b> lalu tekan <b>'E'</b> untuk menjawab kuis materi (+25 Poin).<br />
+                            4. <b>Sapa Teman Sekelas Online</b> dengan menekan tombol <b>'Q'</b> atau <b>'Dada'</b>!<br />
+                            5. <b>Teka-Teki Kartu:</b> Pilih tab <b>Menjodohkan Kartu</b> di bagian atas untuk mencocokkan pasangan kata & aksara!
+                          </p>
+                        </div>
+                      )}
                     </div>
-                  )}
 
-                  {guruTab === "cara_main" && (
-                    <div className="space-y-2">
-                      <b className="text-emerald-300 block">Panduan Petualangan Jelajah:</b>
-                      <p>
-                        1. <b>Jalan</b> melewati Gapura Nusantara dengan tombol WASD atau Panah.<br />
-                        2. <b>Kumpulkan Koin Emas (+5 Poin)</b> yang bertebaran di sepanjang jalan desa.<br />
-                        3. <b>Kunjungi 5 Rumah Suku Adat</b> (Jawa, Sunda, Minang, Dayak, Papua) lalu tekan <b>'E'</b> untuk kuis (+25 Poin).<br />
-                        4. <b>Sapa Teman Sekelas Online</b> yang sedang berpapasan dengan menekan <b>'E'</b>!
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex justify-between items-center pt-2">
-                  <span className="text-[11px] text-slate-400">
-                    {isGuruSpeaking ? "🔊 Sedang bersuara..." : "Tekan tombol audio untuk suara"}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      stopGuruVoice();
-                      setShowGuruDialog(false);
-                      setActiveNotification("🚀 Petunjuk selesai! Silakan mulai menjelajahi jalan desa!");
-                      setTimeout(() => setActiveNotification(null), 3000);
-                    }}
-                    className="bg-sky-500 hover:bg-sky-600 text-white font-bold py-2.5 px-6 rounded-2xl text-xs transition cursor-pointer"
-                  >
-                    Siap, Pak Guru! Mulai Petualangan 🚀
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* DIALOG POPUP POS MATERI & KUIS BERSAMA PENUNGGU PAK GURU (LEBIH RINGKAS & NYAMAN) */}
-          {activeSukuDialog && (
-            <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 animate-in fade-in">
-              <div className="bg-slate-900/95 border-2 border-yellow-400 rounded-3xl max-w-md w-full p-4 sm:p-4.5 text-white space-y-2.5 shadow-2xl max-h-[92vh] overflow-y-auto">
-                {/* Header Pos & Guru Kompak */}
-                <div className="flex items-center justify-between border-b border-slate-700/80 pb-2">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="w-10 h-10 rounded-xl bg-yellow-400/20 border border-yellow-400 flex items-center justify-center text-2xl shadow shrink-0">
-                      {activeSukuDialog.tokohAvatar}
-                    </span>
-                    <div className="min-w-0">
-                      <span className="text-[10px] font-black text-yellow-400 uppercase tracking-wider block truncate">
-                        🏷️ {activeSukuDialog.namaPos}
+                    <div className="flex justify-between items-center pt-2">
+                      <span className="text-[11px] text-slate-400">
+                        {isGuruSpeaking ? "🔊 Sedang bersuara..." : "Tekan tombol audio untuk suara"}
                       </span>
-                      <h3 className="font-black text-sm text-white truncate">
-                        {activeSukuDialog.namaSuku}
-                      </h3>
-                      <p className="text-[11px] text-sky-300 font-semibold truncate">
-                        👨‍🏫 {activeSukuDialog.guruNama} • {activeSukuDialog.tokohNama}
-                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          stopGuruVoice();
+                          setShowGuruDialog(false);
+                          setActiveNotification("🚀 Petunjuk selesai! Silakan mulai menjelajahi jalan desa!");
+                          setTimeout(() => setActiveNotification(null), 3000);
+                        }}
+                        className="bg-sky-500 hover:bg-sky-600 text-white font-bold py-2.5 px-6 rounded-2xl text-xs transition cursor-pointer"
+                      >
+                        Siap, Pak Guru! Mulai Petualangan 🚀
+                      </button>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (isGuruSpeaking) {
-                        stopGuruVoice();
-                      } else {
-                        speakGuruVoice(
-                          `Halo anak hebat! Selamat datang di ${activeSukuDialog.namaPos}. ${activeSukuDialog.penjelasanGuru}`
-                        );
-                      }
-                    }}
-                    className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition flex items-center gap-1 cursor-pointer shrink-0 ${
-                      isGuruSpeaking
-                        ? "bg-rose-600 text-white animate-pulse"
-                        : "bg-sky-500 hover:bg-sky-600 text-white shadow"
-                    }`}
-                  >
-                    <span>{isGuruSpeaking ? "⏹️ Hentikan" : "🔊 Suara Guru"}</span>
-                  </button>
                 </div>
+              )}
 
-                {/* Kotak Ringkas Penjelasan Materi dari Pak Guru Penunggu Pos */}
-                <div className="bg-sky-950/60 border border-sky-400/50 p-2.5 rounded-2xl space-y-0.5 text-xs leading-relaxed text-slate-100">
-                  <div className="text-sky-300 font-black text-[11px] uppercase tracking-wider">
-                    💡 Materi: {activeSukuDialog.subMateri}
-                  </div>
-                  <p className="text-[11px] sm:text-xs text-sky-100 italic">
-                    "{activeSukuDialog.penjelasanGuru}"
-                  </p>
-                </div>
-
-                {/* Soal Kuis Tantangan */}
-                <div className="bg-slate-800/80 p-2.5 rounded-2xl border border-slate-700 text-xs leading-relaxed text-slate-100 font-medium">
-                  <b className="text-yellow-300">🎯 Kuis:</b> "{activeSukuDialog.pertanyaan}"
-                </div>
-
-                <div className="space-y-1.5 pt-0.5">
-                  {activeSukuDialog.opsi.map((opt) => (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => handleAnswerSuku(activeSukuDialog, opt.id)}
-                      className={`w-full text-left p-2.5 rounded-xl transition text-xs font-semibold flex items-start gap-2.5 cursor-pointer border ${
-                        selectedAnswer === opt.id
-                          ? opt.benar
-                            ? "bg-emerald-600/30 border-emerald-400 text-emerald-200"
-                            : "bg-rose-600/30 border-rose-400 text-rose-200"
-                          : "bg-slate-800/90 hover:bg-slate-700/90 border-slate-700 text-slate-200"
-                      }`}
-                    >
-                      <span className="w-5 h-5 rounded-lg bg-yellow-400 text-slate-950 font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
-                        {opt.id}
-                      </span>
-                      <span className="leading-snug">{opt.teks}</span>
-                    </button>
-                  ))}
-                </div>
-
-                {answerFeedback && (
-                  <div
-                    className={`p-2 rounded-xl text-xs font-bold animate-in fade-in ${
-                      answerFeedback.isCorrect
-                        ? "bg-emerald-950/80 border border-emerald-400 text-emerald-300"
-                        : "bg-rose-950/80 border border-rose-400 text-rose-300"
-                    }`}
-                  >
-                    {answerFeedback.isCorrect ? "✅ Benar! +25 Poin! " : "❌ Kurang Tepat: "}
-                    {answerFeedback.text}
-                  </div>
-                )}
-
-                <div className="pt-1 flex justify-between items-center">
-                  <span className="text-[10px] text-slate-400 font-medium">
-                    {visitedSukuIds.includes(activeSukuDialog.id) ? "✓ Sudah Diselesaikan" : "Belum Selesai"}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      stopGuruVoice();
-                      setActiveSukuDialog(null);
-                    }}
-                    className="bg-slate-800 hover:bg-slate-700 text-white font-bold py-1.5 px-4 rounded-xl text-xs transition cursor-pointer"
-                  >
-                    Tutup Dialog
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* MODAL PAPAN SKOR KELAS */}
-          {showLeaderboard && (
-            <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
-              <div className="bg-slate-900/95 border-3 border-indigo-400 rounded-3xl max-w-md w-full p-6 text-white space-y-4 shadow-2xl">
-                <div className="flex items-center justify-between border-b border-slate-700 pb-3">
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-3xl">🏆</span>
-                    <div>
-                      <h3 className="font-black text-base text-indigo-300">
-                        Papan Skor Siswa Kelas Online
-                      </h3>
-                      <p className="text-[11px] text-slate-400">
-                        Peringkat kawan sekelas yang aktif di Petualangan Pancasila
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowLeaderboard(false)}
-                    className="text-slate-400 hover:text-white text-base px-2 py-1"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                <div className="space-y-2 text-xs">
-                  {classLeaderboard.map((s, idx) => (
-                    <div
-                      key={idx}
-                      className={`p-3 rounded-2xl flex items-center justify-between border transition ${
-                        s.isPlayer
-                          ? "bg-yellow-400/20 border-yellow-400 font-bold text-yellow-300 shadow-md ring-1 ring-yellow-400/60"
-                          : "bg-slate-800/80 border-slate-700 text-slate-300"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="w-6 font-black text-center text-sm">
-                          {idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${idx + 1}`}
+              {/* DIALOG POPUP POS MATERI & KUIS BERSAMA PENUNGGU PAK GURU */}
+              {activeSukuDialog && (
+                <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 animate-in fade-in">
+                  <div className="bg-slate-900/95 border-2 border-yellow-400 rounded-3xl max-w-md w-full p-4 sm:p-4.5 text-white space-y-2.5 shadow-2xl max-h-[92vh] overflow-y-auto">
+                    {/* Header Pos & Guru Kompak */}
+                    <div className="flex items-center justify-between border-b border-slate-700/80 pb-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-400 to-yellow-500 flex items-center justify-center text-xl shadow-md shrink-0">
+                          {activeSukuDialog.tokohAvatar || "🏠"}
                         </span>
-                        <span className="text-lg">{s.avatar}</span>
                         <div className="min-w-0">
-                          <span className="block font-black text-white">{s.name}</span>
-                          <span className="text-[10px] text-slate-400">
-                            Kostum: {s.costume} • <span className="text-emerald-400">{s.status}</span>
-                          </span>
+                          <h4 className="font-black text-xs sm:text-sm text-yellow-300 truncate">
+                            {activeSukuDialog.namaPos}
+                          </h4>
+                          <p className="text-[10px] sm:text-[11px] text-slate-300 truncate">
+                            Penunggu: <b className="text-white">{activeSukuDialog.guruNama || activeSukuDialog.tokohNama}</b>
+                          </p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <span className="font-black text-sm text-yellow-300 block">{s.points} Poin</span>
+                      <span className="text-[10px] bg-yellow-400/20 text-yellow-300 font-bold px-2 py-0.5 rounded-full border border-yellow-400/30 shrink-0">
+                        Sila {activeSukuDialog.silaKe} {activeSukuDialog.simbolSila}
+                      </span>
+                    </div>
+
+                    {/* Penjelasan Ringkas Guru */}
+                    <div className="bg-slate-800/90 border border-slate-700/70 p-3 rounded-2xl text-xs leading-relaxed text-slate-200">
+                      <div className="text-[10px] uppercase font-bold text-yellow-400 mb-1 flex items-center gap-1">
+                        <span>💡</span>
+                        <span>Materi Singkat: {activeSukuDialog.subMateri || activeSukuDialog.namaSuku}</span>
+                      </div>
+                      <p className="text-slate-100">{activeSukuDialog.penjelasanGuru}</p>
+                    </div>
+
+                    {/* Pertanyaan Kuis Pos */}
+                    <div className="space-y-2 pt-0.5">
+                      <div className="text-xs font-bold text-sky-300">
+                        ❓ Pertanyaan Kuis (+25 Poin):
+                      </div>
+                      <p className="text-xs sm:text-sm font-semibold text-white leading-snug">
+                        {activeSukuDialog.pertanyaan}
+                      </p>
+
+                      {/* Pilihan Jawaban */}
+                      <div className="space-y-1.5 pt-1">
+                        {activeSukuDialog.opsi.map((opsi) => {
+                          const isPicked = selectedAnswer === opsi.id;
+                          return (
+                            <button
+                              key={opsi.id}
+                              type="button"
+                              onClick={() => {
+                                if (answerFeedback) return;
+                                setSelectedAnswer(opsi.id);
+                                playClickSound();
+
+                                if (opsi.benar) {
+                                  playCorrectSound();
+                                  setAnswerFeedback({
+                                    isCorrect: true,
+                                    text: `Hebat! ${opsi.penjelasan}`,
+                                  });
+                                  setAdventureScore((s) => s + 25);
+                                  addPoints(25, `Menjawab kuis pos: ${activeSukuDialog.namaPos}`);
+                                  setVisitedSukuIds((prev) =>
+                                    prev.includes(activeSukuDialog.id) ? prev : [...prev, activeSukuDialog.id]
+                                  );
+                                } else {
+                                  playOofSound();
+                                  setAnswerFeedback({
+                                    isCorrect: false,
+                                    text: `Kurang tepat. ${opsi.penjelasan}`,
+                                  });
+                                }
+                              }}
+                              className={`w-full text-left p-2.5 rounded-2xl text-xs font-semibold transition border flex items-center justify-between cursor-pointer ${
+                                isPicked
+                                  ? opsi.benar
+                                    ? "bg-emerald-600/90 border-emerald-400 text-white"
+                                    : "bg-rose-600/90 border-rose-400 text-white"
+                                  : "bg-slate-800/80 hover:bg-slate-700 border-slate-700 text-slate-200"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="w-5 h-5 rounded-full bg-slate-900/60 flex items-center justify-center text-[10px] font-bold text-yellow-300">
+                                  {opsi.id}
+                                </span>
+                                <span>{opsi.teks}</span>
+                              </div>
+                              {isPicked && (
+                                <span>{opsi.benar ? "✓" : "✗"}</span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Feedback Hasil */}
+                      {answerFeedback && (
+                        <div
+                          className={`p-2.5 rounded-2xl text-xs font-bold animate-in fade-in ${
+                            answerFeedback.isCorrect
+                              ? "bg-emerald-950/80 border border-emerald-400 text-emerald-200"
+                              : "bg-rose-950/80 border border-rose-400 text-rose-200"
+                          }`}
+                        >
+                          {answerFeedback.text}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Tombol Tutup / Selesai Kuis */}
+                    <div className="pt-2 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          playClickSound();
+                          setActiveSukuDialog(null);
+                          setSelectedAnswer(null);
+                          setAnswerFeedback(null);
+                        }}
+                        className="bg-yellow-400 hover:bg-yellow-500 text-slate-950 font-black py-2 px-5 rounded-2xl text-xs shadow-md transition cursor-pointer"
+                      >
+                        {answerFeedback?.isCorrect ? "Lanjut Petualangan 🚀" : "Tutup"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* PAPAN SKOR POPUP */}
+              {showLeaderboard && (
+                <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+                  <div className="bg-slate-900 border-3 border-indigo-400 rounded-3xl max-w-md w-full p-6 text-white space-y-4 shadow-2xl">
+                    <div className="flex items-center justify-between border-b border-slate-700 pb-3">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-3xl">🏆</span>
+                        <div>
+                          <h3 className="font-black text-base text-yellow-300">
+                            Papan Skor Kelas Online
+                          </h3>
+                          <p className="text-xs text-slate-300">
+                            Peringkat petualang terhebat di kelasmu
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowLeaderboard(false)}
+                        className="text-slate-400 hover:text-white text-lg font-bold cursor-pointer"
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    <div className="space-y-2">
+                      {[
+                        { rank: 1, name: studentName + " (Kamu)", score: adventureScore, me: true, avatar: "🎒" },
+                        { rank: 2, name: "Siti Rahmawati", score: peerScores.siti, avatar: "👧" },
+                        { rank: 3, name: "Budi Santoso", score: peerScores.budi, avatar: "👦" },
+                        { rank: 4, name: "Edo Silaban", score: peerScores.edo, avatar: "🧒" },
+                        { rank: 5, name: "Dayu Astuti", score: peerScores.dayu, avatar: "👧" },
+                      ]
+                        .sort((a, b) => b.score - a.score)
+                        .map((item, idx) => (
+                          <div
+                            key={item.name}
+                            className={`flex items-center justify-between p-2.5 rounded-2xl border text-xs ${
+                              item.me
+                                ? "bg-amber-500/20 border-yellow-400 text-yellow-200 font-bold"
+                                : "bg-slate-800/80 border-slate-700 text-slate-300"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="w-6 h-6 rounded-full bg-slate-900 flex items-center justify-center font-black text-yellow-400">
+                                #{idx + 1}
+                              </span>
+                              <span>{item.avatar}</span>
+                              <span className="truncate max-w-[150px]">{item.name}</span>
+                            </div>
+                            <span className="font-black text-yellow-300">
+                              🪙 {item.score} Poin
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowLeaderboard(false)}
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-2xl text-xs transition cursor-pointer"
+                    >
+                      Tutup Papan Skor
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* SELEBRASI AKHIR KELILING 5 SUKU SELESAI */}
+              {allSukuCompleted && (
+                <div className="absolute inset-0 z-40 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-6 animate-in zoom-in-95 text-center">
+                  <div className="bg-slate-900 border-4 border-yellow-400 rounded-3xl max-w-lg w-full p-8 text-white space-y-5 shadow-2xl">
+                    <div className="w-24 h-24 rounded-full bg-yellow-400/20 border-3 border-yellow-400 flex items-center justify-center text-5xl mx-auto animate-bounce">
+                      🏆
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="font-black text-2xl sm:text-3xl text-yellow-300">
+                        SELAMAT! KAMU JUARA PENJELAJAH! 🇮🇩
+                      </h3>
+                      <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                        Kamu telah mengunjungi seluruh 5 Pos Pembelajaran bersama para penunggu Pak Guru dan menyelesaikan kuis materi dengan gemilang!
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-yellow-400/10 border border-yellow-400/50 rounded-2xl space-y-1">
+                      <div className="text-xs text-yellow-300 uppercase tracking-widest font-black">
+                        Pencapaian Prestasi Pelajar:
+                      </div>
+                      <div className="text-lg font-black text-white">
+                        🎖️ BINTANG PETUALANG KELAS
+                      </div>
+                      <div className="text-xs text-emerald-400 font-bold pt-1">
+                        🪙 Total Skor: {adventureScore} Poin • ⭐ {coinsCollectedCount} Koin Terkumpul
                       </div>
                     </div>
-                  ))}
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        playClickSound();
+                        setAllSukuCompleted(false);
+                        setVisitedSukuIds([]);
+                      }}
+                      className="w-full bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-slate-950 font-black py-3 rounded-2xl text-sm shadow-xl transition cursor-pointer"
+                    >
+                      🔄 Keliling Desa Sekali Lagi
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* VIRTUAL CONTROLLER DI LAYAR */}
+              <div className="absolute bottom-4 inset-x-4 sm:inset-x-8 z-20 flex items-center justify-between pointer-events-none">
+                {/* D-Pad Navigasi */}
+                <div className="grid grid-cols-3 gap-1.5 pointer-events-auto">
+                  <div />
+                  <button
+                    type="button"
+                    onMouseDown={() => (keysRef.current.forward = true)}
+                    onMouseUp={() => (keysRef.current.forward = false)}
+                    onTouchStart={() => (keysRef.current.forward = true)}
+                    onTouchEnd={() => (keysRef.current.forward = false)}
+                    className="w-12 h-12 rounded-2xl bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-950 text-white border border-yellow-400/60 font-black text-lg shadow-lg flex items-center justify-center cursor-pointer active:scale-90"
+                  >
+                    ▲
+                  </button>
+                  <div />
+                  <button
+                    type="button"
+                    onMouseDown={() => (keysRef.current.left = true)}
+                    onMouseUp={() => (keysRef.current.left = false)}
+                    onTouchStart={() => (keysRef.current.left = true)}
+                    onTouchEnd={() => (keysRef.current.left = false)}
+                    className="w-12 h-12 rounded-2xl bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-950 text-white border border-yellow-400/60 font-black text-lg shadow-lg flex items-center justify-center cursor-pointer active:scale-90"
+                  >
+                    ◀
+                  </button>
+                  <button
+                    type="button"
+                    onMouseDown={() => (keysRef.current.backward = true)}
+                    onMouseUp={() => (keysRef.current.backward = false)}
+                    onTouchStart={() => (keysRef.current.backward = true)}
+                    onTouchEnd={() => (keysRef.current.backward = false)}
+                    className="w-12 h-12 rounded-2xl bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-950 text-white border border-yellow-400/60 font-black text-lg shadow-lg flex items-center justify-center cursor-pointer active:scale-90"
+                  >
+                    ▼
+                  </button>
+                  <button
+                    type="button"
+                    onMouseDown={() => (keysRef.current.right = true)}
+                    onMouseUp={() => (keysRef.current.right = false)}
+                    onTouchStart={() => (keysRef.current.right = true)}
+                    onTouchEnd={() => (keysRef.current.right = false)}
+                    className="w-12 h-12 rounded-2xl bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-950 text-white border border-yellow-400/60 font-black text-lg shadow-lg flex items-center justify-center cursor-pointer active:scale-90"
+                  >
+                    ▶
+                  </button>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => setShowLeaderboard(false)}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-2xl text-xs transition"
-                >
-                  Tutup Papan Skor
-                </button>
+                {/* Tombol Interaksi & Sapaan Dadah */}
+                <div className="flex items-center gap-2 pointer-events-auto">
+                  {/* Tombol Sapa Dadah (Q) Sesuai Permintaan User */}
+                  <button
+                    type="button"
+                    onClick={() => triggerWaveGreeting()}
+                    className="px-3.5 sm:px-4 py-3 rounded-2xl bg-teal-500 hover:bg-teal-600 active:scale-95 text-white font-black text-xs sm:text-sm shadow-xl flex items-center gap-1.5 cursor-pointer border-2 border-white"
+                    title="Lambaikan tangan menyapa teman sekelas online"
+                  >
+                    <span>👋</span>
+                    <span className="hidden sm:inline">DADA / SAPA (Q)</span>
+                    <span className="sm:hidden">SAPA (Q)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const event = new KeyboardEvent("keydown", { key: "e" });
+                      window.dispatchEvent(event);
+                    }}
+                    className="px-4 sm:px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 font-black text-xs sm:text-sm shadow-xl flex items-center gap-1.5 cursor-pointer border-2 border-white"
+                  >
+                    <span>🎯</span>
+                    <span className="hidden sm:inline">INTERAKSI (E)</span>
+                    <span className="sm:hidden">(E)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onMouseDown={() => {
+                      keysRef.current.sprint = true;
+                      playDashSound();
+                    }}
+                    onMouseUp={() => {
+                      keysRef.current.sprint = false;
+                    }}
+                    onTouchStart={() => {
+                      keysRef.current.sprint = true;
+                      playDashSound();
+                    }}
+                    onTouchEnd={() => {
+                      keysRef.current.sprint = false;
+                    }}
+                    className="px-3 sm:px-4 py-3 rounded-2xl bg-slate-900/80 hover:bg-slate-800 text-yellow-300 border border-yellow-400/50 font-black text-xs shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer"
+                  >
+                    <span>⚡</span>
+                    <span className="hidden sm:inline">SPRINT</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      keysRef.current.jump = true;
+                      setTimeout(() => {
+                        keysRef.current.jump = false;
+                      }, 120);
+                    }}
+                    className="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-orange-500 text-slate-950 font-black text-xs sm:text-sm py-3 px-4 sm:px-6 rounded-2xl shadow-xl transition hover:scale-105 active:scale-95 flex items-center gap-1.5 cursor-pointer border-2 border-white"
+                  >
+                    <span>🟡</span>
+                    <span className="hidden sm:inline">LOMPAT</span>
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* ============================================================ */}
+          {/* MODE 2: MENJODOHKAN KARTU PASANGAN INTERAKTIF (MATCHING CARDS) */}
+          {/* ============================================================ */}
+          {gameMode === "matching" && (
+            <div className="absolute inset-0 z-30 flex flex-col items-center justify-between p-3 sm:p-6 overflow-y-auto bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white">
+              {/* Header Box Teka-Teki */}
+              <div className="w-full max-w-4xl flex flex-wrap items-center justify-between gap-3 bg-slate-900/90 border border-indigo-400/40 p-3.5 sm:p-4 rounded-3xl shadow-xl backdrop-blur-md">
+                <div className="flex items-center gap-3">
+                  <span className="w-10 h-10 rounded-2xl bg-indigo-500/20 border border-indigo-400 flex items-center justify-center text-2xl shadow-inner">
+                    🧩
+                  </span>
+                  <div>
+                    <h3 className="font-black text-xs sm:text-sm text-yellow-300">
+                      Teka-Teki Kartu Pasangan: {resolvedTitle}
+                    </h3>
+                    <p className="text-[11px] text-slate-300">
+                      Balik 2 kartu untuk menemukan pasangan yang cocok sesuai materi pembelajaran!
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] bg-yellow-400/20 text-yellow-300 px-3 py-1 rounded-full font-bold border border-yellow-400/30">
+                    ✨ Tipe Game Pilihan Materi
+                  </span>
+                </div>
+              </div>
+
+              {/* Grid 4x4 Kartu Pasangan Interaktif */}
+              <div className="w-full max-w-4xl my-auto py-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3.5">
+                  {matchingCards.map((card) => {
+                    const isVisible = card.isFlipped || card.isMatched;
+                    return (
+                      <button
+                        key={card.id}
+                        type="button"
+                        onClick={() => handleCardClick(card.id)}
+                        disabled={card.isMatched || card.isFlipped}
+                        className={`h-24 sm:h-28 rounded-2xl p-2.5 sm:p-3 flex flex-col items-center justify-center text-center transition-all duration-300 transform cursor-pointer border-2 shadow-lg relative select-none ${
+                          card.isMatched
+                            ? "bg-emerald-950/80 border-emerald-400 text-emerald-200 scale-95 shadow-emerald-900/50"
+                            : isVisible
+                            ? "bg-gradient-to-tr from-indigo-900 via-indigo-800 to-purple-900 border-yellow-400 text-white scale-102 shadow-yellow-500/20"
+                            : "bg-slate-800/90 hover:bg-slate-750 border-slate-600/80 hover:border-yellow-400/60 text-slate-400 hover:scale-102"
+                        }`}
+                      >
+                        {isVisible ? (
+                          <div className="flex flex-col items-center justify-center space-y-1 animate-in zoom-in-90 duration-200">
+                            {card.icon && <span className="text-xl sm:text-2xl">{card.icon}</span>}
+                            <span className="font-black text-xs sm:text-sm text-yellow-200 line-clamp-2 leading-tight">
+                              {card.text}
+                            </span>
+                            {card.subText && (
+                              <span className="text-[10px] text-slate-300 font-medium line-clamp-1">
+                                {card.subText}
+                              </span>
+                            )}
+                            {card.isMatched && (
+                              <span className="text-[9px] bg-emerald-500/30 text-emerald-300 font-bold px-1.5 py-0.2 rounded-full mt-0.5">
+                                ✓ Cocok
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center space-y-1">
+                            <span className="text-2xl sm:text-3xl opacity-60">❓</span>
+                            <span className="text-[9px] font-bold tracking-wider text-slate-400 uppercase">
+                              Buka Kartu
+                            </span>
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Modal Selebrasi Kemenangan Matching Game */}
+              {isMatchingWon && (
+                <div className="absolute inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-6 animate-in zoom-in-95 text-center">
+                  <div className="bg-slate-900 border-3 border-yellow-400 rounded-3xl max-w-md w-full p-6 text-white space-y-4 shadow-2xl">
+                    <div className="w-20 h-20 rounded-full bg-yellow-400/20 border-2 border-yellow-400 flex items-center justify-center text-4xl mx-auto animate-bounce">
+                      🏆
+                    </div>
+                    <div>
+                      <h3 className="font-black text-xl text-yellow-300">
+                        LUAR BIASA! SEMUA PASANGAN COCOK! 🌟
+                      </h3>
+                      <p className="text-xs text-slate-300 mt-1">
+                        Kamu telah menguasai materi <b>{resolvedTitle}</b> dengan mencocokkan seluruh kartu teka-teki!
+                      </p>
+                    </div>
+                    <div className="bg-slate-800/80 p-3 rounded-2xl border border-slate-700 flex justify-around text-xs">
+                      <div>
+                        <div className="text-slate-400">Total Skor</div>
+                        <div className="font-black text-yellow-300 text-sm">+{matchingScore} Poin</div>
+                      </div>
+                      <div>
+                        <div className="text-slate-400">Waktu Main</div>
+                        <div className="font-black text-emerald-300 text-sm">
+                          {Math.floor(matchingTimer / 60)}:{(matchingTimer % 60).toString().padStart(2, "0")}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => restartMatchingGame()}
+                        className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-orange-500 text-slate-950 font-black text-xs shadow-lg transition cursor-pointer"
+                      >
+                        🔄 Main Lagi (Acak Ulang)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setGameMode("adventure")}
+                        className="flex-1 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-lg transition cursor-pointer"
+                      >
+                        🏰 Coba Petualangan 3D
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ============================================================ */}
+          {/* MODE 3: GENERATOR EDU-GAME MANUS AI OTOMATIS */}
+          {/* ============================================================ */}
+          {gameMode === "manus" && (
+            <div className="absolute inset-0 z-30 flex flex-col items-center justify-start p-4 sm:p-6 overflow-y-auto bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
+              <div className="w-full max-w-3xl space-y-4 my-auto py-2">
+                <div className="bg-slate-900/95 border-2 border-cyan-400/50 p-5 rounded-3xl shadow-2xl backdrop-blur-md">
+                  <div className="flex items-center justify-between gap-3 border-b border-slate-700/80 pb-3">
+                    <div className="flex items-center gap-3">
+                      <span className="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-400 flex items-center justify-center text-3xl shadow-inner">
+                        🤖
+                      </span>
+                      <div>
+                        <h3 className="font-black text-base sm:text-lg text-cyan-300">
+                          Generator Edu-Game Manus AI
+                        </h3>
+                        <p className="text-xs text-slate-300">
+                          Spesifikasi & prompt game disinkronkan otomatis untuk: <b className="text-white">{resolvedTitle}</b>
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-[11px] bg-cyan-500/20 border border-cyan-400/50 text-cyan-300 font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                      {manusGameData.gameType || "Auto-Matched Game"}
+                    </span>
+                  </div>
+
+                  {/* Spesifikasi Game */}
+                  {manusGameData.specs && (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 my-3.5 text-xs">
+                      <div className="bg-slate-800/80 p-2.5 rounded-2xl border border-slate-700">
+                        <div className="text-slate-400 text-[10px] uppercase font-bold">Judul Game Rekomendasi</div>
+                        <div className="font-bold text-yellow-300 mt-0.5 truncate">{manusGameData.specs.title}</div>
+                      </div>
+                      <div className="bg-slate-800/80 p-2.5 rounded-2xl border border-slate-700">
+                        <div className="text-slate-400 text-[10px] uppercase font-bold">Genre Game</div>
+                        <div className="font-bold text-emerald-300 mt-0.5 truncate">{manusGameData.specs.genre}</div>
+                      </div>
+                      <div className="bg-slate-800/80 p-2.5 rounded-2xl border border-slate-700">
+                        <div className="text-slate-400 text-[10px] uppercase font-bold">Tujuan Pembelajaran</div>
+                        <div className="font-bold text-sky-300 mt-0.5 truncate">{manusGameData.specs.learningGoal}</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Box Prompt Siap Pakai Manus AI */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-300 font-bold">📝 Prompt Siap Pakai untuk Manus AI:</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (manusGameData.prompt) {
+                            navigator.clipboard.writeText(manusGameData.prompt);
+                            setActiveNotification("📋 Prompt Manus AI berhasil disalin ke clipboard!");
+                            setTimeout(() => setActiveNotification(null), 3000);
+                          }
+                        }}
+                        className="text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1 cursor-pointer"
+                      >
+                        <span>📋</span>
+                        <span>Salin Prompt</span>
+                      </button>
+                    </div>
+                    <div className="bg-slate-950/90 border border-slate-700 p-3.5 rounded-2xl text-[11px] sm:text-xs font-mono text-slate-300 max-h-48 overflow-y-auto leading-relaxed select-text whitespace-pre-wrap">
+                      {manusGameData.prompt || "Menghasilkan prompt edukasi terintegrasi..."}
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex flex-wrap items-center gap-3 pt-4">
+                    <a
+                      href={manusGameData.directLauncherUrl || "https://manus.im"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-black text-xs sm:text-sm text-center shadow-lg transition flex items-center justify-center gap-2"
+                    >
+                      <span>🚀</span>
+                      <span>Buka Langsung di Manus AI</span>
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => setGameMode("adventure")}
+                      className="py-3 px-5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 font-bold text-xs transition cursor-pointer"
+                    >
+                      Kembali ke Game 🏰
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}
 
-          {/* SELEBRASI AKHIR KELILING 5 SUKU SELESAI */}
-          {allSukuCompleted && (
-            <div className="absolute inset-0 z-40 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-6 animate-in zoom-in-95 text-center">
-              <div className="bg-slate-900 border-4 border-yellow-400 rounded-3xl max-w-lg w-full p-8 text-white space-y-5 shadow-2xl">
-                <div className="w-24 h-24 rounded-full bg-yellow-400/20 border-3 border-yellow-400 flex items-center justify-center text-5xl mx-auto animate-bounce">
-                  🏆
-                </div>
-                <div className="space-y-2">
-                  <h3 className="font-black text-2xl sm:text-3xl text-yellow-300">
-                    SELAMAT! KAMU DUTA PANCASILA NUSANTARA! 🇮🇩
-                  </h3>
-                  <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-                    Kamu telah mengunjungi seluruh 5 Pos Pembelajaran bersama para penunggu Pak Guru dan menyelesaikan seluruh kuis materi dengan gemilang!
-                  </p>
-                </div>
-
-                <div className="p-4 bg-yellow-400/10 border border-yellow-400/50 rounded-2xl space-y-1">
-                  <div className="text-xs text-yellow-300 uppercase tracking-widest font-black">
-                    Pencapaian Prestasi Pelajar:
-                  </div>
-                  <div className="text-lg font-black text-white">
-                    🎖️ JUARA PETUALANG PANCASILA KELAS
-                  </div>
-                  <div className="text-xs text-emerald-400 font-bold pt-1">
-                    🪙 Total Skor: {adventureScore} Poin • ⭐ {coinsCollectedCount} Koin Terkumpul • +50 Poin Bonus Web!
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    playClickSound();
-                    setAllSukuCompleted(false);
-                    setVisitedSukuIds([]);
-                  }}
-                  className="w-full bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-slate-950 font-black py-3 rounded-2xl text-sm shadow-xl transition cursor-pointer"
-                >
-                  🔄 Keliling Desa Sekali Lagi
-                </button>
-              </div>
+          {/* NOTIFIKASI DI LAYAR GLOBAL */}
+          {activeNotification && (
+            <div className="absolute top-20 inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-50 max-w-md bg-slate-900/95 border-2 border-yellow-400 p-3.5 rounded-2xl shadow-2xl text-center animate-in fade-in zoom-in text-white text-xs sm:text-sm font-bold backdrop-blur-md">
+              {activeNotification}
             </div>
           )}
-
-          
-          {/* VIRTUAL CONTROLLER DI LAYAR */}
-          <div className="absolute bottom-4 inset-x-4 sm:inset-x-8 z-20 flex items-center justify-between pointer-events-none">
-            {/* D-Pad Navigasi Lembut */}
-            <div className="grid grid-cols-3 gap-1.5 pointer-events-auto">
-              <div />
-              <button
-                type="button"
-                onMouseDown={() => (keysRef.current.forward = true)}
-                onMouseUp={() => (keysRef.current.forward = false)}
-                onTouchStart={() => (keysRef.current.forward = true)}
-                onTouchEnd={() => (keysRef.current.forward = false)}
-                className="w-12 h-12 rounded-2xl bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-950 text-white border border-yellow-400/60 font-black text-lg shadow-lg flex items-center justify-center cursor-pointer active:scale-90"
-              >
-                ▲
-              </button>
-              <div />
-              <button
-                type="button"
-                onMouseDown={() => (keysRef.current.left = true)}
-                onMouseUp={() => (keysRef.current.left = false)}
-                onTouchStart={() => (keysRef.current.left = true)}
-                onTouchEnd={() => (keysRef.current.left = false)}
-                className="w-12 h-12 rounded-2xl bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-950 text-white border border-yellow-400/60 font-black text-lg shadow-lg flex items-center justify-center cursor-pointer active:scale-90"
-              >
-                ◀
-              </button>
-              <button
-                type="button"
-                onMouseDown={() => (keysRef.current.backward = true)}
-                onMouseUp={() => (keysRef.current.backward = false)}
-                onTouchStart={() => (keysRef.current.backward = true)}
-                onTouchEnd={() => (keysRef.current.backward = false)}
-                className="w-12 h-12 rounded-2xl bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-950 text-white border border-yellow-400/60 font-black text-lg shadow-lg flex items-center justify-center cursor-pointer active:scale-90"
-              >
-                ▼
-              </button>
-              <button
-                type="button"
-                onMouseDown={() => (keysRef.current.right = true)}
-                onMouseUp={() => (keysRef.current.right = false)}
-                onTouchStart={() => (keysRef.current.right = true)}
-                onTouchEnd={() => (keysRef.current.right = false)}
-                className="w-12 h-12 rounded-2xl bg-slate-900/80 hover:bg-yellow-400 hover:text-slate-950 text-white border border-yellow-400/60 font-black text-lg shadow-lg flex items-center justify-center cursor-pointer active:scale-90"
-              >
-                ▶
-              </button>
-            </div>
-
-            {/* Tombol Interaksi Pill Cantik */}
-            <div className="flex items-center gap-2.5 pointer-events-auto">
-              <button
-                type="button"
-                onClick={() => {
-                  const event = new KeyboardEvent("keydown", { key: "e" });
-                  window.dispatchEvent(event);
-                }}
-                className="px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 font-black text-xs sm:text-sm shadow-xl flex items-center gap-2 cursor-pointer border-2 border-white"
-              >
-                <span>🎯</span>
-                <span>INTERAKSI (E)</span>
-              </button>
-
-              <button
-                type="button"
-                onMouseDown={() => {
-                  keysRef.current.sprint = true;
-                  playDashSound();
-                }}
-                onMouseUp={() => {
-                  keysRef.current.sprint = false;
-                }}
-                onTouchStart={() => {
-                  keysRef.current.sprint = true;
-                  playDashSound();
-                }}
-                onTouchEnd={() => {
-                  keysRef.current.sprint = false;
-                }}
-                className="px-4 py-3 rounded-2xl bg-slate-900/80 hover:bg-slate-800 text-yellow-300 border border-yellow-400/50 font-black text-xs shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer"
-              >
-                <span>⚡</span>
-                <span>SPRINT</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  keysRef.current.jump = true;
-                  setTimeout(() => {
-                    keysRef.current.jump = false;
-                  }, 120);
-                }}
-                className="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-orange-500 text-slate-950 font-black text-xs sm:text-sm py-3 px-5 sm:px-6 rounded-2xl shadow-xl transition hover:scale-105 active:scale-95 flex items-center gap-2 cursor-pointer border-2 border-white"
-              >
-                <span>🟡</span>
-                <span>LOMPAT</span>
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </ModalPortal>

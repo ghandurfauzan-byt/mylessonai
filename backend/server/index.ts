@@ -2361,52 +2361,132 @@ router.post("/llm/generate", async (req: Request, res: Response) => {
   return res.json(result);
 });
 
+// Helper Cerdas Generator Spesifikasi & Prompt Game Manus AI Sesuai Karakteristik Materi
+function createTailoredManusGamePayload(params: {
+  chapterId?: string;
+  chapterTitle?: string;
+  subject?: string;
+  grade?: string;
+  learningGoal?: string;
+  ragSummary?: string;
+  quizQuestions?: any[];
+}) {
+  const idStr = String(params.chapterId || "").toLowerCase();
+  const titleStr = String(params.chapterTitle || "").toLowerCase();
+  const subjStr = String(params.subject || "").toLowerCase();
+  const targetGrade = params.grade || "Kelas 4";
+  const title = params.chapterTitle || "Pendidikan Karakter & Budaya Nusantara";
+
+  let gameType: "matching" | "adventure" | "dialogue" | "quiz_arena" = "adventure";
+  let prompt = "";
+  let specs: any = {};
+
+  if (idStr.includes("aksara") || titleStr.includes("aksara")) {
+    gameType = "matching";
+    prompt = `Buat game web edukasi interaktif anak SD (${targetGrade}) bertema: "${title}". Genre: Pasangan Kartu Memori & Drag-and-Drop Aksara Jawa (HTML5 Canvas/React). Pemain mencocokkan kartu aksara Jawa legena (ꦲ, ꦤ, ꦕ, ꦫ, ꦏ, ꦢ, ꦠ, ꦱ, ꦮ, ꦭ...) dengan bunyi latin serta sandhangan swara (Wulu, Suku, Taling, Pepet, Taling Tarung). Fitur: Audio pelafalan vokal saat kartu dibuka, visual kartu wayang keemasan, combo multiplier skor koin, timer 90 detik, dan animasi bintang berhamburan saat tuntas. Kontrol ramah sentuhan layar dan mouse.`;
+    specs = {
+      genre: "Teka-Teki Pasangan Kartu Aksara Jawa & Bunyi Latin (Card Matching Memory)",
+      targetAudience: `Siswa Sekolah Dasar (${targetGrade})`,
+      recommendedType: "Menjodohkan Kartu (Matching Cards)",
+      coreMechanics: "Pencocokan kartu simbol aksara dan bunyi latin, combo streak, audio pelafalan, timer tantangan",
+      theme: title,
+    };
+  } else if (
+    idStr.includes("punokawan") ||
+    idStr.includes("pandhawa") ||
+    titleStr.includes("punokawan") ||
+    titleStr.includes("pandhawa") ||
+    titleStr.includes("wayang")
+  ) {
+    gameType = "matching";
+    prompt = `Buat game web edukasi interaktif anak SD (${targetGrade}) bertema: "${title}". Genre: Menjodohkan Tokoh Pewayangan & Watak Budi Pekerti Luhur. Pemain menjodohkan tokoh wayang (Semar, Gareng, Petruk, Bagong, Yudhistira, Bima, Arjuna) dengan watak luhurnya (bijaksana, jujur, setia, pemberani, suka menolong). Setiap pasangan yang benar membuka kisah teladan singkat dan bonus koin emas. Desain ramah anak bernuansa ornamen batik Nusantara, suara gamelan riang, dan medali Pelajar Berbudi Luhur.`;
+    specs = {
+      genre: "Wayang Heritage Character Match & Moral Quest",
+      targetAudience: `Siswa Sekolah Dasar (${targetGrade})`,
+      recommendedType: "Menjodohkan Karakter Wayang (Character Match)",
+      coreMechanics: "Pencocokan tokoh wayang dan watak budi pekerti luhur, dialog mini-cerita, skor koin emas",
+      theme: title,
+    };
+  } else if (idStr.includes("unggah") || titleStr.includes("unggah") || titleStr.includes("tata krama")) {
+    gameType = "dialogue";
+    prompt = `Buat game web simulasi percakapan interaktif ramah anak SD (${targetGrade}) bertema: "${title}". Genre: Dialogue Choice RPG & Tata Krama Simulator. Karakter murid SD berjalan di lingkungan rumah dan sekolah, berinteraksi dengan Bapak/Ibu Guru dan orang tua. Pemain memilih tingkatan tutur basa yang santun (Ngoko Lugu vs Krama Alus seperti 'Nyuwun sewu', 'Matur nuwun', 'Ndherek langkung'). Setiap pilihan santun menaikkan Indeks Sopan Santun (Budi Pekerti Meter) dan efek apresiasi suara ramah.`;
+    specs = {
+      genre: "Simulasi Percakapan Tata Krama & Budi Pekerti (Dialogue Choice RPG)",
+      targetAudience: `Siswa Sekolah Dasar (${targetGrade})`,
+      recommendedType: "Simulasi Dialog Tata Krama (Dialogue RPG)",
+      coreMechanics: "Pilihan dialog tutur basa santun (Ngoko vs Krama), meteran budi pekerti, feedback suara guru",
+      theme: title,
+    };
+  } else if (idStr.includes("norma") || titleStr.includes("norma") || titleStr.includes("aturan")) {
+    gameType = "adventure";
+    prompt = `Buat game petualangan 2D/3D interaktif anak SD (${targetGrade}) bertema: "${title}". Genre: Detektif Disiplin Sekolah & Petualangan Tertib Norma. Karakter murid SD berpetualang di lingkungan sekolah dan pemukiman, membedakan 4 macam norma (Agama, Kesusilaan, Kesopanan, Hukum). Terdapat 5 pos misi perbuatan benar (antre rapi, piket kelas, mengembalikan barang temuan, menghormati guru). Hadiah koin integritas dan trofi Siswa Teladan Pancasila.`;
+    specs = {
+      genre: "Detektif Disiplin Sekolah & Petualangan Tertib Norma",
+      targetAudience: `Siswa Sekolah Dasar (${targetGrade})`,
+      recommendedType: "Petualangan Misi Tertib Sekolah (School Quest)",
+      coreMechanics: "Eksplorasi peta sekolah, pos studi kasus 4 norma, pilihan aksi bijak, trofi ketertiban",
+      theme: title,
+    };
+  } else if (idStr.includes("gotong") || titleStr.includes("gotong")) {
+    gameType = "adventure";
+    prompt = `Buat game web petualangan gotong royong anak SD (${targetGrade}) bertema: "${title}". Genre: 3D/2D Village Adventure Quest. Karakter anak SD menjelajahi desa adat Nusantara, membantu warga membersihkan selokan, piket kelas, menolong teman tertimpa musibah, dan membagi tugas secara adil. Grafik kartun cerah Nusantara, NPC teman sekelas yang bisa disapa, koin persaudaraan, dan pesan suara 'Berat Sama Dipikul, Ringan Sama Dijinjing'.`;
+    specs = {
+      genre: "Petualangan Desa Nusantara & Misi Gotong Royong",
+      targetAudience: `Siswa Sekolah Dasar (${targetGrade})`,
+      recommendedType: "Petualangan 3D Jelajah Desa (Village Adventure)",
+      coreMechanics: "Eksplorasi desa adat, 5 pos misi kerja sama, mini-game membersihkan lingkungan, reward persahabatan",
+      theme: title,
+    };
+  } else if (idStr.includes("bhinneka") || titleStr.includes("bhinneka") || titleStr.includes("keragaman")) {
+    gameType = "adventure";
+    prompt = `Buat game petualangan budaya nusantara ramah anak SD (${targetGrade}) bertema: "${title}". Genre: Nusantara Cultural Explorer & Harmony Quest. Karakter anak SD mengunjungi 5 rumah adat nusantara (Joglo Jawa, Gadang Minang, Panggung Sunda, Betang Dayak, Honai Papua). Di setiap pos, pemain mengenal busana adat, alat musik tradisional (angklung/gamelan), dan belajar toleransi antarsuku. Fitur kuis ramah anak dan medali Duta Bhinneka Tunggal Ika.`;
+    specs = {
+      genre: "Nusantara Cultural Explorer & Harmony Quest",
+      targetAudience: `Siswa Sekolah Dasar (${targetGrade})`,
+      recommendedType: "Petualangan Budaya Nusantara (Cultural Explorer)",
+      coreMechanics: "Kunjungan 5 rumah adat, pengenalan pakaian & musik daerah, kuis toleransi, medali duta budaya",
+      theme: title,
+    };
+  } else {
+    // Modul Dinamis / Baru yang Ditarik dari API Kemendikbud
+    gameType = "adventure";
+    const goalSnippet = params.learningGoal ? `Tujuan Pembelajaran: ${params.learningGoal}. ` : "";
+    const summarySnippet = params.ragSummary ? `Ringkasan Materi: ${params.ragSummary.slice(0, 220)}. ` : "";
+    prompt = `Buat game web edukasi interaktif anak SD (${targetGrade}) berbasis materi Kurikulum Merdeka Kemendikbud: "${title}". ${goalSnippet}${summarySnippet}Genre: Mini-Game Petualangan Edukasi Interaktif dengan 5 pos tantangan studi kasus bertahap, efek suara ceria, animasi koin prestasi, dan papan skor kelas yang ramah anak SD.`;
+    specs = {
+      genre: "Mini-Game Petualangan Edukasi Kurikulum Merdeka",
+      targetAudience: `Siswa Sekolah Dasar (${targetGrade})`,
+      recommendedType: "Petualangan Pos Edukasi Kurikulum Merdeka",
+      coreMechanics: "Eksplorasi pos belajar, 5 tantangan studi kasus materi, perolehan bintang prestasi, papan skor",
+      theme: title,
+    };
+  }
+
+  specs.title = title;
+  specs.learningGoal = params.learningGoal || (
+    gameType === "matching"
+      ? `Mencocokkan pasangan simbol, makna, dan aksara materi ${title} secara tepat`
+      : `Memahami dan mengamalkan nilai-nilai luhur materi ${title} dalam kehidupan sehari-hari`
+  );
+
+  return { gameType, prompt, specs };
+}
+
 // Endpoint Otomasi Generator Game Berbasis Materi Kurikulum (Integrasi Manus AI)
-router.post("/games/manus-generate", async (req: Request, res: Response) => {
+router.all("/games/manus-generate", async (req: Request, res: Response) => {
   try {
-    const { chapterId, chapterTitle, subject } = req.body || {};
+    const data = req.method === "POST" ? req.body || {} : req.query || {};
+    const { chapterId, chapterTitle, subject, grade, learningGoal, ragSummary, quizQuestions } = data;
 
-    const idStr = String(chapterId || "").toLowerCase();
-    const titleStr = String(chapterTitle || "").toLowerCase();
-    const subjStr = String(subject || "").toLowerCase();
-
-    // Deteksi cerdas jenis materi:
-    // Jika Basa Jawa / Aksara / Pasangan / Kosakata -> Format Menjodohkan (Matching Puzzle)
-    // Jika PKn / Pancasila / Norma / Gotong Royong -> Format Petualangan Pengamalan (Adventure Quest)
-    const isJawa =
-      subjStr.includes("jawa") ||
-      idStr.includes("bjawa") ||
-      idStr.includes("aksara") ||
-      idStr.includes("unggah") ||
-      idStr.includes("punokawan") ||
-      idStr.includes("pandhawa") ||
-      titleStr.includes("jawa") ||
-      titleStr.includes("aksara") ||
-      titleStr.includes("unggah") ||
-      titleStr.includes("punokawan");
-
-    const gameType: "adventure" | "matching" = isJawa ? "matching" : "adventure";
-
-    let gamePrompt = "";
-    let detailedSpecs = {};
-
-    if (gameType === "adventure") {
-      gamePrompt = `Buat game web browser interaktif ramah anak SD (HTML5/Canvas/Phaser) bertema: "${chapterTitle || "Pengamalan Nilai Pancasila"}". Genre: 2D Adventure Quest & Pengamalan Sehari-hari. Karakter pemain anak SD menjelajahi peta desa dan sekolah, menyelesaikan 3 pos misi perbuatan baik (gotong royong, toleransi, tolong-menolong). Setiap pilihan bijak memberikan koin emas +10 dan efek suara riang. Grafik kartun cerah, kontrol tombol panah dan spasi yang mudah.`;
-      detailedSpecs = {
-        genre: "2D Adventure Quest / RPG Nilai",
-        targetAudience: "Siswa Sekolah Dasar (SD)",
-        coreMechanics: "Eksplorasi peta, dialog studi kasus, pilihan tindakan moral, reward bintang",
-        theme: chapterTitle || "Pengamalan Nilai Pancasila"
-      };
-    } else {
-      gamePrompt = `Buat game web edukasi interaktif anak SD bertema: "${chapterTitle || "Belajar Aksara & Basa Jawa"}". Genre: Menjodohkan Kartu Pasangan (Memory/Matching Drag-and-Drop). Pemain mencocokkan kartu aksara/kata Jawa dengan pasangan artinya atau bunyi latinnya. Terdapat timer tantangan 60 detik, skor koin emas, animasi kartu bersinar saat cocok, dan suara tepuk tangan saat menang.`;
-      detailedSpecs = {
-        genre: "Interactive Matching Puzzle / Drag-and-Drop",
-        targetAudience: "Siswa Sekolah Dasar (SD)",
-        coreMechanics: "Pencocokan kartu simbol/kata, timer countdown, combo streak, leaderboard",
-        theme: chapterTitle || "Belajar Aksara & Basa Jawa"
-      };
-    }
+    const { gameType, prompt: gamePrompt, specs } = createTailoredManusGamePayload({
+      chapterId: String(chapterId || ""),
+      chapterTitle: String(chapterTitle || ""),
+      subject: String(subject || ""),
+      grade: String(grade || ""),
+      learningGoal: String(learningGoal || ""),
+      ragSummary: String(ragSummary || ""),
+      quizQuestions: Array.isArray(quizQuestions) ? quizQuestions : undefined,
+    });
 
     const manusApiKey = process.env.MANUS_API_KEY;
     let manusTaskResult = null;
@@ -2417,11 +2497,11 @@ router.post("/games/manus-generate", async (req: Request, res: Response) => {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${manusApiKey}`,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            prompt: gamePrompt
-          })
+            prompt: gamePrompt,
+          }),
         });
         manusTaskResult = await manusRes.json();
       } catch (apiErr: any) {
@@ -2435,15 +2515,15 @@ router.post("/games/manus-generate", async (req: Request, res: Response) => {
       chapterTitle,
       gameType,
       prompt: gamePrompt,
-      specs: detailedSpecs,
+      specs,
       manusTask: manusTaskResult,
       directLauncherUrl: `https://manus.im/app?prompt=${encodeURIComponent(gamePrompt)}`,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (err: any) {
     return res.status(500).json({
       success: false,
-      message: `Gagal memproses generator game: ${err.message}`
+      message: `Gagal memproses generator game: ${err.message}`,
     });
   }
 });
