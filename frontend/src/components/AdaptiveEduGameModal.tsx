@@ -2493,6 +2493,7 @@ export default function AdaptiveEduGameModal({
     playerGroup.add(pNameSprite);
 
     playerGroup.position.set(0, 0, 18);
+    playerGroup.rotation.y = Math.PI; // Menghadap maju ke arah desa
     scene.add(playerGroup);
 
     // ------------------------------------------------------------------------
@@ -2532,34 +2533,37 @@ export default function AdaptiveEduGameModal({
         playerGroup.position.x = Math.max(-28, Math.min(28, playerGroup.position.x));
         playerGroup.position.z = Math.max(-320, Math.min(24, playerGroup.position.z));
 
-        // Rotasi Halus (Smooth Facing Turn ke Arah Jalan)
-        const targetAngle = Math.atan2(moveX, moveZ) + Math.PI;
+        // Rotasi Halus (Menghadap MAJU ke Arah Pergerakan, Tidak Mundur)
+        const targetAngle = Math.atan2(moveX, moveZ);
         let angleDiff = targetAngle - playerGroup.rotation.y;
         while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
         while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-        playerGroup.rotation.y += angleDiff * Math.min(1, delta * 14);
+        playerGroup.rotation.y += angleDiff * Math.min(1, delta * 16);
 
-        // Animasi Langkah Kaki & Ayunan Tangan Manusiawi (Luwes & Hidup)
-        walkAnim += delta * (keys.sprint ? 15 : 10);
+        // Animasi Langkah Kaki & Ayunan Tangan Manusiawi Maju
+        walkAnim += delta * (keys.sprint ? 16 : 10.5);
         const legSwing = Math.sin(walkAnim) * (keys.sprint ? 0.75 : 0.55);
         const armSwing = Math.sin(walkAnim) * (keys.sprint ? 0.8 : 0.55);
 
-        leftLeg.rotation.x = legSwing;
-        rightLeg.rotation.x = -legSwing;
-        leftArm.rotation.x = -armSwing;
+        // Kaki & tangan berayun maju-mundur secara bergantian
+        leftLeg.rotation.x = -legSwing;
+        rightLeg.rotation.x = legSwing;
+        leftArm.rotation.x = legSwing;
         leftArm.rotation.z = Math.cos(walkAnim) * 0.08 - 0.04;
 
         if (!isPlayerWavingRef.current) {
-          rightArm.rotation.x = armSwing;
+          rightArm.rotation.x = -legSwing;
           rightArm.rotation.z = -Math.cos(walkAnim) * 0.08 + 0.04;
         }
 
-        // Efek Pantulan Tubuh (Bobbing Langkah Kaki & Ayunan Badan)
+        // Condong Maju Atletis & Pantulan Langkah (Bobbing & Forward Momentum)
         const bob = Math.abs(Math.sin(walkAnim)) * 0.12;
         torso.position.y = 2.15 + bob;
+        torso.rotation.x = keys.sprint ? 0.14 : 0.07; // Badan sedikit condong maju saat jalan/lari
         torso.rotation.y = Math.sin(walkAnim) * 0.08;
         torso.rotation.z = Math.cos(walkAnim) * 0.035;
         head.position.y = 3.35 + bob;
+        head.rotation.x = keys.sprint ? 0.05 : 0.02;
         head.rotation.y = -torso.rotation.y * 0.45;
       } else {
         // Idle / Diam Bernapas Halus secara Natural
