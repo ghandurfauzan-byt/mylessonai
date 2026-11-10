@@ -196,6 +196,15 @@ export default function AdaptiveEduGameModal({
   const [customChatInput, setCustomChatInput] = useState("");
 
   // Ref Animasi Dadah & Interaksi Teman Online
+  
+  // Tipe & State Emot Gerakan Tubuh (Roblox Movement Emotes)
+  type MovementEmote = "none" | "wave" | "dance" | "cheer" | "bow" | "sit" | "flip";
+  const [activeEmote, setActiveEmote] = useState<MovementEmote>("none");
+  const activeEmoteRef = useRef<MovementEmote>("none");
+  const emoteStartTimeRef = useRef(0);
+  const [showEmoteMenu, setShowEmoteMenu] = useState(false);
+  const emoteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const isPlayerWavingRef = useRef(false);
   const greetedStudentIdRef = useRef<string | null>(null);
   const waveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -929,94 +938,73 @@ export default function AdaptiveEduGameModal({
 
 
 
-  // Emote Aksi Roblox: Dadah, Balapan, Kumpul di Pos, Semangat Belajar
-  const triggerPlayerEmote = useCallback(
-    (type: "wave" | "race" | "gather" | "cheer", targetStudent?: OnlineStudent) => {
-      isPlayerWavingRef.current = true;
-      playCoinSound();
-      playDashSound();
+    // Fungsi Memicu Emot Gerakan Tubuh Karakter (Terpisah dari Chat)
+  const triggerMovementEmote = useCallback(
+    (emote: MovementEmote) => {
+      activeEmoteRef.current = emote;
+      setActiveEmote(emote);
+      emoteStartTimeRef.current = Date.now();
+      setShowEmoteMenu(false);
 
-      // Cari kawan terdekat jika tidak dispesifikasikan
-      const px = playerPosRef.current.x;
-      const pz = playerPosRef.current.z;
-      let closestPeer: OnlineStudent | null = targetStudent || null;
-      if (!closestPeer) {
-        let minD = 999;
+      if (emote === "wave") {
+        isPlayerWavingRef.current = true;
+        playCoinSound();
+        playDashSound();
+        setActiveNotification("👋 Kamu melambaikan tangan!");
+
+        // Cek teman terdekat jika ada yang bisa membalas sapaan
+        const px = playerPosRef.current.x;
+        const pz = playerPosRef.current.z;
         for (const st of onlineStudents) {
-          if (st.mesh) {
-            const d = Math.hypot(px - st.mesh.position.x, pz - st.mesh.position.z);
-            if (d < minD) {
-              minD = d;
-              closestPeer = st;
-            }
+          if (st.mesh && Math.hypot(px - st.mesh.position.x, pz - st.mesh.position.z) < 12) {
+            greetedStudentIdRef.current = st.id;
+            setAdventureScore((s) => s + 5);
+            addPoints(5, `Menyapa kawan: ${st.name}`);
+            setFriendGreetingBubble({
+              name: st.name,
+              text: `👋 "Halo ${studentName}! Senang ketemu kamu di desa! Ayo kumpulkan koin & jelajahi 5 Suku bareng!"`,
+            });
+            break;
           }
         }
-        if (minD > 14) closestPeer = null;
-      }
-
-      if (type === "wave") {
-        if (closestPeer) {
-          greetedStudentIdRef.current = closestPeer.id;
-          setAdventureScore((s) => s + 5);
-          addPoints(5, `Menyapa kawan: ${closestPeer.name}`);
-          setFriendGreetingBubble({
-            name: closestPeer.name,
-            text: `👋 "Halo ${studentName}! Senang ketemu di jalan desa! Ayo kumpulkan koin & jelajahi 5 Suku bareng!"`,
-          });
-          setActiveNotification(`👋 Kamu melambaikan tangan ke ${closestPeer.name} (+5 Poin Persahabatan!)`);
-          setChatMessages((prev) => [
-            { id: String(Date.now()), sender: studentName, avatar: "🎒", text: `👋 Halo ${closestPeer.name}! Semangat ya!`, time: "Baru saja", isPlayer: true },
-            { id: String(Date.now() + 1), sender: closestPeer.name, avatar: closestPeer.avatar, text: `👋 Halo juga ${studentName}! Gaspol kumpulkan koin!`, time: "Baru saja" },
-            ...prev.slice(0, 20),
-          ]);
-        } else {
-          setActiveNotification("👋 Kamu melambaikan tangan ke semua kawan sekelas!");
-          setChatMessages((prev) => [
-            { id: String(Date.now()), sender: studentName, avatar: "🎒", text: "👋 Halo kawan-kawan semua di Desa Pancasila!", time: "Baru saja", isPlayer: true },
-            ...prev.slice(0, 20),
-          ]);
-        }
-      } else if (type === "race") {
-        keysRef.current.sprint = true;
-        setTimeout(() => { keysRef.current.sprint = false; }, 2500);
-        setActiveNotification("🏃💨 SPRINT! Ayo balapan keliling desa kumpulkan koin!");
-        setChatMessages((prev) => [
-          { id: String(Date.now()), sender: studentName, avatar: "🎒", text: "🏃 Ayo balapan cepat kumpulkan koin di jalan desa!", time: "Baru saja", isPlayer: true },
-          { id: String(Date.now() + 1), sender: "Budi Santoso", avatar: "👦", text: "Siapa takut! Tunggu aku di depan ya! ⚡", time: "Baru saja" },
-          ...prev.slice(0, 20),
-        ]);
-      } else if (type === "gather") {
-        setActiveNotification("📢 Mengajak kawan-kawan berkumpul di Pos Pembelajaran!");
-        setChatMessages((prev) => [
-          { id: String(Date.now()), sender: studentName, avatar: "🎒", text: "📚 Teman-teman, ayo kumpul di Pos Pembelajaran bareng Pak Guru!", time: "Baru saja", isPlayer: true },
-          { id: String(Date.now() + 1), sender: "Siti Rahma", avatar: "👧", text: "Siap, aku sudah di dekat Pos Suku Adat nih! 🏠", time: "Baru saja" },
-          ...prev.slice(0, 20),
-        ]);
-      } else if (type === "cheer") {
+      } else if (emote === "dance") {
         playBadgeFanfareSound();
-        setActiveNotification("⭐ Bersorak gembira menyemangati kelas online!");
-        setChatMessages((prev) => [
-          { id: String(Date.now()), sender: studentName, avatar: "🎒", text: "⭐ Semangat 45 belajar Pancasila kawan-kawan!", time: "Baru saja", isPlayer: true },
-          { id: String(Date.now() + 1), sender: "Dayu Kemala", avatar: "👧", text: "Semangat pantang menyerah! Bhinneka Tunggal Ika! 🇮🇩", time: "Baru saja" },
-          ...prev.slice(0, 20),
-        ]);
+        setActiveNotification("💃 Kamu berjoget riang di tengah desa!");
+      } else if (emote === "cheer") {
+        playCorrectSound();
+        setActiveNotification("🙌 Hore! Kamu bersorak gembira merayakan persatuan!");
+      } else if (emote === "bow") {
+        playClickSound();
+        setActiveNotification("🙏 Kamu menunduk hormat dengan santun!");
+      } else if (emote === "sit") {
+        playDashSound();
+        setActiveNotification("🧘 Kamu duduk santai di rumput pedesaan!");
+      } else if (emote === "flip") {
+        playJumpSound();
+        setActiveNotification("🤸 Salto! Kamu melompat akrobatik!");
       }
 
-      if (waveTimeoutRef.current) clearTimeout(waveTimeoutRef.current);
-      waveTimeoutRef.current = setTimeout(() => {
-        isPlayerWavingRef.current = false;
-        greetedStudentIdRef.current = null;
-        setFriendGreetingBubble(null);
-      }, 3500);
+      if (emoteTimeoutRef.current) clearTimeout(emoteTimeoutRef.current);
+      if (emote !== "sit") {
+        emoteTimeoutRef.current = setTimeout(() => {
+          activeEmoteRef.current = "none";
+          setActiveEmote("none");
+          isPlayerWavingRef.current = false;
+          greetedStudentIdRef.current = null;
+          setFriendGreetingBubble(null);
+          setActiveNotification(null);
+        }, 3500);
+      }
     },
     [addPoints, onlineStudents, studentName]
   );
 
 
+
     // Sapa Teman Sekelas (Interaksi Dadah Online Seperti Roblox)
   const handleGreetClassmate = useCallback((student: OnlineStudent) => {
-    triggerPlayerEmote("wave", student);
-  }, [triggerPlayerEmote]);
+    triggerMovementEmote("wave");
+  }, [triggerMovementEmote]);
 
   // Jawab Pertanyaan Suku
   const handleAnswerSuku = (suku: SukuAdat, optId: string) => {
@@ -1522,6 +1510,8 @@ export default function AdaptiveEduGameModal({
 
       return {
         group: charGroup,
+        torso,
+        head,
         leftArm,
         rightArm,
         leftLeg,
@@ -1931,7 +1921,7 @@ export default function AdaptiveEduGameModal({
       backpackColor: "#f97316",
     });
     const playerGroup = playerData.group;
-    const { leftArm, rightArm, leftLeg, rightLeg } = playerData;
+    const { torso, head, leftArm, rightArm, leftLeg, rightLeg } = playerData;
 
         // Label Pemain Auto-Fitted (Menampilkan Nama Siswa Asli)
     const playerNameCanvas = document.createElement("canvas");
@@ -2022,11 +2012,74 @@ export default function AdaptiveEduGameModal({
       }
 
       
-      // Animasi Gerakan Dadah / Sapa Teman Khas Roblox Online
-      if (isPlayerWavingRef.current) {
+      // ANIMASI 3D EMOT GERAKAN TUBUH KARAKTER (ROBLOX STYLE)
+      const curEmote = activeEmoteRef.current;
+      const emoteTime = (Date.now() - emoteStartTimeRef.current) / 1000;
+
+      if (curEmote === "wave" || isPlayerWavingRef.current) {
+        // 1. 👋 Wave: Tangan kanan melambai ke atas
         rightArm.rotation.x = -Math.PI * 0.72;
         rightArm.rotation.z = Math.sin(Date.now() * 0.016) * 0.45;
+        leftArm.rotation.set(0, 0, 0);
+        leftLeg.rotation.set(0, 0, 0);
+        rightLeg.rotation.set(0, 0, 0);
+        torso.rotation.set(0, 0, 0);
+        head.rotation.set(0, 0, 0);
+      } else if (curEmote === "dance") {
+        // 2. 💃 Dance / Joget: Badan bergoyang riang kiri-kanan & tangan bergantian
+        torso.rotation.y = Math.sin(Date.now() * 0.01) * 0.35;
+        torso.position.y = 2.15 + Math.abs(Math.sin(Date.now() * 0.012)) * 0.12;
+        rightArm.rotation.x = -Math.PI * 0.55 + Math.sin(Date.now() * 0.01) * 0.45;
+        rightArm.rotation.z = 0.25;
+        leftArm.rotation.x = -Math.PI * 0.55 - Math.sin(Date.now() * 0.01) * 0.45;
+        leftArm.rotation.z = -0.25;
+        leftLeg.rotation.x = Math.sin(Date.now() * 0.01) * 0.25;
+        rightLeg.rotation.x = -Math.sin(Date.now() * 0.01) * 0.25;
+        head.rotation.y = Math.sin(Date.now() * 0.01) * 0.2;
+      } else if (curEmote === "cheer") {
+        // 3. 🙌 Cheer / Hore: Dua tangan diangkat ke atas bersorak gembira
+        rightArm.rotation.x = -Math.PI * 0.88;
+        rightArm.rotation.z = 0.35 + Math.sin(Date.now() * 0.012) * 0.15;
+        leftArm.rotation.x = -Math.PI * 0.88;
+        leftArm.rotation.z = -0.35 - Math.sin(Date.now() * 0.012) * 0.15;
+        head.rotation.x = -0.25;
+        torso.rotation.set(0, 0, 0);
+        torso.position.y = 2.15 + Math.abs(Math.sin(Date.now() * 0.012)) * 0.15;
+        leftLeg.rotation.set(0, 0, 0);
+        rightLeg.rotation.set(0, 0, 0);
+      } else if (curEmote === "bow") {
+        // 4. 🙏 Bow / Hormat: Badan membungkuk santun ke depan
+        torso.rotation.x = 0.42;
+        head.rotation.x = 0.25;
+        rightArm.rotation.x = -0.3;
+        rightArm.rotation.z = -0.35;
+        leftArm.rotation.x = -0.3;
+        leftArm.rotation.z = 0.35;
+        leftLeg.rotation.set(0, 0, 0);
+        rightLeg.rotation.set(0, 0, 0);
+      } else if (curEmote === "sit") {
+        // 5. 🧘 Sit / Duduk: Badan diturunkan ke rumput, kaki terlipat ke depan
+        torso.rotation.set(0, 0, 0);
+        torso.position.y = 1.35;
+        head.rotation.set(0, 0, 0);
+        leftLeg.rotation.x = -Math.PI * 0.48;
+        rightLeg.rotation.x = -Math.PI * 0.48;
+        leftArm.rotation.x = -0.25;
+        rightArm.rotation.x = -0.25;
+      } else if (curEmote === "flip") {
+        // 6. 🤸 Flip / Salto: Putaran vertikal akrobatik 360 derajat
+        const progress = Math.min(1, emoteTime / 0.85);
+        torso.rotation.x = progress * Math.PI * 2;
+        torso.position.y = 2.15 + Math.sin(progress * Math.PI) * 1.8;
+        rightArm.rotation.x = -Math.PI * 0.5;
+        leftArm.rotation.x = -Math.PI * 0.5;
+        leftLeg.rotation.x = 0.3;
+        rightLeg.rotation.x = 0.3;
       } else {
+        // Berdiri diam normal
+        torso.rotation.set(0, 0, 0);
+        torso.position.y = 2.15;
+        head.rotation.set(0, 0, 0);
         rightArm.rotation.z = 0;
       }
 
@@ -2375,128 +2428,6 @@ export default function AdaptiveEduGameModal({
           )}
 
           
-          {/* ROBLOX STYLE CLASS ONLINE CHAT & EMOTE OVERLAY */}
-          <div className="absolute top-20 left-4 z-30 pointer-events-auto flex flex-col items-start gap-2 max-w-xs sm:max-w-sm">
-            {/* Tombol Buka/Tutup Chat */}
-            <button
-              type="button"
-              onClick={() => setIsChatOpen(!isChatOpen)}
-              className="bg-slate-900/90 hover:bg-slate-800 text-white font-bold text-xs px-3.5 py-2 rounded-2xl border border-sky-400/60 shadow-xl backdrop-blur-md flex items-center gap-2 cursor-pointer transition hover:scale-105"
-            >
-              <span className="text-sm">💬</span>
-              <span>Chat Siswa Online (Roblox Style)</span>
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-            </button>
-
-            {/* Kotak Chat Mengambang */}
-            {isChatOpen && (
-              <div className="w-80 bg-slate-950/95 border-2 border-sky-400 rounded-3xl p-3 shadow-2xl backdrop-blur-md text-white flex flex-col gap-2.5 animate-in slide-in-from-top-2 duration-200">
-                <div className="flex items-center justify-between border-b border-slate-700/80 pb-2">
-                  <span className="text-[11px] font-black text-sky-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <span>🎒</span> Obrolan Kelas Desa (4 Siswa Online)
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setIsChatOpen(false)}
-                    className="text-slate-400 hover:text-white text-xs px-1.5 py-0.5 rounded cursor-pointer"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                {/* Riwayat Chat */}
-                <div className="max-h-48 overflow-y-auto space-y-2 text-xs pr-1">
-                  {chatMessages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`p-2 rounded-xl text-[11px] leading-relaxed ${
-                        msg.isPlayer
-                          ? "bg-yellow-400/15 border border-yellow-400/40 text-yellow-200"
-                          : "bg-slate-800/80 border border-slate-700/80 text-slate-200"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between text-[10px] font-black text-sky-400 mb-0.5">
-                        <span>{msg.avatar} {msg.sender}</span>
-                        <span className="text-slate-400 font-normal">{msg.time}</span>
-                      </div>
-                      <p className="font-semibold">{msg.text}</p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Quick Emote Buttons */}
-                <div className="grid grid-cols-2 gap-1.5 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => triggerPlayerEmote("wave")}
-                    className="p-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/40 border border-amber-400/50 text-[11px] font-bold text-amber-300 transition text-center cursor-pointer"
-                  >
-                    👋 Dadah / Sapa
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => triggerPlayerEmote("race")}
-                    className="p-1.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/40 border border-sky-400/50 text-[11px] font-bold text-sky-300 transition text-center cursor-pointer"
-                  >
-                    🏃 Ayo Balapan!
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => triggerPlayerEmote("gather")}
-                    className="p-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/40 border border-emerald-400/50 text-[11px] font-bold text-emerald-300 transition text-center cursor-pointer"
-                  >
-                    📚 Kumpul di Pos!
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => triggerPlayerEmote("cheer")}
-                    className="p-1.5 rounded-xl bg-purple-500/20 hover:bg-purple-500/40 border border-purple-400/50 text-[11px] font-bold text-purple-300 transition text-center cursor-pointer"
-                  >
-                    ⭐ Semangat Kelas!
-                  </button>
-                </div>
-
-                {/* Form Kirim Chat Sendiri */}
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    if (!customChatInput.trim()) return;
-                    setChatMessages((prev) => [
-                      {
-                        id: String(Date.now()),
-                        sender: studentName,
-                        avatar: "🎒",
-                        text: customChatInput.trim(),
-                        time: "Baru saja",
-                        isPlayer: true,
-                      },
-                      ...prev.slice(0, 20),
-                    ]);
-                    setCustomChatInput("");
-                    setActiveNotification(`💬 Kamu mengirim chat: "${customChatInput.trim()}"`);
-                    setTimeout(() => setActiveNotification(null), 2500);
-                  }}
-                  className="flex items-center gap-1.5 pt-1 border-t border-slate-800"
-                >
-                  <input
-                    type="text"
-                    value={customChatInput}
-                    onChange={(e) => setCustomChatInput(e.target.value)}
-                    placeholder="Ketik pesan chat..."
-                    maxLength={60}
-                    className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-sky-400"
-                  />
-                  <button
-                    type="submit"
-                    className="bg-sky-500 hover:bg-sky-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs cursor-pointer"
-                  >
-                    Kirim
-                  </button>
-                </form>
-              </div>
-            )}
-          </div>
-
           {/* BALON INTERAKSI DADAH MENYAPA TEMAN ONLINE */}
           {friendGreetingBubble && (
             <div className="absolute bottom-28 inset-x-6 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-30 max-w-md bg-emerald-950/95 border-3 border-emerald-400 p-4 rounded-3xl shadow-2xl text-center animate-in zoom-in-95 text-white space-y-1 backdrop-blur-md">
@@ -2884,6 +2815,174 @@ export default function AdaptiveEduGameModal({
                   className="w-full bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-slate-950 font-black py-3 rounded-2xl text-sm shadow-xl transition cursor-pointer"
                 >
                   🔄 Keliling Desa Sekali Lagi
+                </button>
+              </div>
+            </div>
+          )}
+
+          
+          {/* ================================================================= */}
+          {/* KOLOM CHAT ONLINE DI BAGIAN BAWAH (TERDOKING RAPIH DI BAWAH) */}
+          {/* ================================================================= */}
+          <div className="absolute bottom-20 left-4 sm:left-8 z-30 pointer-events-auto max-w-sm sm:max-w-md w-[calc(100vw-2rem)] sm:w-96 flex flex-col gap-1.5">
+            {/* Jendela Obrolan (Jika Dibuka) */}
+            {isChatOpen && (
+              <div className="bg-slate-950/95 border-2 border-sky-400 rounded-3xl p-3 shadow-2xl backdrop-blur-md text-white flex flex-col gap-2 animate-in slide-in-from-bottom-3 duration-200">
+                <div className="flex items-center justify-between border-b border-slate-700/80 pb-1.5">
+                  <span className="text-[11px] font-black text-sky-300 flex items-center gap-1.5 uppercase tracking-wider">
+                    <span>💬</span> Chat Kelas Online (4 Siswa Aktif)
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsChatOpen(false)}
+                    className="text-slate-400 hover:text-white text-xs px-1.5 py-0.5 rounded cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Pesan Obrolan dengan Scroll Halus */}
+                <div className="max-h-40 overflow-y-auto space-y-1.5 text-xs pr-1">
+                  {chatMessages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={`p-2 rounded-xl text-[11px] leading-relaxed ${
+                        msg.isPlayer
+                          ? "bg-yellow-400/15 border border-yellow-400/40 text-yellow-200"
+                          : "bg-slate-800/80 border border-slate-700/80 text-slate-200"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between text-[10px] font-black text-sky-400 mb-0.5">
+                        <span>{msg.avatar} {msg.sender}</span>
+                        <span className="text-slate-400 font-normal">{msg.time}</span>
+                      </div>
+                      <p className="font-semibold">{msg.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Baris Input Chat di Bawah */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!customChatInput.trim()) return;
+                setChatMessages((prev) => [
+                  {
+                    id: String(Date.now()),
+                    sender: studentName,
+                    avatar: "🎒",
+                    text: customChatInput.trim(),
+                    time: "Baru saja",
+                    isPlayer: true,
+                  },
+                  ...prev.slice(0, 25),
+                ]);
+                setCustomChatInput("");
+                setActiveNotification(`💬 Chat terkirim: "${customChatInput.trim()}"`);
+                setTimeout(() => setActiveNotification(null), 2500);
+              }}
+              className="flex items-center gap-1.5 bg-slate-900/95 border border-sky-400/70 p-1.5 rounded-2xl shadow-xl backdrop-blur-md"
+            >
+              <button
+                type="button"
+                onClick={() => setIsChatOpen(!isChatOpen)}
+                className="px-2.5 py-1.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 font-black text-xs flex items-center gap-1 cursor-pointer transition shrink-0"
+                title="Buka / Tutup Riwayat Chat"
+              >
+                <span>💬</span>
+                <span className="hidden sm:inline">{isChatOpen ? "Tutup" : "Chat"}</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              </button>
+
+              <input
+                type="text"
+                value={customChatInput}
+                onChange={(e) => setCustomChatInput(e.target.value)}
+                onFocus={() => setIsChatOpen(true)}
+                placeholder="Ketik pesan chat ke kawan kelas..."
+                maxLength={60}
+                className="flex-1 min-w-0 bg-transparent px-2 py-1 text-xs text-white placeholder-slate-400 focus:outline-none"
+              />
+
+              <button
+                type="submit"
+                className="bg-sky-500 hover:bg-sky-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs cursor-pointer shrink-0 transition active:scale-95"
+              >
+                Kirim
+              </button>
+            </form>
+          </div>
+
+          {/* ================================================================= */}
+          {/* MENU PILIHAN EMOT GERAKAN TUBUH (ROBLOX EMOTE WHEEL / POPUP) */}
+          {/* ================================================================= */}
+          {showEmoteMenu && (
+            <div className="absolute bottom-20 right-4 sm:right-8 z-40 bg-slate-950/95 border-2 border-fuchsia-400 p-3.5 rounded-3xl shadow-2xl backdrop-blur-md w-72 text-white animate-in zoom-in-95 space-y-2 pointer-events-auto">
+              <div className="flex items-center justify-between border-b border-slate-700/80 pb-2">
+                <span className="text-xs font-black text-fuchsia-300 flex items-center gap-1.5">
+                  <span>🎭</span> Pilihan Emot Gerakan Karakter
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowEmoteMenu(false)}
+                  className="text-slate-400 hover:text-white text-xs px-1.5 py-0.5 rounded cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+              <p className="text-[10px] text-slate-300">
+                Pilih gerakan tubuh 3D untuk mengekspresikan diri di desa:
+              </p>
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => triggerMovementEmote("wave")}
+                  className="p-2.5 rounded-2xl bg-amber-500/20 hover:bg-amber-500/40 border border-amber-400/50 text-xs font-bold text-amber-300 transition flex items-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <span className="text-lg">👋</span>
+                  <span>Dadah / Sapa</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => triggerMovementEmote("dance")}
+                  className="p-2.5 rounded-2xl bg-pink-500/20 hover:bg-pink-500/40 border border-pink-400/50 text-xs font-bold text-pink-300 transition flex items-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <span className="text-lg">💃</span>
+                  <span>Joget Riang</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => triggerMovementEmote("cheer")}
+                  className="p-2.5 rounded-2xl bg-sky-500/20 hover:bg-sky-500/40 border border-sky-400/50 text-xs font-bold text-sky-300 transition flex items-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <span className="text-lg">🙌</span>
+                  <span>Sorak / Hore</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => triggerMovementEmote("bow")}
+                  className="p-2.5 rounded-2xl bg-emerald-500/20 hover:bg-emerald-500/40 border border-emerald-400/50 text-xs font-bold text-emerald-300 transition flex items-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <span className="text-lg">🙏</span>
+                  <span>Hormat Santun</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => triggerMovementEmote("sit")}
+                  className="p-2.5 rounded-2xl bg-teal-500/20 hover:bg-teal-500/40 border border-teal-400/50 text-xs font-bold text-teal-300 transition flex items-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <span className="text-lg">🧘</span>
+                  <span>Duduk Santai</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => triggerMovementEmote("flip")}
+                  className="p-2.5 rounded-2xl bg-purple-500/20 hover:bg-purple-500/40 border border-purple-400/50 text-xs font-bold text-purple-300 transition flex items-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <span className="text-lg">🤸</span>
+                  <span>Salto Putar</span>
                 </button>
               </div>
             </div>
