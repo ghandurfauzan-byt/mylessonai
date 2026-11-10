@@ -1423,14 +1423,17 @@ export default function AdaptiveEduGameModal({
       stepMesh.position.set(0, 0.15, suku.xPos > 0 ? -5.1 : 5.1);
       hGroup.add(stepMesh);
 
-      hGroup.position.set(suku.xPos, 0, suku.zPos);
+      // Letakkan Rumah agak ke belakang agar halaman depan lega dan terbuka
+      const houseX = suku.xPos > 0 ? 17.5 : -17.5;
+      hGroup.position.set(houseX, 0, suku.zPos);
       scene.add(hGroup);
 
       // ----------------------------------------------------------------------
-      // PLANG PAPAN NAMA POS DI DEPAN RUMAH (BERDIRI DI TANAH DEKAT JALAN)
+      // PLANG PAPAN NAMA POS DI DEPAN RUMAH (DIMAJUKAN KE HALAMAN DEKAT JALAN)
+      // JAUH DARI TEMBOK RUMAH, MENGHADAP JALAN SECARA JELAS
       // ----------------------------------------------------------------------
-      const signX = suku.xPos > 0 ? 8.8 : -8.8;
-      const signZ = suku.zPos + (suku.xPos > 0 ? 3.2 : -3.2);
+      const signX = suku.xPos > 0 ? 7.2 : -7.2;
+      const signZ = suku.zPos - (suku.xPos > 0 ? 2.6 : -2.6);
       const signGroup = new THREE.Group();
 
       const signPole1 = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 3.2, 8), new THREE.MeshLambertMaterial({ color: "#78350f" }));
@@ -1476,11 +1479,12 @@ export default function AdaptiveEduGameModal({
       signGroup.add(signBoard);
 
       signGroup.position.set(signX, 0, signZ);
-      signGroup.rotation.y = suku.xPos > 0 ? -Math.PI / 2 : Math.PI / 2;
+      // Diputar miring menghadap jalan agar terbaca jelas oleh pemain
+      signGroup.rotation.y = suku.xPos > 0 ? -Math.PI * 0.42 : Math.PI * 0.42;
       scene.add(signGroup);
 
       // ----------------------------------------------------------------------
-      // PENUNGGU PAK GURU 3D HUMANOID DI TIAP-TIAP RUMAH / POS
+      // PENUNGGU PAK GURU 3D HUMANOID (DIMAJUKAN KE HALAMAN DEPAN, TIDAK NEMPEL TEMBOK)
       // ----------------------------------------------------------------------
       const guruTeacherColors = [
         { shirt: "#0284c7", tie: "#1e3a8a" },
@@ -1531,20 +1535,21 @@ export default function AdaptiveEduGameModal({
       gpCtx.fillText("[ Tekan 'E' untuk Dialog & Kuis ]", 210, 85);
 
       const gpSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(gpCanvas) }));
-      gpSprite.position.set(0, 4.8, 0);
+      gpSprite.position.set(0, 5.0, 0);
       gpSprite.scale.set(4.0, 0.95, 1);
       guruPosGroup.add(gpSprite);
 
-      const guruPosHostX = suku.xPos > 0 ? 8.5 : -8.5;
-      const guruPosHostZ = suku.zPos + (suku.xPos > 0 ? 1.6 : -1.6);
+      // Dimajukan ke samping jalan (X = ±7.2), jauh dari dinding rumah (X = ±17.5)
+      const guruPosHostX = suku.xPos > 0 ? 7.2 : -7.2;
+      const guruPosHostZ = suku.zPos + (suku.xPos > 0 ? 2.2 : -2.2);
       guruPosGroup.position.set(guruPosHostX, 0, guruPosHostZ);
-      guruPosGroup.rotation.y = suku.xPos > 0 ? -Math.PI / 2 : Math.PI / 2;
+      guruPosGroup.rotation.y = suku.xPos > 0 ? -Math.PI * 0.42 : Math.PI * 0.42;
       scene.add(guruPosGroup);
 
       // ----------------------------------------------------------------------
-      // TITIK MISI BERCAHAYA (CHECKPOINT PAD DI DEPAN RUMAH)
+      // TITIK MISI BERCAHAYA (CHECKPOINT PAD DI HALAMAN DEPAN)
       // ----------------------------------------------------------------------
-      const hotspotX = suku.xPos > 0 ? 6.5 : -6.5;
+      const hotspotX = suku.xPos > 0 ? 6.2 : -6.2;
       const hotspotZ = suku.zPos;
       const spotGroup = new THREE.Group();
 
@@ -1590,7 +1595,7 @@ export default function AdaptiveEduGameModal({
       pdCtx.fillText(`👨‍🏫 Bersama ${suku.guruNama} [Tekan 'E']`, 200, 72);
 
       const padSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(padCanvas) }));
-      padSprite.position.set(0, 3.8, 0);
+      padSprite.position.set(0, 4.2, 0);
       padSprite.scale.set(4.2, 1.0, 1);
       spotGroup.add(padSprite);
 
@@ -2255,25 +2260,25 @@ export default function AdaptiveEduGameModal({
             </div>
           )}
 
-          {/* DIALOG POPUP POS MATERI & KUIS BERSAMA PENUNGGU PAK GURU */}
+          {/* DIALOG POPUP POS MATERI & KUIS BERSAMA PENUNGGU PAK GURU (LEBIH RINGKAS & NYAMAN) */}
           {activeSukuDialog && (
-            <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
-              <div className="bg-slate-900/95 border-3 border-yellow-400 rounded-3xl max-w-lg w-full p-6 text-white space-y-4 shadow-2xl">
-                {/* Header Pos & Guru */}
-                <div className="flex items-center justify-between border-b border-slate-700/80 pb-3">
-                  <div className="flex items-center gap-3">
-                    <span className="w-14 h-14 rounded-2xl bg-yellow-400/20 border border-yellow-400 flex items-center justify-center text-3xl shadow-md">
+            <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 animate-in fade-in">
+              <div className="bg-slate-900/95 border-2 border-yellow-400 rounded-3xl max-w-md w-full p-4 sm:p-4.5 text-white space-y-2.5 shadow-2xl max-h-[92vh] overflow-y-auto">
+                {/* Header Pos & Guru Kompak */}
+                <div className="flex items-center justify-between border-b border-slate-700/80 pb-2">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="w-10 h-10 rounded-xl bg-yellow-400/20 border border-yellow-400 flex items-center justify-center text-2xl shadow shrink-0">
                       {activeSukuDialog.tokohAvatar}
                     </span>
-                    <div>
-                      <span className="text-[10px] font-bold text-yellow-400 uppercase tracking-wider block">
+                    <div className="min-w-0">
+                      <span className="text-[10px] font-black text-yellow-400 uppercase tracking-wider block truncate">
                         🏷️ {activeSukuDialog.namaPos}
                       </span>
-                      <h3 className="font-black text-base sm:text-lg text-white">
+                      <h3 className="font-black text-sm text-white truncate">
                         {activeSukuDialog.namaSuku}
                       </h3>
-                      <p className="text-xs text-sky-300 font-semibold">
-                        👨‍🏫 Penunggu: <b>{activeSukuDialog.guruNama}</b> • Tetua: <b>{activeSukuDialog.tokohNama}</b>
+                      <p className="text-[11px] text-sky-300 font-semibold truncate">
+                        👨‍🏫 {activeSukuDialog.guruNama} • {activeSukuDialog.tokohNama}
                       </p>
                     </div>
                   </div>
@@ -2288,7 +2293,7 @@ export default function AdaptiveEduGameModal({
                         );
                       }
                     }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                    className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition flex items-center gap-1 cursor-pointer shrink-0 ${
                       isGuruSpeaking
                         ? "bg-rose-600 text-white animate-pulse"
                         : "bg-sky-500 hover:bg-sky-600 text-white shadow"
@@ -2299,27 +2304,27 @@ export default function AdaptiveEduGameModal({
                 </div>
 
                 {/* Kotak Ringkas Penjelasan Materi dari Pak Guru Penunggu Pos */}
-                <div className="bg-sky-950/60 border border-sky-400/50 p-3.5 rounded-2xl space-y-1 text-xs sm:text-sm leading-relaxed text-slate-100">
-                  <div className="flex items-center gap-2 text-sky-300 font-black text-xs uppercase tracking-wider">
-                    <span>💡 Penjelasan Materi {activeSukuDialog.subMateri}:</span>
+                <div className="bg-sky-950/60 border border-sky-400/50 p-2.5 rounded-2xl space-y-0.5 text-xs leading-relaxed text-slate-100">
+                  <div className="text-sky-300 font-black text-[11px] uppercase tracking-wider">
+                    💡 Materi: {activeSukuDialog.subMateri}
                   </div>
-                  <p className="text-xs sm:text-sm text-sky-100 italic">
+                  <p className="text-[11px] sm:text-xs text-sky-100 italic">
                     "{activeSukuDialog.penjelasanGuru}"
                   </p>
                 </div>
 
                 {/* Soal Kuis Tantangan */}
-                <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700 text-xs sm:text-sm leading-relaxed text-slate-100 font-medium">
-                  <b>🎯 Pertanyaan Kuis:</b> "{activeSukuDialog.pertanyaan}"
+                <div className="bg-slate-800/80 p-2.5 rounded-2xl border border-slate-700 text-xs leading-relaxed text-slate-100 font-medium">
+                  <b className="text-yellow-300">🎯 Kuis:</b> "{activeSukuDialog.pertanyaan}"
                 </div>
 
-                <div className="space-y-2 pt-1">
+                <div className="space-y-1.5 pt-0.5">
                   {activeSukuDialog.opsi.map((opt) => (
                     <button
                       key={opt.id}
                       type="button"
                       onClick={() => handleAnswerSuku(activeSukuDialog, opt.id)}
-                      className={`w-full text-left p-3.5 rounded-2xl transition text-xs sm:text-sm font-semibold flex items-start gap-3 cursor-pointer border ${
+                      className={`w-full text-left p-2.5 rounded-xl transition text-xs font-semibold flex items-start gap-2.5 cursor-pointer border ${
                         selectedAnswer === opt.id
                           ? opt.benar
                             ? "bg-emerald-600/30 border-emerald-400 text-emerald-200"
@@ -2327,17 +2332,17 @@ export default function AdaptiveEduGameModal({
                           : "bg-slate-800/90 hover:bg-slate-700/90 border-slate-700 text-slate-200"
                       }`}
                     >
-                      <span className="w-6 h-6 rounded-xl bg-yellow-400 text-slate-950 font-black text-xs flex items-center justify-center shrink-0">
+                      <span className="w-5 h-5 rounded-lg bg-yellow-400 text-slate-950 font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
                         {opt.id}
                       </span>
-                      <span>{opt.teks}</span>
+                      <span className="leading-snug">{opt.teks}</span>
                     </button>
                   ))}
                 </div>
 
                 {answerFeedback && (
                   <div
-                    className={`p-3 rounded-2xl text-xs font-bold animate-in fade-in ${
+                    className={`p-2 rounded-xl text-xs font-bold animate-in fade-in ${
                       answerFeedback.isCorrect
                         ? "bg-emerald-950/80 border border-emerald-400 text-emerald-300"
                         : "bg-rose-950/80 border border-rose-400 text-rose-300"
@@ -2348,8 +2353,8 @@ export default function AdaptiveEduGameModal({
                   </div>
                 )}
 
-                <div className="pt-2 flex justify-between items-center">
-                  <span className="text-[11px] text-slate-400">
+                <div className="pt-1 flex justify-between items-center">
+                  <span className="text-[10px] text-slate-400 font-medium">
                     {visitedSukuIds.includes(activeSukuDialog.id) ? "✓ Sudah Diselesaikan" : "Belum Selesai"}
                   </span>
                   <button
@@ -2358,7 +2363,7 @@ export default function AdaptiveEduGameModal({
                       stopGuruVoice();
                       setActiveSukuDialog(null);
                     }}
-                    className="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 px-5 rounded-xl text-xs transition cursor-pointer"
+                    className="bg-slate-800 hover:bg-slate-700 text-white font-bold py-1.5 px-4 rounded-xl text-xs transition cursor-pointer"
                   >
                     Tutup Dialog
                   </button>
