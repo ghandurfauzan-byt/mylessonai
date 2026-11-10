@@ -51,8 +51,8 @@ export default function SusunKataEduGame({
   const addPoints = useUIStore((s) => s.addPoints);
 
   const puzzles: WordPuzzle[] = useMemo(() => {
-    const raw = (activeModule?.title || chapterTitle || "").toLowerCase();
-    const id = (activeModule?.id || "").toLowerCase();
+    const raw = (chapterTitle || activeModule?.title || chapter || "").toLowerCase();
+    const id = (chapter || activeModule?.id || "").toLowerCase();
 
     // 1. TOPIK ARANE ANAK KEWAN
     if (id.includes("kewan") || raw.includes("kewan")) {
@@ -128,7 +128,7 @@ export default function SusunKataEduGame({
       { id: "w5", word: "BHINNEKA", clue: "Semboyan keragaman bangsa: ... Tunggal Ika", category: "Wawasan Kebangsaan", icon: "🇮🇩" },
       { id: "w6", word: "TOLERANSI", clue: "Sikap saling menghormati perbedaan suku dan agama...", category: "Karakter", icon: "⭐" },
     ];
-  }, [activeModule?.title, activeModule?.id, chapterTitle]);
+  }, [chapterTitle, chapter, activeModule?.title, activeModule?.id]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentPuzzle: WordPuzzle = puzzles[currentIndex] ?? puzzles[0] ?? DEFAULT_PUZZLE;

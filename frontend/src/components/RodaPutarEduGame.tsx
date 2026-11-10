@@ -43,10 +43,13 @@ const SEGMENTS: WheelSegment[] = [
 ];
 
 export default function RodaPutarEduGame({
+  chapter,
   chapterTitle,
+  studentName,
   activeModule,
   onFinish,
   onSwitchToAdventure,
+  onSwitchToMatching,
 }: Props) {
   const addPoints = useUIStore((s) => s.addPoints);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -60,8 +63,8 @@ export default function RodaPutarEduGame({
 
   // Bank Soal Tantangan Materi
   const questions = useMemo(() => {
-    const raw = (activeModule?.title || chapterTitle || "").toLowerCase();
-    const id = (activeModule?.id || "").toLowerCase();
+    const raw = (chapterTitle || activeModule?.title || chapter || "").toLowerCase();
+    const id = (chapter || activeModule?.id || "").toLowerCase();
 
     if (id.includes("kewan") || raw.includes("kewan")) {
       return [
@@ -104,7 +107,7 @@ export default function RodaPutarEduGame({
       { q: "Sikap gotong royong di lingkungan kelas tercermin dari...", opts: ["Mengerjakan PR teman", "Melaksanakan piket kelas kompak", "Bermain game sendiri", "Menonton teman bekerja"], correct: 1, exp: "Hebat! Piket kelas bersama adalah wujud nyata gotong royong." },
       { q: "Pepatah 'Berat sama dipikul, ringan sama dijinjing' mengajarkan...", opts: ["Bekerja sama saling membantu", "Memilih tugas yang ringan", "Menyerahkan tugas ke orang lain", "Bekerja sendiri"], correct: 0, exp: "Tepat sekali! Kebersamaan meringankan pekerjaan berat." },
     ];
-  }, [activeModule?.title, activeModule?.id, chapterTitle]);
+  }, [chapterTitle, chapter, activeModule?.title, activeModule?.id]);
 
   const [activeQuestion, setActiveQuestion] = useState<{ q: string; opts: string[]; correct: number; exp: string } | null>(null);
   const [answeredState, setAnsweredState] = useState<{ isAnswered: boolean; isCorrect: boolean } | null>(null);

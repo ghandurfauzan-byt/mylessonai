@@ -79,8 +79,8 @@ export default function UlarTanggaEduGame({
   const [winner, setWinner] = useState<"player" | "rival" | null>(null);
 
   const resolvedTitle = useMemo(() => {
-    return activeModule?.title || chapterTitle || chapter || "Evaluasi Pemahaman Materi";
-  }, [activeModule, chapterTitle, chapter]);
+    return chapterTitle || activeModule?.title || chapter || "Evaluasi Pemahaman Materi";
+  }, [chapterTitle, activeModule, chapter]);
 
   const isJawaTopic = useMemo(() => {
     const raw = resolvedTitle.toLowerCase();

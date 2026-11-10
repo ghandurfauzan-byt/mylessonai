@@ -164,9 +164,21 @@ export default function AdaptiveEduGameModal({
   const addPoints = useUIStore((s) => s.addPoints);
   const activeValidatedModule = useUIStore((s) => s.activeValidatedModule);
 
-  const [resolvedTitle, setResolvedTitle] = useState<string>(
-    activeValidatedModule?.title || chapterTitle || chapter
-  );
+  const cleanActiveId = (activeValidatedModule?.id || "").replace("mod-", "");
+  const cleanChapter = (chapter || "").replace("mod-", "");
+  const isMatchingActive =
+    Boolean(activeValidatedModule) &&
+    (cleanChapter === cleanActiveId || chapter === activeValidatedModule?.id);
+
+  const currentModule = activeModule || (isMatchingActive ? activeValidatedModule : undefined);
+
+  const resolvedTitle = useMemo(() => {
+    return (
+      chapterTitle ||
+      (isMatchingActive ? activeValidatedModule?.title : undefined) ||
+      chapter
+    );
+  }, [chapterTitle, isMatchingActive, activeValidatedModule, chapter]);
 
   const [bgmEnabled, setBgmEnabled] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
@@ -179,37 +191,41 @@ export default function AdaptiveEduGameModal({
 
   // Tipe Game Interaktif: "adventure" (3D Pos Desa) | "matching" (Menjodohkan Kartu) | "manus" (Manus AI Game)
   const isJawaTopic = useMemo(() => {
-    const raw = (activeValidatedModule?.title || chapterTitle || chapter || "").toLowerCase();
-    const id = (chapter || activeValidatedModule?.id || "").toLowerCase();
+    const raw = (resolvedTitle || chapter || "").toLowerCase();
+    const id = (chapter || "").toLowerCase();
     return (
       id.includes("bjawa") ||
       id.includes("aksara") ||
       id.includes("punokawan") ||
       id.includes("pandhawa") ||
       id.includes("unggah") ||
+      id.includes("krama") ||
+      id.includes("geguritan") ||
+      id.includes("kewan") ||
       raw.includes("jawa") ||
       raw.includes("aksara") ||
       raw.includes("wayang") ||
       raw.includes("punokawan") ||
       raw.includes("pandhawa") ||
-      raw.includes("unggah")
+      raw.includes("unggah") ||
+      raw.includes("krama") ||
+      raw.includes("geguritan") ||
+      raw.includes("kewan")
     );
-  }, [chapter, chapterTitle, activeValidatedModule]);
-
-  const currentModule = activeModule || activeValidatedModule;
+  }, [chapter, resolvedTitle]);
 
   // 1 MATERI = 1 JENIS GAME EKSKLUSIF
-  // Menentukan secara pasti tipe game resmi untuk topik pembelajaran aktif
+  // Menentukan secara pasti tipe game resmi untuk topik pembelajaran aktif yang sedang diambil siswa
   const officialGameType = useMemo<GameType>(() => {
     if (forcedGameMode) return forcedGameMode;
     if (currentModule?.gameType) return currentModule.gameType;
     return resolveGameTypeForModule(
-      currentModule?.title || chapterTitle || chapter,
-      currentModule?.subject || "",
-      currentModule?.id || chapter,
+      resolvedTitle,
+      currentModule?.subject || (isJawaTopic ? "bjawa" : "pkn"),
+      chapter || currentModule?.id || "",
       currentModule?.ragSummary
     );
-  }, [forcedGameMode, currentModule, chapterTitle, chapter]);
+  }, [forcedGameMode, currentModule, resolvedTitle, chapter, isJawaTopic]);
 
   const [gameMode, setGameMode] = useState<GameType | "manus">(officialGameType);
 
@@ -257,8 +273,8 @@ export default function AdaptiveEduGameModal({
   // LOGIKA GAME MENJODOHKAN KARTU PASANGAN INTERAKTIF (MATCHING CARDS)
   // --------------------------------------------------------------------------
   const generateDeckForCurrentTopic = useCallback(() => {
-    const raw = (activeValidatedModule?.title || chapterTitle || chapter || "").toLowerCase();
-    const id = (chapter || activeValidatedModule?.id || "").toLowerCase();
+    const raw = (resolvedTitle || chapterTitle || chapter || "").toLowerCase();
+    const id = (chapter || currentModule?.id || "").toLowerCase();
 
     let rawPairs: Array<{ id: string; a: string; b: string; subA?: string; subB?: string; icon: string }> = [];
 
@@ -366,7 +382,7 @@ export default function AdaptiveEduGameModal({
 
     // Acak Kartu Secara Merata
     return cards.sort(() => Math.random() - 0.5);
-  }, [activeValidatedModule, chapterTitle, chapter]);
+  }, [resolvedTitle, chapterTitle, chapter, currentModule?.id]);
 
   const restartMatchingGame = useCallback(() => {
     playClickSound();
@@ -1697,12 +1713,6 @@ export default function AdaptiveEduGameModal({
     }
   }, [isOpen, stopGuruVoice]);
 
-  // Sinkronkan Judul Materi Aktif dari Dashboard Siswa
-  useEffect(() => {
-    setResolvedTitle(activeValidatedModule?.title || chapterTitle || chapter);
-  }, [activeValidatedModule, chapterTitle, chapter]);
-
-  
   // Simulasi Siswa Kelas Online Bergerak, Mengumpulkan Poin & Chatting (Online)
   useEffect(() => {
     if (!isOpen || !gameStarted) return;

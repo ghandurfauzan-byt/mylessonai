@@ -66,21 +66,58 @@ export default function PelajarDashboardPage() {
     isJawaCurrent ? "bjawa" : "pkn"
   );
 
-    // Dynamic Game Mode & Title based on active curriculum / chapter
+  // 1. Dapatkan informasi topik yang sedang diambil / dipilih siswa (Materi Yang Diambil)
+  const currentChapterInfo = useMemo(() => {
+    const fromCatalog = availableChapters.find((c) => c.value === chapter);
+    const cleanActiveId = (activeValidatedModule?.id || "").replace("mod-", "");
+    const cleanChapter = chapter.replace("mod-", "");
+    const isMatchingActive =
+      Boolean(activeValidatedModule) &&
+      (cleanChapter === cleanActiveId || chapter === activeValidatedModule?.id);
+
+    const title = isMatchingActive
+      ? activeValidatedModule!.title
+      : fromCatalog?.label || chapter;
+
+    const subject = isMatchingActive
+      ? activeValidatedModule!.subject
+      : chapter.toLowerCase().includes("bjawa") ||
+        chapter.toLowerCase().includes("unggah") ||
+        chapter.toLowerCase().includes("krama") ||
+        chapter.toLowerCase().includes("aksara") ||
+        chapter.toLowerCase().includes("geguritan") ||
+        chapter.toLowerCase().includes("kewan") ||
+        chapter.toLowerCase().includes("wayang") ||
+        chapter.toLowerCase().includes("pandhawa") ||
+        chapter.toLowerCase().includes("punokawan")
+      ? "bjawa"
+      : "pkn";
+
+    const gameType =
+      isMatchingActive && activeValidatedModule?.gameType
+        ? activeValidatedModule.gameType
+        : resolveGameTypeForModule(
+            title,
+            subject,
+            chapter,
+            isMatchingActive ? activeValidatedModule?.ragSummary : undefined
+          );
+
+    const moduleToPass = isMatchingActive ? activeValidatedModule : undefined;
+
+    return {
+      title,
+      subject,
+      gameType,
+      moduleToPass,
+    };
+  }, [chapter, activeValidatedModule]);
+
+  // Dynamic Game Mode & Title based on active curriculum / chapter yang diambil siswa
   const activeGameInfo = useMemo(() => {
-    const rawTitle =
-      activeValidatedModule?.title ||
-      availableChapters.find((c) => c.value === chapter)?.label ||
-      chapter;
+    const rawTitle = currentChapterInfo.title;
     const cleanTitle = rawTitle.replace(/^.*-\s*/, "");
-    const targetGameType =
-      activeValidatedModule?.gameType ||
-      resolveGameTypeForModule(
-        rawTitle,
-        activeValidatedModule?.subject || "",
-        activeValidatedModule?.id || chapter,
-        activeValidatedModule?.ragSummary
-      );
+    const targetGameType = currentChapterInfo.gameType;
 
     if (targetGameType === "matching") {
       return {
@@ -125,14 +162,7 @@ export default function PelajarDashboardPage() {
       badge: "Petualangan 3D",
       title: `Petualangan Desa: ${cleanTitle}`,
     };
-  }, [
-    activeValidatedModule?.title,
-    activeValidatedModule?.id,
-    activeValidatedModule?.subject,
-    activeValidatedModule?.gameType,
-    activeValidatedModule?.ragSummary,
-    chapter,
-  ]);
+  }, [currentChapterInfo]);
 
   const setActiveValidatedModule = useUIStore((s) => s.setActiveValidatedModule);
 
@@ -1532,19 +1562,15 @@ export default function PelajarDashboardPage() {
         </ModalPortal>
       )}
 
-      {/* Modal Game Edukasi Adaptif (Petualangan Pengamalan / Menjodohkan + Manus AI) */}
+      {/* Modal Game Edukasi Adaptif (1 Materi = 1 Model Game Eksklusif Sesuai Materi yang Diambil) */}
       <AdaptiveEduGameModal
         isOpen={isGameModalOpen}
         onClose={() => setIsGameModalOpen(false)}
         chapter={chapter}
-        chapterTitle={
-          availableChapters.find((c) => c.value === chapter)?.label ||
-          activeValidatedModule?.title ||
-          chapter
-        }
+        chapterTitle={currentChapterInfo.title}
         studentName={currentStudentName}
         forcedGameMode={activeGameInfo.type as any}
-        activeModule={activeValidatedModule}
+        activeModule={currentChapterInfo.moduleToPass}
       />
     </div>
   );
