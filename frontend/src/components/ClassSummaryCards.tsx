@@ -158,7 +158,7 @@ export default function ClassSummaryCards() {
           }}
           icon={
             <svg
-              className="w-5 h-5 text-white"
+              className="w-5 h-5 text-white shrink-0" width="20" height="20" style={{ width: "20px", height: "20px" }}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -183,7 +183,7 @@ export default function ClassSummaryCards() {
           onClick={() => scrollToSection("section-chapter-progress")}
           icon={
             <svg
-              className="w-5 h-5 text-white"
+              className="w-5 h-5 text-white shrink-0" width="20" height="20" style={{ width: "20px", height: "20px" }}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -208,7 +208,7 @@ export default function ClassSummaryCards() {
           onClick={() => scrollToSection("section-curriculum-manager")}
           icon={
             <svg
-              className="w-5 h-5 text-white"
+              className="w-5 h-5 text-white shrink-0" width="20" height="20" style={{ width: "20px", height: "20px" }}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"

@@ -10,3 +10,14 @@ body {
   min-height: 100vh;
   @apply bg-[#fafafa] text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200;
 }
+
+
+/* Global SVG containment to prevent any unconstrained layout blowup */
+svg {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+svg:not([width]):not([class*="w-"]) {
+  width: 1.25rem;
+  height: 1.25rem;
+}

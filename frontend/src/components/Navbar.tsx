@@ -65,10 +65,13 @@ export default function Navbar({ role }: { role: "pelajar" | "pengajar" }) {
             to="/"
             className="flex items-center space-x-2.5 group focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg p-0.5"
           >
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 p-[1px] shadow-sm shadow-blue-500/20 group-hover:shadow-blue-500/40 transition">
-              <div className="w-full h-full bg-white dark:bg-slate-800 rounded-[11px] flex items-center justify-center">
+            <div className="w-9 h-9 min-w-9 min-h-9 max-w-9 max-h-9 shrink-0 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 p-[1px] shadow-sm shadow-blue-500/20 group-hover:shadow-blue-500/40 transition overflow-hidden">
+              <div className="w-full h-full bg-white dark:bg-slate-800 rounded-[11px] flex items-center justify-center overflow-hidden">
                 <svg
-                  className="w-4.5 h-4.5 text-blue-600 dark:text-blue-400"
+                  className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0"
+                  width="20"
+                  height="20"
+                  style={{ width: "20px", height: "20px", maxWidth: "20px", maxHeight: "20px" }}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"

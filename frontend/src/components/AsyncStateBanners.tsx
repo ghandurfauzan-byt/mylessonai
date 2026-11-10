@@ -42,7 +42,7 @@ export function EmptyState({ title, description }: { title: string; description:
   return (
     <div className="text-center py-8 px-4 border border-dashed border-slate-200 rounded-xl bg-slate-50/50 space-y-1.5">
       <div className="w-9 h-9 mx-auto rounded-full bg-slate-100 flex items-center justify-center text-slate-500 mb-2">
-        <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-5 h-5 shrink-0" width="20" height="20" style={{ width: "20px", height: "20px" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
