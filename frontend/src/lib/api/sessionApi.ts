@@ -66,6 +66,10 @@ export async function login(
   if (resData?.data?.token && typeof window !== "undefined") {
     localStorage.setItem("auth_token", resData.data.token);
   }
+  const resolvedUser = resData?.data?.user ?? resData?.user;
+  if (resolvedUser && typeof window !== "undefined") {
+    localStorage.setItem("user_profile", JSON.stringify(resolvedUser));
+  }
   return {
     ok: true,
     role: resData.data?.role ?? resData.role,
@@ -87,6 +91,10 @@ export async function register(data: RegisterInput): Promise<{ ok: true; user: U
   if (resData?.data?.token && typeof window !== "undefined") {
     localStorage.setItem("auth_token", resData.data.token);
   }
+  const regUser = resData?.data?.user ?? resData?.user ?? { name: data.name, email: data.email, role: data.role };
+  if (regUser && typeof window !== "undefined") {
+    localStorage.setItem("user_profile", JSON.stringify(regUser));
+  }
   return {
     ok: true,
     user: resData.data?.user ?? resData.user,
@@ -96,6 +104,7 @@ export async function register(data: RegisterInput): Promise<{ ok: true; user: U
 export async function logout(): Promise<void> {
   if (typeof window !== "undefined") {
     localStorage.removeItem("auth_token");
+    localStorage.removeItem("user_profile");
   }
   await fetch("/api/v1/auth/logout", { method: "POST", credentials: "same-origin" });
 }

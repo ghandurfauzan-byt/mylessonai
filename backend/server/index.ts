@@ -148,6 +148,12 @@ router.post("/login", async (req: Request, res: Response) => {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
+        maxAge: 1000 * 60 * 60 * 8,
+      });
+      res.cookie(USER_ID_COOKIE, user.id, {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
         maxAge: 1000 * 60 * 60 * 8, // 8 jam
       });
       res.cookie(USER_ID_COOKIE, user.id, {
@@ -201,6 +207,12 @@ router.post("/register", async (req: Request, res: Response) => {
   try {
     const user = await registerUserAccount(parsed.data);
     res.cookie(SESSION_COOKIE, user.role, {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 1000 * 60 * 60 * 8,
+    });
+    res.cookie(USER_ID_COOKIE, user.id, {
       httpOnly: true,
       sameSite: "lax",
       path: "/",
@@ -633,6 +645,12 @@ v1Router.post("/auth/login", async (req: Request, res: Response) => {
     path: "/",
     maxAge: 1000 * 60 * 60 * 8,
   });
+  res.cookie(USER_ID_COOKIE, user.id, {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 1000 * 60 * 60 * 8,
+  });
 
   return res.json({
     success: true,
@@ -670,6 +688,7 @@ v1Router.get("/auth/session", async (req: Request, res: Response) => {
 // 5. POST /api/v1/auth/logout (FR-03 Logout Sesi)
 v1Router.post("/auth/logout", (_req: Request, res: Response) => {
   res.clearCookie(SESSION_COOKIE, { path: "/" });
+  res.clearCookie(USER_ID_COOKIE, { path: "/" });
   return res.json({
     success: true,
     message: "Logout berhasil. Sesi telah diakhiri.",

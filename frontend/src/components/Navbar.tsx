@@ -6,7 +6,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
-function getInitials(name?: string, fallback = "PL"): string {
+function getInitials(name?: string, fallback = "GF"): string {
   if (!name || !name.trim()) return fallback;
   const words = name.trim().split(/\s+/).filter(Boolean);
   if (words.length === 1) {
@@ -42,7 +42,7 @@ export default function Navbar({ role }: { role: "pelajar" | "pengajar" }) {
         }
       } catch {}
     }
-    return getInitials(name, isTeacher ? "GR" : "PL");
+    return getInitials(name, isTeacher ? "DL" : "GF");
   }, [profile?.name, isTeacher]);
 
   async function handleLogout() {

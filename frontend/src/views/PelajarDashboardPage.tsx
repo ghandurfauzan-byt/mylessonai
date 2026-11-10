@@ -16,7 +16,7 @@ import {
 } from "@/lib/soundEffects";
 import { useUIStore } from "@/lib/store/useUIStore";
 import { type AiMode, availableChapters } from "@shared/catalog";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 interface BadgeDetail {
@@ -65,6 +65,59 @@ export default function PelajarDashboardPage() {
   const [badgeSubject, setBadgeSubject] = useState<"pkn" | "bjawa">(
     isJawaCurrent ? "bjawa" : "pkn"
   );
+
+    // Dynamic Game Mode & Title based on active curriculum / chapter
+  const activeGameInfo = useMemo(() => {
+    const rawTitle = activeValidatedModule?.title || availableChapters.find((c) => c.value === chapter)?.label || chapter;
+    const titleLower = rawTitle.toLowerCase();
+    const chLower = (activeValidatedModule?.id || chapter || "").toLowerCase();
+    const subjLower = (activeValidatedModule?.subject || "").toLowerCase();
+
+    // 1. Modul Tokoh / Karakter / Kata Pendek (Punokawan, Pandhawa, Tokoh, Pahlawan, dll)
+    if (
+      chLower.includes("punokawan") ||
+      titleLower.includes("punokawan") ||
+      chLower.includes("pandhawa") ||
+      titleLower.includes("pandhawa") ||
+      titleLower.includes("tokoh") ||
+      titleLower.includes("tebak kata") ||
+      titleLower.includes("pahlawan")
+    ) {
+      return {
+        type: "word_guess",
+        icon: "🔤",
+        badge: "Tebak Kata & Tokoh",
+        title: `Tebak Tokoh: ${rawTitle.replace(/^.*-\s*/, "")} 🔤`,
+      };
+    }
+
+    // 2. Modul Pasangan Kata / Aksara / Bahasa (Aksara Jawa, Unggah-Ungguh, Pasangan Kata)
+    if (
+      chLower.includes("aksara") ||
+      titleLower.includes("aksara") ||
+      chLower.includes("unggah") ||
+      titleLower.includes("unggah") ||
+      titleLower.includes("jodoh") ||
+      titleLower.includes("pasangan") ||
+      titleLower.includes("kosakata") ||
+      (subjLower === "bjawa" && !chLower.includes("punokawan") && !chLower.includes("pandhawa"))
+    ) {
+      return {
+        type: "matching",
+        icon: "🧩",
+        badge: "Teka-Teki Pasangan",
+        title: `Menjodohkan: ${rawTitle.replace(/^.*-\s*/, "")} 🧩`,
+      };
+    }
+
+    // 3. Modul Petualangan 3D Jelajah Desa (Pancasila, Gotong Royong, Norma, Bhinneka, atau materi baru Kemendikbud)
+    return {
+      type: "adventure",
+      icon: "🗺️",
+      badge: "Petualangan 3D",
+      title: `Petualangan Desa: ${rawTitle.replace(/^.*-\s*/, "")} 🗺️`,
+    };
+  }, [activeValidatedModule?.title, activeValidatedModule?.id, activeValidatedModule?.subject, chapter]);
 
   const setActiveValidatedModule = useUIStore((s) => s.setActiveValidatedModule);
 
@@ -897,15 +950,15 @@ export default function PelajarDashboardPage() {
             >
               <div className="flex items-center gap-3 min-w-0">
                 <span className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center font-black text-xl shrink-0 shadow-inner">
-                  {isJawaCurrent ? "🧩" : "🗺️"}
+                  {activeGameInfo.icon}
                 </span>
                 <div className="text-left min-w-0">
                   <div className="text-[10px] font-black uppercase tracking-wider text-yellow-100 flex items-center gap-1.5 flex-wrap">
-                    <span>Game 3D Seru</span>
-                    <span className="bg-white/20 px-1.5 py-0.2 rounded text-[9px] font-bold">Layar Penuh 🎵</span>
+                    <span>Game Seru</span>
+                    <span className="bg-white/20 px-1.5 py-0.2 rounded text-[9px] font-bold">{activeGameInfo.badge} 🎵</span>
                   </div>
                   <div className="text-xs sm:text-sm font-black truncate text-white">
-                    {isJawaCurrent ? "Teka-Teki Menjodohkan 🧩" : "Petualangan Desa Pancasila 🗺️"}
+                    {activeGameInfo.title}
                   </div>
                 </div>
               </div>

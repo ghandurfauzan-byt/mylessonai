@@ -9,7 +9,7 @@ import type { UserProfile } from "@shared/schema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
-function getInitials(name?: string, fallback = "PL"): string {
+function getInitials(name?: string, fallback = "GF"): string {
   if (!name || !name.trim()) return fallback;
   const words = name.trim().split(/\s+/).filter(Boolean);
   if (words.length === 1) {
@@ -98,7 +98,7 @@ export default function ProfileModal() {
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 flex items-center justify-center font-black text-sm tracking-wider">
-              {getInitials(profile?.name || name, profile?.role === "pengajar" ? "GR" : "PL")}
+              {getInitials(profile?.name || name, profile?.role === "pengajar" ? "DL" : "GF")}
             </div>
             <div>
               <h2
