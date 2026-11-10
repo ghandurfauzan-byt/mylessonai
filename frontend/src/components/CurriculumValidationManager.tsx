@@ -586,6 +586,19 @@ export default function CurriculumValidationManager() {
 
     setShowRequestModal(false);
 
+    // Otomatis Panggil Generator Game Manus AI untuk Topik Baru Ini
+    try {
+      fetch("/api/games/manus-generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chapterId: validatedMod.id,
+          chapterTitle: validatedMod.title,
+          subject: validatedMod.subject,
+        }),
+      }).catch(() => {});
+    } catch {}
+
     try {
       await validateCurriculumModule(validatedMod);
       queryClient.invalidateQueries({ queryKey: ["ai-content"] });
@@ -629,6 +642,19 @@ export default function CurriculumValidationManager() {
       ragSummary: targetModule.ragSummary,
       quizQuestions: (targetModule as any).quizQuestions,
     });
+
+    // Otomatis Panggil Generator Game Manus AI untuk Modul yang Divalidasi
+    try {
+      fetch("/api/games/manus-generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chapterId: targetModule.id,
+          chapterTitle: targetModule.title,
+          subject: targetModule.subject,
+        }),
+      }).catch(() => {});
+    } catch {}
 
     try {
       await validateCurriculumModule(targetModule);
@@ -1206,6 +1232,34 @@ export default function CurriculumValidationManager() {
                         <span>{quiz}</span>
                       </p>
                     ))}
+                  </div>
+                </div>
+
+                {/* PROMPT OTOMATIS GENERATOR GAME VIA MANUS AI ENGINE */}
+                <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-slate-800 dark:to-indigo-950/40 p-4 rounded-2xl border-2 border-indigo-200 dark:border-indigo-800 space-y-2.5">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <span className="text-xs font-black text-indigo-950 dark:text-indigo-200 flex items-center gap-1.5">
+                      <span>🎮 Integrasi Generator Game Manus AI</span>
+                    </span>
+                    <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-indigo-200 dark:bg-indigo-900 text-indigo-900 dark:text-indigo-200 border border-indigo-300 dark:border-indigo-700">
+                      Format: {generatedModule.subject === "bjawa" ? "Menjodohkan Kartu Pasangan" : "Petualangan Jelajah Desa 3D"}
+                    </span>
+                  </div>
+
+                  <div className="bg-white/90 dark:bg-slate-900/90 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900/60 space-y-1">
+                    <p className="text-[10px] font-extrabold text-indigo-700 dark:text-indigo-300 uppercase tracking-wide">
+                      Prompt Generator Manus AI Terbuat Otomatis:
+                    </p>
+                    <p className="text-xs text-slate-800 dark:text-slate-200 font-semibold italic leading-relaxed">
+                      "{generatedModule.subject === "bjawa"
+                        ? `Buat game web edukasi interaktif anak SD bertema: "${generatedModule.title}". Genre: Menjodohkan Kartu Pasangan (Memory/Matching Puzzle) dengan timer 60 detik, kombo bintang emas, dan suara riang saat cocok.`
+                        : `Buat game web petualangan interaktif anak SD bertema: "${generatedModule.title}". Genre: 2D Adventure Quest dengan 3 pos misi perbuatan baik, pengumpulan koin emas, dan dialog edukasi moral anak.`}"
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+                    <span>⚡</span>
+                    <span>Saat divalidasi, game baru ini otomatis muncul dan langsung bisa dimainkan siswa!</span>
                   </div>
                 </div>
 
