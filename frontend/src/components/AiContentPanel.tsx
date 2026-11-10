@@ -12,7 +12,7 @@ import {
 } from "@/lib/soundEffects";
 import { useUIStore } from "@/lib/store/useUIStore";
 import type { AiMode } from "@shared/catalog";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export default function AiContentPanel({
   chapterId,
@@ -60,6 +60,7 @@ export default function AiContentPanel({
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [selectedTimelineIndex, setSelectedTimelineIndex] = useState<number | null>(null);
+  const timelineScrollRef = useRef<HTMLDivElement>(null);
 
   // Membersihkan suara jika berganti bab/mode atau komponen di-unmount
   useEffect(() => {
@@ -854,7 +855,7 @@ export default function AiContentPanel({
             era: "Proklamasi & PPKI",
             title: "Kemerdekaan RI & Pengesahan UUD",
             desc: "Sang Saka Merah Putih dijahit tangan oleh Ibu Fatmawati berkibar saat proklamasi. Keesokan harinya sidang PPKI 18 Agustus mengesahkan UUD 1945 dan menetapkan Pancasila sebagai Dasar Negara.",
-            icon: "🇮🇩",
+            icon: "🚩",
             color: "from-red-600 to-rose-700",
             speech: "17 dan 18 Agustus 1945. Proklamasi Kemerdekaan RI dengan bendera jahitan tangan Ibu Fatmawati serta pengesahan UUD 1945 dan Pancasila oleh PPKI."
           },
@@ -871,7 +872,8 @@ export default function AiContentPanel({
 
         return (
           <div className="bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-yellow-500/15 dark:from-amber-950/40 dark:to-slate-900 border-3 border-amber-400 dark:border-amber-600 rounded-3xl p-4 sm:p-5 space-y-4 shadow-lg shadow-amber-500/10">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-300 dark:border-amber-800 pb-3">
+            {/* Header Linimasa dengan Tombol Navigasi Geser */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-300 dark:border-amber-800 pb-3">
               <div>
                 <h3 className="text-base sm:text-lg font-black text-amber-950 dark:text-amber-200 flex items-center gap-2">
                   <span>🏛️</span>
@@ -881,13 +883,45 @@ export default function AiContentPanel({
                   Klik tiap tonggak peristiwa untuk mendengarkan alur sejarahnya secara runtut! 🎧
                 </p>
               </div>
-              <span className="text-[11px] font-black bg-amber-400 text-amber-950 px-3 py-1 rounded-full self-start sm:self-auto shadow-xs">
-                Linimasa Bersejarah
-              </span>
+
+              <div className="flex items-center gap-2 self-start sm:self-auto">
+                {/* Tombol Geser Kiri / Kanan */}
+                <div className="flex items-center gap-1 bg-amber-200/70 dark:bg-slate-800 p-1 rounded-xl border border-amber-300 dark:border-amber-700 shadow-2xs">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playClickSound();
+                      timelineScrollRef.current?.scrollBy({ left: -240, behavior: "smooth" });
+                    }}
+                    title="Geser ke kiri"
+                    className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-amber-950 dark:text-amber-200 hover:bg-amber-100 flex items-center justify-center font-black text-xs transition cursor-pointer shadow-xs active:scale-90"
+                  >
+                    ◀
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playClickSound();
+                      timelineScrollRef.current?.scrollBy({ left: 240, behavior: "smooth" });
+                    }}
+                    title="Geser ke kanan"
+                    className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-amber-950 dark:text-amber-200 hover:bg-amber-100 flex items-center justify-center font-black text-xs transition cursor-pointer shadow-xs active:scale-90"
+                  >
+                    ▶
+                  </button>
+                </div>
+
+                <span className="text-[11px] font-black bg-amber-400 text-amber-950 px-3 py-1.5 rounded-xl shadow-xs whitespace-nowrap">
+                  7 Tonggak Sejarah
+                </span>
+              </div>
             </div>
 
-            {/* Horizontal Timeline Bar */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+            {/* Jalur Linimasa Horizontal yang Lapang & Rapi */}
+            <div
+              ref={timelineScrollRef}
+              className="flex items-stretch gap-3 overflow-x-auto pb-3 pt-1 px-0.5 scroll-smooth snap-x snap-mandatory scrollbar-thin scrollbar-thumb-amber-300 dark:scrollbar-thumb-amber-700"
+            >
               {milestones.map((m, mIdx) => {
                 const isSelected = selectedTimelineIndex === mIdx;
                 return (
@@ -903,26 +937,36 @@ export default function AiContentPanel({
                         pitch: 1.05,
                       });
                     }}
-                    className={`p-2.5 rounded-2xl border-2 text-left transition-all hover:scale-103 active:scale-95 cursor-pointer shadow-xs flex flex-col justify-between ${
+                    className={`w-[210px] sm:w-[230px] shrink-0 snap-start p-3.5 rounded-2xl border-2 text-left transition-all hover:scale-[1.02] active:scale-95 cursor-pointer shadow-xs flex flex-col justify-between ${
                       isSelected
-                        ? "bg-amber-100 dark:bg-amber-900/60 border-amber-500 dark:border-amber-400 ring-2 ring-amber-400"
-                        : "bg-white/90 dark:bg-slate-800/90 border-amber-200 dark:border-amber-800/60 hover:bg-amber-50/80"
+                        ? "bg-amber-100 dark:bg-amber-900/60 border-amber-500 dark:border-amber-400 ring-2 ring-amber-400 shadow-md"
+                        : "bg-white/95 dark:bg-slate-800/90 border-amber-200 dark:border-amber-800/60 hover:bg-amber-50/80"
                     }`}
                   >
-                    <div>
-                      <div className="flex items-center justify-between text-lg mb-1">
-                        <span>{m.icon}</span>
-                        <span className="text-[9px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-300 bg-amber-200/60 dark:bg-slate-700 px-1.5 py-0.5 rounded-md">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-2xl p-1.5 rounded-xl bg-amber-100 dark:bg-slate-700 shadow-2xs">
+                          {m.icon}
+                        </span>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-amber-900 dark:text-amber-200 bg-amber-200/80 dark:bg-slate-700 px-2.5 py-1 rounded-lg whitespace-nowrap shadow-2xs">
                           {m.year}
                         </span>
                       </div>
-                      <div className="text-[11px] font-black text-slate-900 dark:text-slate-100 line-clamp-2 leading-tight">
-                        {m.title}
+                      <div>
+                        <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400 block truncate">
+                          {m.era}
+                        </span>
+                        <div className="text-xs font-black text-slate-900 dark:text-slate-100 leading-snug line-clamp-2 min-h-[2.2rem]">
+                          {m.title}
+                        </div>
                       </div>
                     </div>
-                    <div className="text-[10px] text-amber-800 dark:text-amber-400 font-semibold mt-1.5 flex items-center gap-1">
-                      <span>🔊</span>
-                      <span>Dengar</span>
+                    <div className="text-[11px] font-black text-amber-800 dark:text-amber-300 mt-2.5 pt-2 border-t border-amber-200/60 dark:border-amber-800/60 flex items-center justify-between">
+                      <span className="flex items-center gap-1">
+                        <span>🔊</span>
+                        <span>{isSelected ? "Sedang Dipilih" : "Dengarkan"}</span>
+                      </span>
+                      <span className="text-xs font-bold">→</span>
                     </div>
                   </button>
                 );
@@ -936,15 +980,17 @@ export default function AiContentPanel({
               if (!activeMilestone) return null;
 
               return (
-                <div className="bg-white/95 dark:bg-slate-800/95 p-4 rounded-2xl border-2 border-amber-400 dark:border-amber-600 shadow-md space-y-2 animate-in fade-in zoom-in-95 duration-200">
-                  <div className="flex items-center justify-between border-b border-amber-200 dark:border-amber-800 pb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl">{activeMilestone.icon}</span>
+                <div className="bg-white/95 dark:bg-slate-800/95 p-4 sm:p-5 rounded-2xl border-2 border-amber-400 dark:border-amber-600 shadow-md space-y-2 animate-in fade-in zoom-in-95 duration-200">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-200 dark:border-amber-800 pb-3">
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl p-2 rounded-2xl bg-amber-100 dark:bg-slate-700 shadow-xs">
+                        {activeMilestone.icon}
+                      </span>
                       <div>
-                        <span className="text-[10px] font-extrabold uppercase bg-amber-100 text-amber-900 dark:bg-amber-900 dark:text-amber-200 px-2 py-0.5 rounded-md">
+                        <span className="text-[10px] font-extrabold uppercase bg-amber-100 text-amber-900 dark:bg-amber-900 dark:text-amber-200 px-2.5 py-0.5 rounded-md inline-block">
                           {activeMilestone.era} • {activeMilestone.year}
                         </span>
-                        <h4 className="font-black text-sm sm:text-base text-amber-950 dark:text-amber-100">
+                        <h4 className="font-black text-base sm:text-lg text-amber-950 dark:text-amber-100">
                           {activeMilestone.title}
                         </h4>
                       </div>
@@ -959,13 +1005,13 @@ export default function AiContentPanel({
                           pitch: 1.05,
                         });
                       }}
-                      className="px-3 py-1 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-black text-xs flex items-center gap-1 cursor-pointer transition shadow-xs"
+                      className="px-3.5 py-1.5 rounded-full bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-black text-xs flex items-center justify-center gap-1.5 cursor-pointer transition shadow-xs self-start sm:self-auto"
                     >
                       <span>🔊</span>
-                      <span>Ulangi Suara</span>
+                      <span>Ulangi Suara Kisah</span>
                     </button>
                   </div>
-                  <p className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 leading-relaxed">
+                  <p className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 leading-relaxed pt-1">
                     {activeMilestone.desc}
                   </p>
                 </div>
