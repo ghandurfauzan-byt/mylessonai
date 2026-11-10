@@ -59,7 +59,8 @@ export default function AiContentPanel({
   ]);
 
   const [isPlaying, setIsPlaying] = useState(false);
-  const [selectedTimelineIndex, setSelectedTimelineIndex] = useState<number | null>(null);
+  const [selectedTimelineIndex, setSelectedTimelineIndex] = useState<number>(0);
+  const [timelineViewMode, setTimelineViewMode] = useState<"stepper" | "vertical">("stepper");
   const timelineScrollRef = useRef<HTMLDivElement>(null);
 
   // Membersihkan suara jika berganti bab/mode atau komponen di-unmount
@@ -67,7 +68,7 @@ export default function AiContentPanel({
     return () => {
       stopSpeaking();
       setIsPlaying(false);
-      setSelectedTimelineIndex(null);
+      setSelectedTimelineIndex(0);
     };
   }, [chapterId, mode]);
 
@@ -807,6 +808,7 @@ export default function AiContentPanel({
         const milestones = [
           {
             year: "Abad XIV (1365)",
+            shortYear: "1365 M",
             era: "Kerajaan Majapahit",
             title: "Kakawin Sutasoma & Bhinneka Tunggal Ika",
             desc: "Pujangga Mpu Tantular menulis bait suci dalam Kakawin Sutasoma: 'Bhinneka Tunggal Ika tan hana dharma mangrwa' sebagai pedoman kerukunan bangsa di era Prabu Hayam Wuruk dan Mahapatih Gajah Mada.",
@@ -815,7 +817,8 @@ export default function AiContentPanel({
             speech: "Abad ke-14 pada era Kerajaan Majapahit. Pujangga Mpu Tantular menulis Kakawin Sutasoma yang melahirkan semboyan suci Bhinneka Tunggal Ika."
           },
           {
-            year: "Abad XV-XVI",
+            year: "Abad XV-XVI (1500)",
+            shortYear: "1500 M",
             era: "Kasultanan Demak",
             title: "Sunan Kalijaga & Wayang Punokawan",
             desc: "Kanjeng Sunan Kalijaga menyempurnakan 4 tokoh Punokawan (Semar, Gareng, Petruk, Bagong) sebagai media dakwah Islam dan tuntunan watak budi pekerti luhur bagi rakyat dan para ksatria.",
@@ -825,6 +828,7 @@ export default function AiContentPanel({
           },
           {
             year: "Legenda Jawa",
+            shortYear: "Legenda",
             era: "Medang Kamulan",
             title: "Aji Saka & 20 Aksara Jawa Hanacaraka",
             desc: "Prabu Aji Saka menciptakan 20 aksara Jawa legena untuk mengabadikan kesetiaan abdinya, Dora dan Sembada, yang gugur membela amanah keris pusaka di Gunung Kendeng.",
@@ -833,9 +837,10 @@ export default function AiContentPanel({
             speech: "Legenda Medang Kamulan Tanah Jawa. Prabu Aji Saka menciptakan 20 aksara Jawa untuk mengenang kesetiaan Dora dan Sembada."
           },
           {
-            year: "28 Okt 1928",
-            era: "Gedung Kramat 106",
-            title: "Kongres Pemuda II & Sumpah Pemuda",
+            year: "28 Oktober 1928",
+            shortYear: "1928",
+            era: "Kongres Pemuda II",
+            title: "Sumpah Pemuda & Lagu Kebangsaan",
             desc: "Para pemuda pelajar dari Jong Java, Sumatra, Batak, Celebes, Ambon, dan Betawi mengikrarkan Sumpah Pemuda dan pertama kali mendengarkan alunan biola lagu Indonesia Raya ciptaan W.R. Supratman.",
             icon: "🎻",
             color: "from-emerald-600 to-teal-700",
@@ -843,6 +848,7 @@ export default function AiContentPanel({
           },
           {
             year: "1 Juni 1945",
+            shortYear: "1 Jun 1945",
             era: "Sidang BPUPKI",
             title: "Pidato Bung Karno & Lahir Pancasila",
             desc: "Dalam sidang BPUPKI di Gedung Chuo Sangi In, Ir. Soekarno berpidato membakar semangat tanpa teks mengusulkan lima prinsip dasar falsafah negara yang dinamai Pancasila.",
@@ -851,7 +857,8 @@ export default function AiContentPanel({
             speech: "1 Juni 1945 dalam sidang BPUPKI. Bung Karno berpidato dengan penuh semangat mencetuskan falsafah dasar negara Pancasila."
           },
           {
-            year: "17-18 Ags 1945",
+            year: "17-18 Agustus 1945",
+            shortYear: "17 Ags 1945",
             era: "Proklamasi & PPKI",
             title: "Kemerdekaan RI & Pengesahan UUD",
             desc: "Sang Saka Merah Putih dijahit tangan oleh Ibu Fatmawati berkibar saat proklamasi. Keesokan harinya sidang PPKI 18 Agustus mengesahkan UUD 1945 dan menetapkan Pancasila sebagai Dasar Negara.",
@@ -860,9 +867,10 @@ export default function AiContentPanel({
             speech: "17 dan 18 Agustus 1945. Proklamasi Kemerdekaan RI dengan bendera jahitan tangan Ibu Fatmawati serta pengesahan UUD 1945 dan Pancasila oleh PPKI."
           },
           {
-            year: "11 Feb 1950",
+            year: "11 Februari 1950",
+            shortYear: "1950",
             era: "Kabinet RIS",
-            title: "Peresmian Lambang Garuda Pancasila",
+            title: "Peresmian Garuda Pancasila",
             desc: "Dirancang oleh Sultan Hamid II dari Pontianak dan disempurnakan langsung Bung Karno dengan menambahkan jambul gagah serta pita semboyan Bhinneka Tunggal Ika yang dicengkeram di depan kedua kaki garuda.",
             icon: "🦅",
             color: "from-amber-600 to-yellow-600",
@@ -871,152 +879,359 @@ export default function AiContentPanel({
         ];
 
         return (
-          <div className="bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-yellow-500/15 dark:from-amber-950/40 dark:to-slate-900 border-3 border-amber-400 dark:border-amber-600 rounded-3xl p-4 sm:p-5 space-y-4 shadow-lg shadow-amber-500/10">
-            {/* Header Linimasa dengan Tombol Navigasi Geser */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-300 dark:border-amber-800 pb-3">
+          <div className="bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-yellow-500/15 dark:from-amber-950/40 dark:to-slate-900 border-3 border-amber-400 dark:border-amber-600 rounded-3xl p-4 sm:p-6 space-y-5 shadow-lg shadow-amber-500/10">
+            {/* Header Linimasa dengan Mode Bentuk Tampilan & Indikator */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-300 dark:border-amber-800 pb-3.5">
               <div>
                 <h3 className="text-base sm:text-lg font-black text-amber-950 dark:text-amber-200 flex items-center gap-2">
                   <span>🏛️</span>
-                  <span>Linimasa Sejarah &amp; Kronologi Peristiwa Bangsa / Sastra</span>
+                  <span>Jalur Linimasa Sejarah &amp; Peristiwa Bangsa</span>
                 </h3>
                 <p className="text-xs font-bold text-amber-800 dark:text-amber-400">
-                  Klik tiap tonggak peristiwa untuk mendengarkan alur sejarahnya secara runtut! 🎧
+                  Telusuri tonggak perjalanan sejarah Nusantara dari masa ke masa! 🎧
                 </p>
               </div>
 
               <div className="flex items-center gap-2 self-start sm:self-auto">
-                {/* Tombol Geser Kiri / Kanan */}
-                <div className="flex items-center gap-1 bg-amber-200/70 dark:bg-slate-800 p-1 rounded-xl border border-amber-300 dark:border-amber-700 shadow-2xs">
+                {/* Switch Bentuk Tampilan: Jalur Peta Waktu vs Pita Vertikal */}
+                <div className="flex items-center bg-amber-200/80 dark:bg-slate-800 p-1 rounded-xl border border-amber-300 dark:border-amber-700 shadow-2xs text-xs font-black">
                   <button
                     type="button"
                     onClick={() => {
                       playClickSound();
-                      timelineScrollRef.current?.scrollBy({ left: -240, behavior: "smooth" });
+                      setTimelineViewMode("stepper");
                     }}
-                    title="Geser ke kiri"
-                    className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-amber-950 dark:text-amber-200 hover:bg-amber-100 flex items-center justify-center font-black text-xs transition cursor-pointer shadow-xs active:scale-90"
+                    className={`px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
+                      timelineViewMode === "stepper"
+                        ? "bg-white dark:bg-amber-600 text-amber-950 dark:text-white shadow-xs font-black"
+                        : "text-amber-900 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-slate-700 font-bold"
+                    }`}
                   >
-                    ◀
+                    <span>🛣️</span>
+                    <span>Jalur Rel Waktu</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => {
                       playClickSound();
-                      timelineScrollRef.current?.scrollBy({ left: 240, behavior: "smooth" });
+                      setTimelineViewMode("vertical");
                     }}
-                    title="Geser ke kanan"
-                    className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-amber-950 dark:text-amber-200 hover:bg-amber-100 flex items-center justify-center font-black text-xs transition cursor-pointer shadow-xs active:scale-90"
+                    className={`px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
+                      timelineViewMode === "vertical"
+                        ? "bg-white dark:bg-amber-600 text-amber-950 dark:text-white shadow-xs font-black"
+                        : "text-amber-900 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-slate-700 font-bold"
+                    }`}
                   >
-                    ▶
+                    <span>📜</span>
+                    <span>Pita Berurutan</span>
                   </button>
                 </div>
 
                 <span className="text-[11px] font-black bg-amber-400 text-amber-950 px-3 py-1.5 rounded-xl shadow-xs whitespace-nowrap">
-                  7 Tonggak Sejarah
+                  Tonggak {selectedTimelineIndex + 1} / {milestones.length}
                 </span>
               </div>
             </div>
 
-            {/* Jalur Linimasa Horizontal yang Lapang & Rapi */}
-            <div
-              ref={timelineScrollRef}
-              className="flex items-stretch gap-3 overflow-x-auto pb-3 pt-1 px-0.5 scroll-smooth snap-x snap-mandatory scrollbar-thin scrollbar-thumb-amber-300 dark:scrollbar-thumb-amber-700"
-            >
-              {milestones.map((m, mIdx) => {
-                const isSelected = selectedTimelineIndex === mIdx;
-                return (
-                  <button
-                    key={m.title}
-                    type="button"
-                    onClick={() => {
-                      playClickSound();
-                      setSelectedTimelineIndex(isSelected ? null : mIdx);
-                      startSpeaking({
-                        text: `${m.title}. ${m.desc}`,
-                        rate: 0.92,
-                        pitch: 1.05,
-                      });
-                    }}
-                    className={`w-[210px] sm:w-[230px] shrink-0 snap-start p-3.5 rounded-2xl border-2 text-left transition-all hover:scale-[1.02] active:scale-95 cursor-pointer shadow-xs flex flex-col justify-between ${
-                      isSelected
-                        ? "bg-amber-100 dark:bg-amber-900/60 border-amber-500 dark:border-amber-400 ring-2 ring-amber-400 shadow-md"
-                        : "bg-white/95 dark:bg-slate-800/90 border-amber-200 dark:border-amber-800/60 hover:bg-amber-50/80"
-                    }`}
-                  >
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-2xl p-1.5 rounded-xl bg-amber-100 dark:bg-slate-700 shadow-2xs">
-                          {m.icon}
-                        </span>
-                        <span className="text-[10px] font-black uppercase tracking-wider text-amber-900 dark:text-amber-200 bg-amber-200/80 dark:bg-slate-700 px-2.5 py-1 rounded-lg whitespace-nowrap shadow-2xs">
-                          {m.year}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400 block truncate">
-                          {m.era}
-                        </span>
-                        <div className="text-xs font-black text-slate-900 dark:text-slate-100 leading-snug line-clamp-2 min-h-[2.2rem]">
-                          {m.title}
-                        </div>
-                      </div>
+            {/* TAMPILAN BENTUK 1: JALUR REL PETA WAKTU (HORIZONTAL CONNECTED MILESTONE ROADMAP) */}
+            {timelineViewMode === "stepper" && (
+              <div className="space-y-4">
+                {/* Lintasan Rel Relasi Garis Waktu Berpenghubung */}
+                <div
+                  ref={timelineScrollRef}
+                  className="relative overflow-x-auto pb-4 pt-2 px-2 scrollbar-thin scrollbar-thumb-amber-300 dark:scrollbar-thumb-amber-700 scroll-smooth"
+                >
+                  <div className="min-w-[700px] relative flex items-center justify-between px-6 pt-3 pb-2">
+                    {/* Garis Rel Penghubung di Belakang Bulatan */}
+                    <div className="absolute left-10 right-10 top-[40px] h-2.5 bg-amber-200 dark:bg-slate-700 rounded-full z-0 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 transition-all duration-300 rounded-full"
+                        style={{
+                          width: `${(selectedTimelineIndex / (milestones.length - 1)) * 100}%`,
+                        }}
+                      />
                     </div>
-                    <div className="text-[11px] font-black text-amber-800 dark:text-amber-300 mt-2.5 pt-2 border-t border-amber-200/60 dark:border-amber-800/60 flex items-center justify-between">
-                      <span className="flex items-center gap-1">
-                        <span>🔊</span>
-                        <span>{isSelected ? "Sedang Dipilih" : "Dengarkan"}</span>
-                      </span>
-                      <span className="text-xs font-bold">→</span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
 
-            {/* Detail Expandable Card if Selected */}
-            {(() => {
-              const activeMilestone =
-                selectedTimelineIndex !== null ? milestones[selectedTimelineIndex] : null;
-              if (!activeMilestone) return null;
+                    {milestones.map((m, mIdx) => {
+                      const isSelected = selectedTimelineIndex === mIdx;
+                      const isPassed = mIdx <= selectedTimelineIndex;
+                      return (
+                        <button
+                          key={m.title}
+                          type="button"
+                          onClick={() => {
+                            playClickSound();
+                            setSelectedTimelineIndex(mIdx);
+                            startSpeaking({
+                              text: `${m.title}. ${m.desc}`,
+                              rate: 0.92,
+                              pitch: 1.05,
+                            });
+                          }}
+                          className="relative z-10 flex flex-col items-center group cursor-pointer transition-transform focus:outline-none"
+                        >
+                          {/* Tahun / Tag Era di Atas */}
+                          <span
+                            className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md mb-2 transition-all shadow-2xs whitespace-nowrap ${
+                              isSelected
+                                ? "bg-amber-600 text-white ring-2 ring-amber-300 scale-105"
+                                : isPassed
+                                ? "bg-amber-300 text-amber-950 dark:bg-slate-700 dark:text-amber-200"
+                                : "bg-white/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-amber-200 dark:border-amber-800"
+                            }`}
+                          >
+                            {m.shortYear || m.year}
+                          </span>
 
-              return (
-                <div className="bg-white/95 dark:bg-slate-800/95 p-4 sm:p-5 rounded-2xl border-2 border-amber-400 dark:border-amber-600 shadow-md space-y-2 animate-in fade-in zoom-in-95 duration-200">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-200 dark:border-amber-800 pb-3">
-                    <div className="flex items-center gap-3">
-                      <span className="text-3xl p-2 rounded-2xl bg-amber-100 dark:bg-slate-700 shadow-xs">
-                        {activeMilestone.icon}
-                      </span>
-                      <div>
-                        <span className="text-[10px] font-extrabold uppercase bg-amber-100 text-amber-900 dark:bg-amber-900 dark:text-amber-200 px-2.5 py-0.5 rounded-md inline-block">
-                          {activeMilestone.era} • {activeMilestone.year}
-                        </span>
-                        <h4 className="font-black text-base sm:text-lg text-amber-950 dark:text-amber-100">
-                          {activeMilestone.title}
-                        </h4>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        playClickSound();
-                        startSpeaking({
-                          text: activeMilestone.desc,
-                          rate: 0.92,
-                          pitch: 1.05,
-                        });
-                      }}
-                      className="px-3.5 py-1.5 rounded-full bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-black text-xs flex items-center justify-center gap-1.5 cursor-pointer transition shadow-xs self-start sm:self-auto"
-                    >
-                      <span>🔊</span>
-                      <span>Ulangi Suara Kisah</span>
-                    </button>
+                          {/* Bulatan / Medali Tonggak Sejarah */}
+                          <div
+                            className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center text-2xl sm:text-3xl transition-all duration-300 relative shadow-md ${
+                              isSelected
+                                ? "bg-gradient-to-br from-amber-400 via-orange-500 to-amber-600 text-white ring-4 ring-amber-400/80 scale-115 shadow-xl -translate-y-1"
+                                : isPassed
+                                ? "bg-gradient-to-br from-amber-100 to-orange-100 dark:from-slate-700 dark:to-slate-800 border-3 border-amber-400 text-amber-900 dark:text-amber-200 hover:scale-105"
+                                : "bg-white dark:bg-slate-800 border-3 border-slate-300 dark:border-slate-700 text-slate-400 hover:border-amber-400 hover:scale-105"
+                            }`}
+                          >
+                            <span>{m.icon}</span>
+
+                            {/* Nomor Tonggak Kecil */}
+                            <span
+                              className={`absolute -top-1 -right-1 w-5 h-5 rounded-full text-[10px] font-black flex items-center justify-center shadow-xs ${
+                                isSelected
+                                  ? "bg-rose-500 text-white ring-2 ring-white"
+                                  : isPassed
+                                  ? "bg-amber-500 text-white"
+                                  : "bg-slate-400 text-white"
+                              }`}
+                            >
+                              {mIdx + 1}
+                            </span>
+                          </div>
+
+                          {/* Judul Singkat di Bawah */}
+                          <span
+                            className={`mt-2 text-[11px] font-extrabold text-center max-w-[85px] leading-tight line-clamp-2 transition-colors ${
+                              isSelected
+                                ? "text-amber-950 dark:text-amber-200 font-black scale-105"
+                                : "text-slate-700 dark:text-slate-300 group-hover:text-amber-700"
+                            }`}
+                          >
+                            {m.title.split("&")[0].trim()}
+                          </span>
+
+                          {/* Penanda Panah Menunjuk ke Bawah Jika Terpilih */}
+                          {isSelected && (
+                            <div className="w-0 h-0 border-x-6 border-x-transparent border-t-6 border-t-amber-500 mt-1 animate-bounce" />
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
-                  <p className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 leading-relaxed pt-1">
-                    {activeMilestone.desc}
-                  </p>
                 </div>
-              );
-            })()}
+
+                {/* Panggung Kisah Tonggak Sejarah Terpilih */}
+                {(() => {
+                  const activeMilestone = milestones[selectedTimelineIndex] || milestones[0];
+                  return (
+                    <div className="bg-white/95 dark:bg-slate-800/95 p-4 sm:p-6 rounded-3xl border-3 border-amber-400 dark:border-amber-600 shadow-md space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                      {/* Baris Atas Panggung: Medali Besar, Era, Judul, dan Tombol Suara */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-amber-200 dark:border-amber-800/80 pb-4">
+                        <div className="flex items-start sm:items-center gap-3.5">
+                          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center text-3xl sm:text-4xl shadow-md shrink-0 ring-4 ring-amber-200 dark:ring-amber-900">
+                            {activeMilestone.icon}
+                          </div>
+                          <div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-[10px] font-black uppercase tracking-wider bg-amber-500 text-white px-2.5 py-0.5 rounded-md shadow-2xs">
+                                Tonggak {selectedTimelineIndex + 1} / {milestones.length}
+                              </span>
+                              <span className="text-[10px] font-extrabold uppercase bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200 px-2.5 py-0.5 rounded-md">
+                                {activeMilestone.era} • {activeMilestone.year}
+                              </span>
+                            </div>
+                            <h4 className="font-black text-base sm:text-xl text-amber-950 dark:text-amber-100 mt-1">
+                              {activeMilestone.title}
+                            </h4>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            playClickSound();
+                            startSpeaking({
+                              text: `${activeMilestone.title}. ${activeMilestone.desc}`,
+                              rate: 0.92,
+                              pitch: 1.05,
+                            });
+                          }}
+                          className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 active:scale-95 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer transition shadow-md self-start sm:self-auto hover:shadow-lg"
+                        >
+                          <span className="text-base">🔊</span>
+                          <span>Dengarkan Narasi Suara</span>
+                        </button>
+                      </div>
+
+                      {/* Isi Cerita Sejarah Lengkap */}
+                      <div className="bg-amber-50/70 dark:bg-slate-900/50 p-4 sm:p-5 rounded-2xl border border-amber-200/80 dark:border-amber-800/60">
+                        <p className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 leading-relaxed">
+                          {activeMilestone.desc}
+                        </p>
+                      </div>
+
+                      {/* Bar Navigasi Langkah: Sebelumnya & Selanjutnya */}
+                      <div className="flex items-center justify-between pt-1 gap-2">
+                        <button
+                          type="button"
+                          disabled={selectedTimelineIndex === 0}
+                          onClick={() => {
+                            playClickSound();
+                            const prev = Math.max(0, selectedTimelineIndex - 1);
+                            setSelectedTimelineIndex(prev);
+                            startSpeaking({
+                              text: `${milestones[prev].title}. ${milestones[prev].desc}`,
+                              rate: 0.92,
+                              pitch: 1.05,
+                            });
+                          }}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition ${
+                            selectedTimelineIndex === 0
+                              ? "bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600 cursor-not-allowed"
+                              : "bg-amber-100 text-amber-950 dark:bg-slate-700 dark:text-amber-200 hover:bg-amber-200 cursor-pointer shadow-xs active:scale-95"
+                          }`}
+                        >
+                          <span>◀</span>
+                          <span>Tonggak Sebelumnya</span>
+                        </button>
+
+                        {/* Indikator Titik 7 Tonggak */}
+                        <div className="hidden sm:flex items-center gap-1.5">
+                          {milestones.map((_, dotIdx) => (
+                            <button
+                              key={`dot-${dotIdx}`}
+                              type="button"
+                              onClick={() => {
+                                playClickSound();
+                                setSelectedTimelineIndex(dotIdx);
+                              }}
+                              className={`h-2.5 rounded-full transition-all cursor-pointer ${
+                                selectedTimelineIndex === dotIdx
+                                  ? "w-7 bg-amber-500 shadow-xs"
+                                  : "w-2.5 bg-amber-200 dark:bg-slate-700 hover:bg-amber-300"
+                              }`}
+                              title={`Menuju tonggak ${dotIdx + 1}`}
+                            />
+                          ))}
+                        </div>
+
+                        <button
+                          type="button"
+                          disabled={selectedTimelineIndex === milestones.length - 1}
+                          onClick={() => {
+                            playClickSound();
+                            const next = Math.min(milestones.length - 1, selectedTimelineIndex + 1);
+                            setSelectedTimelineIndex(next);
+                            startSpeaking({
+                              text: `${milestones[next].title}. ${milestones[next].desc}`,
+                              rate: 0.92,
+                              pitch: 1.05,
+                            });
+                          }}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition ${
+                            selectedTimelineIndex === milestones.length - 1
+                              ? "bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600 cursor-not-allowed"
+                              : "bg-amber-500 text-white hover:bg-amber-600 cursor-pointer shadow-xs active:scale-95"
+                          }`}
+                        >
+                          <span>Tonggak Berikutnya</span>
+                          <span>▶</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* TAMPILAN BENTUK 2: PITA KRONOLOGI VERTIKAL (VERTICAL TIMELINE STREAM / RIBBON) */}
+            {timelineViewMode === "vertical" && (
+              <div className="relative pl-6 sm:pl-8 space-y-4 before:absolute before:left-3 sm:before:left-4 before:top-2 before:bottom-2 before:w-1 before:bg-gradient-to-b before:from-amber-400 before:via-orange-400 before:to-yellow-500">
+                {milestones.map((m, mIdx) => {
+                  const isSelected = selectedTimelineIndex === mIdx;
+                  return (
+                    <div
+                      key={`vertical-${m.title}`}
+                      className="relative flex items-start gap-3 sm:gap-4 group"
+                    >
+                      {/* Simpul Bulatan Garis Waktu Vertikal */}
+                      <div
+                        className={`absolute -left-6 sm:-left-8 top-1.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-black shadow-md transition-transform ${
+                          isSelected
+                            ? "bg-amber-500 text-white ring-4 ring-amber-300 scale-110"
+                            : "bg-white dark:bg-slate-800 text-amber-900 dark:text-amber-200 border-2 border-amber-400"
+                        }`}
+                      >
+                        {mIdx + 1}
+                      </div>
+
+                      {/* Pita Kartu Peristiwa Horisontal */}
+                      <div
+                        onClick={() => {
+                          playClickSound();
+                          setSelectedTimelineIndex(mIdx);
+                        }}
+                        className={`flex-1 p-4 rounded-2xl border-2 transition-all cursor-pointer shadow-xs ${
+                          isSelected
+                            ? "bg-amber-50/90 dark:bg-amber-950/40 border-amber-500 dark:border-amber-400 ring-2 ring-amber-400"
+                            : "bg-white/95 dark:bg-slate-800/90 border-amber-200 dark:border-amber-800/60 hover:bg-amber-50/50"
+                        }`}
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-200/70 dark:border-amber-800/60 pb-2.5">
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-2xl p-1.5 rounded-xl bg-amber-100 dark:bg-slate-700 shadow-2xs">
+                              {m.icon}
+                            </span>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-black uppercase text-amber-900 dark:text-amber-200 bg-amber-200/80 dark:bg-slate-700 px-2 py-0.5 rounded-md">
+                                  {m.era} • {m.year}
+                                </span>
+                              </div>
+                              <h4 className="text-xs sm:text-sm font-black text-amber-950 dark:text-amber-100 mt-0.5">
+                                {m.title}
+                              </h4>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              playClickSound();
+                              setSelectedTimelineIndex(mIdx);
+                              startSpeaking({
+                                text: `${m.title}. ${m.desc}`,
+                                rate: 0.92,
+                                pitch: 1.05,
+                              });
+                            }}
+                            className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-black text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-xs self-start sm:self-auto"
+                          >
+                            <span>🔊</span>
+                            <span>Dengarkan</span>
+                          </button>
+                        </div>
+
+                        <p className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 leading-relaxed pt-2.5">
+                          {m.desc}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         );
       })()}

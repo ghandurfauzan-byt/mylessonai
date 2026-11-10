@@ -212,5 +212,67 @@
     "role": "pengajar",
     "nimNip": "199xxxxxxxxx",
     "institution": "SD Negeri 1 Madiun"
+  },
+  {
+    "id": "usr_1794326453596",
+    "name": "Siswa Baru 1794326453596",
+    "email": "siswa_1794326453596@gmail.com",
+    "passwordHash": "$2b$10$Y4Dv0DCqVSbWRev0blK3o.6mNkgeVP7YxEpr7aFWrgFAOsvgrm.Xi",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 200,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "01",
+    "gamePoints": 0
+  },
+  {
+    "id": "usr_1794326476323",
+    "name": "Guru Uji 1794326476323",
+    "email": "guru_uji_1794326476323@gmail.com",
+    "passwordHash": "$2b$10$vI.nPNSg9VuORU4/Nygp2eLOgL0tsINVFaAa4oV1WdbwgMKC.SLT2",
+    "role": "pengajar",
+    "nimNip": "199xxxxxxxxx",
+    "institution": "SD Negeri 1 Madiun"
+  },
+  {
+    "id": "usr_1794327108623",
+    "name": "Siswa Baru 1794327108622",
+    "email": "siswa_1794327108622@gmail.com",
+    "passwordHash": "$2b$10$ICrOG6e1rDhiGy3R/ZXmkOA4aUKoOHoxDoCRNumFw.Uq9tAiv4Nvy",
+    "role": "pelajar",
+    "nimNip": "V3925xxx",
+    "institution": "SD Negeri 1 Madiun",
+    "points": 200,
+    "weakness": {
+      "chapterId": "pkn-sila3",
+      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "subject": "pkn",
+      "score": 8,
+      "outOf": 10,
+      "status": "tuntas",
+      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "01",
+    "gamePoints": 0
+  },
+  {
+    "id": "usr_1794327159802",
+    "name": "Guru Uji 1794327159802",
+    "email": "guru_uji_1794327159802@gmail.com",
+    "passwordHash": "$2b$10$cEy3d21trplVcgG.8iDBZ.PCIU2QDp0igWuN.UiWzjAymDnAqbVny",
+    "role": "pengajar",
+    "nimNip": "199xxxxxxxxx",
+    "institution": "SD Negeri 1 Madiun"
   }
 ]
