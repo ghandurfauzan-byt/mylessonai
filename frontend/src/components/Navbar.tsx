@@ -9,10 +9,15 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 function getInitials(name?: string, fallback = "GF"): string {
   if (!name || !name.trim()) return fallback;
   const words = name.trim().split(/\s+/).filter(Boolean);
+  const firstWord = words[0];
+  if (!firstWord) return fallback;
   if (words.length === 1) {
-    return words[0].substring(0, 2).toUpperCase();
+    return firstWord.substring(0, 2).toUpperCase();
   }
-  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+  const lastWord = words[words.length - 1] ?? firstWord;
+  const firstChar = firstWord[0] ?? "";
+  const lastChar = lastWord[0] ?? "";
+  return (firstChar + lastChar).toUpperCase() || fallback;
 }
 
 export default function Navbar({ role }: { role: "pelajar" | "pengajar" }) {

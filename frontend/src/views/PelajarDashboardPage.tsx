@@ -22,7 +22,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 interface BadgeDetail {
   id: string;
   chapterCode?: string;
-  subject: "pkn" | "bjawa";
+  subject?: "pkn" | "bjawa";
   name: string;
   icon: string;
   unlocked: boolean;
@@ -121,11 +121,32 @@ export default function PelajarDashboardPage() {
 
   const setActiveValidatedModule = useUIStore((s) => s.setActiveValidatedModule);
 
+  const [currentStudentName, setCurrentStudentName] = useState("Ghandur Fauzan Ngauf Hisam");
+  const [currentStudent, setCurrentStudent] = useState<{
+    id: string;
+    name: string;
+    email: string;
+    kelas?: string;
+    noAbsen?: string;
+    points?: number;
+    gamePoints?: number;
+    weakness?: {
+      chapterId: string;
+      chapterName: string;
+      subject: string;
+      score: number;
+      outOf: number;
+      status: "remedial" | "tuntas";
+      message: string;
+    };
+  } | null>(null);
+
   useEffect(() => {
     let lastActiveId = activeValidatedModule?.id;
     // Sinkronkan modul aktif yang baru saja divalidasi oleh Guru via API secara real-time
     const syncActiveModule = () => {
-      fetch("/api/v1/curriculum/active")
+      const studentKelas = currentStudent?.kelas || "Kelas 4";
+      fetch(`/api/v1/curriculum/active?kelas=${encodeURIComponent(studentKelas)}`)
         .then((r) => r.json())
         .then((res) => {
           if (res.success && res.data && res.data.id !== lastActiveId) {
@@ -144,7 +165,7 @@ export default function PelajarDashboardPage() {
       clearInterval(interval);
       window.removeEventListener("focus", syncActiveModule);
     };
-  }, [setActiveValidatedModule, activeValidatedModule?.id]);
+  }, [setActiveValidatedModule, activeValidatedModule?.id, currentStudent?.kelas]);
 
   useEffect(() => {
     setBadgeSubject(isJawaCurrent ? "bjawa" : "pkn");
@@ -171,39 +192,28 @@ export default function PelajarDashboardPage() {
     };
   }, []);
 
-  // 1. Misi Harian Belajar Dinamis (5 Misi: Rangkuman, Audio, Kuis Level 1, Level 2, Level 3)
+  // 1. Misi Harian Belajar Dinamis (6 Misi: Rangkuman, Audio, Game Petualangan, Kuis L1, L2, L3)
   const completedMissionsCount = [
     dailyMissions.readSummary,
     dailyMissions.listenedAudio,
+    dailyMissions.playedGame,
     dailyMissions.quizLevel1,
     dailyMissions.quizLevel2,
     dailyMissions.quizLevel3 || dailyMissions.completedQuiz,
   ].filter(Boolean).length;
-  const missionProgressPercent = Math.round((completedMissionsCount / 5) * 100);
+  const missionProgressPercent = Math.round((completedMissionsCount / 6) * 100);
 
-  const [currentStudentName, setCurrentStudentName] = useState("Ghandur Fauzan Ngauf Hisam");
-  const [currentStudent, setCurrentStudent] = useState<{
-    id: string;
-    name: string;
-    email: string;
-    points?: number;
-    weakness?: {
-      chapterId: string;
-      chapterName: string;
-      subject: string;
-      score: number;
-      outOf: number;
-      status: "remedial" | "tuntas";
-      message: string;
-    };
-  } | null>(null);
+  
 
   const [registeredStudents, setRegisteredStudents] = useState<
     Array<{
       id: string;
       name: string;
       email: string;
+      kelas?: string;
+      noAbsen?: string;
       points?: number;
+      gamePoints?: number;
       weakness?: {
         chapterId: string;
         chapterName: string;
@@ -359,228 +369,83 @@ export default function PelajarDashboardPage() {
     "bjawa-aksara",
   ].includes(cleanActiveId);
 
-  // --- KOLEKSI PER BAB KHUSUS PKN (4 BAB KURIKULUM RESMI) ---
-  const pknBadges: BadgeDetail[] = [
+    // --- LENCANA PRESTASI AKTIVITAS HARIAN SISWA (DIPEROLEH OTOMATIS DARI AKTIVITAS HARIAN) ---
+  const isQuizCompletedToday = Boolean(
+    dailyMissions.quizLevel1 || dailyMissions.quizLevel2 || dailyMissions.quizLevel3 || dailyMissions.completedQuiz
+  );
+
+  const dailyActivityBadges: BadgeDetail[] = [
     {
-      id: "bab1_pkn",
-      chapterCode: "Bab 1",
-      subject: "pkn",
-      name: "Bab 1 · Makna Sila Ke-3",
-      icon: "🌳",
-      unlocked: true,
-      tag: "Diraih ⭐",
-      tagColor: "text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 font-black border border-emerald-300 dark:border-emerald-800",
-      description: "Arti lambang pohon beringin dan serunya hidup rukun di sekolah & rumah.",
-      howToGet: "Materi pokok semester awal sudah berhasil diselesaikan.",
-      motivation:
-        "Pohon beringin yang rindang menaungi persatuan kita. Ayo saling rukun dan menghargai teman sekelas!",
-      targetChapterId: "pkn-sila3",
+      id: "badge_audio",
+      name: "Pendengar Budiman",
+      icon: "🎧",
+      unlocked: dailyMissions.listenedAudio,
+      tag: dailyMissions.listenedAudio ? "Diraih Hari Ini ⭐" : "Belum Diraih 🔒",
+      tagColor: dailyMissions.listenedAudio
+        ? "text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 font-black border border-emerald-300 dark:border-emerald-800"
+        : "text-slate-500 bg-slate-100 dark:bg-slate-800 font-bold border border-slate-300 dark:border-slate-700",
+      description: "Mendengarkan penjelasan audio materi dari Guru dan Robot Pintar.",
+      howToGet: "Klik tombol Putar Penjelasan Suara di materi hari ini.",
+      motivation: "Hebat! Dengan mendengarkan secara seksama, ilmumu bertambah dan pemahamanmu semakin kuat!",
     },
     {
-      id: "bab2_pkn",
-      chapterCode: "Bab 2",
-      subject: "pkn",
-      name: "Bab 2 · Gotong Royong",
+      id: "badge_game",
+      name: "Penjelajah Desa",
+      icon: "🎮",
+      unlocked: dailyMissions.playedGame,
+      tag: dailyMissions.playedGame ? "Diraih Hari Ini ⭐" : "Belum Diraih 🔒",
+      tagColor: dailyMissions.playedGame
+        ? "text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 font-black border border-emerald-300 dark:border-emerald-800"
+        : "text-slate-500 bg-slate-100 dark:bg-slate-800 font-bold border border-slate-300 dark:border-slate-700",
+      description: "Menjelajahi pos edukasi dan berpetualang di Desa Adat Nusantara.",
+      howToGet: "Mainkan 1 sesi game petualangan edukasi desa hari ini.",
+      motivation: "Petualang cilik tangguh! Kamu telah menjelajahi pos desa dan belajar dengan penuh riang gembira!",
+    },
+    {
+      id: "badge_quiz",
+      name: "Bintang Kuis Pintar",
+      icon: "🎯",
+      unlocked: isQuizCompletedToday,
+      tag: isQuizCompletedToday ? "Diraih Hari Ini ⭐" : "Belum Diraih 🔒",
+      tagColor: isQuizCompletedToday
+        ? "text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 font-black border border-emerald-300 dark:border-emerald-800"
+        : "text-slate-500 bg-slate-100 dark:bg-slate-800 font-bold border border-slate-300 dark:border-slate-700",
+      description: "Menjawab kuis tantangan harian dengan pemahaman yang baik.",
+      howToGet: "Kerjakan dan selesaikan minimal 1 level kuis tantangan hari ini.",
+      motivation: "Bintang kelas yang cemerlang! Ketekunanmu mengerjakan kuis membuktikan kamu anak yang cerdas!",
+    },
+    {
+      id: "badge_summary",
+      name: "Kutu Buku Hebat",
+      icon: "📖",
+      unlocked: dailyMissions.readSummary,
+      tag: dailyMissions.readSummary ? "Diraih Hari Ini ⭐" : "Belum Diraih 🔒",
+      tagColor: dailyMissions.readSummary
+        ? "text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 font-black border border-emerald-300 dark:border-emerald-800"
+        : "text-slate-500 bg-slate-100 dark:bg-slate-800 font-bold border border-slate-300 dark:border-slate-700",
+      description: "Membaca ringkasan materi dan intisari pengamalan budi pekerti.",
+      howToGet: "Buka dan pahami ringkasan materi di ruang belajar.",
+      motivation: "Membaca adalah jendela dunia! Teruslah rajin membaca buku untuk meraih cita-citamu!",
+    },
+    {
+      id: "badge_gotongroyong",
+      name: "Sahabat Gotong Royong",
       icon: "🤝",
-      unlocked: isPknBab2Unlocked,
-      tag: "Diraih ⭐",
-      tagColor: "text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 font-black border border-emerald-300 dark:border-emerald-800",
-      description: "Kerja sama, tolong-menolong, dan toleransi saat piket kebersihan kelas.",
-      howToGet: "Lencana Bab 2 berhasil diraih setelah menuntaskan kuis dan pembelajaran gotong royong.",
-      motivation:
-        "Berat sama dipikul, ringan sama dijinjing. Semangat gotong royong membuat pekerjaan terasa mudah!",
-      targetChapterId: "pkn-gotongroyong",
-    },
-    {
-      id: "bab3_pkn",
-      chapterCode: "Bab 3",
-      subject: "pkn",
-      name: "Bab 3 · Norma & Aturan",
-      icon: "📜",
-      unlocked: isPknBab3Unlocked,
-      tag: "Diraih ⭐",
-      tagColor: "text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 font-black border border-emerald-300 dark:border-emerald-800",
-      description: "Memahami norma, hak, dan kewajiban siswa di sekolah serta mentaati tata tertib.",
-      howToGet: "Lencana Bab 3 berhasil diraih setelah memahami materi norma dan aturan sekolah.",
-      motivation:
-        "Disiplin mematuhi norma dan tata tertib adalah ciri calon pemimpin bangsa yang berwibawa!",
-      targetChapterId: "pkn-norma",
-    },
-    {
-      id: "bab4_pkn",
-      chapterCode: "Bab 4",
-      subject: "pkn",
-      name: "Bab 4 · Bhinneka Tunggal Ika",
-      icon: "🌺",
-      unlocked: isPknBab4Unlocked,
-      tag: "Diraih ⭐",
-      tagColor: "text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 font-black border border-emerald-300 dark:border-emerald-800",
-      description: "Mengenal dan menghormati keragaman suku, rumah adat, tarian daerah, dan budaya Nusantara.",
-      howToGet: "Lencana Bab 4 berhasil diraih setelah menuntaskan materi Bhinneka Tunggal Ika.",
-      motivation:
-        "Berbeda-beda tetapi tetap satu jua! Keberagaman adalah kekayaan terindah bangsa Indonesia!",
-      targetChapterId: "pkn-bhinneka",
+      unlocked: completedMissionsCount >= 4,
+      tag: completedMissionsCount >= 4 ? "Diraih Hari Ini ⭐" : "Belum Diraih 🔒",
+      tagColor: completedMissionsCount >= 4
+        ? "text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 font-black border border-emerald-300 dark:border-emerald-800"
+        : "text-slate-500 bg-slate-100 dark:bg-slate-800 font-bold border border-slate-300 dark:border-slate-700",
+      description: "Menyelesaikan seluruh misi belajar harian dan menyapa kawan sekelas.",
+      howToGet: "Selesaikan minimal 4 misi belajar harian hari ini.",
+      motivation: "Luar biasa! Kamu adalah teladan Pelajar Pancasila yang disiplin, mandiri, dan berjiwa gotong royong!",
     },
   ];
 
-  // Sisipkan materi kurikulum baru dari guru bila topik di luar 4 bab standar
-  if (!isDefaultChapter && activeValidatedModule?.subject === "pkn") {
-    pknBadges.push({
-      id: activeValidatedModule.id,
-      chapterCode: activeValidatedModule.chapterCode,
-      subject: "pkn",
-      name: `${activeValidatedModule.chapterCode} · ${activeValidatedModule.title.length > 18 ? activeValidatedModule.title.slice(0, 18) + "..." : activeValidatedModule.title}`,
-      icon: "✨",
-      unlocked: true,
-      tag: "Diraih ⭐",
-      tagColor: "text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 font-black border border-emerald-300 dark:border-emerald-800",
-      description: activeValidatedModule.title,
-      howToGet: "Materi baru dari guru telah aktif dan berhasil diselesaikan.",
-      motivation: "Materi pengayaan baru dari guru siap mengasah wawasanmu setelah bab sebelumnya tuntas!",
-      targetChapterId: activeValidatedModule.id,
-    });
-  }
+  const earnedDailyBadges = dailyActivityBadges.filter((b) => b.unlocked);
 
-  // --- KOLEKSI PER BAB KHUSUS BAHASA JAWA (4 BAB KURIKULUM RESMI) ---
-  const bjawaBadges: BadgeDetail[] = [
-    {
-      id: "bab1_bjawa",
-      chapterCode: "Bab 1",
-      subject: "bjawa",
-      name: "Bab 1 · Unggah-ungguh",
-      icon: "🗣️",
-      unlocked: true,
-      tag: "Diraih ⭐",
-      tagColor: "text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 font-black border border-emerald-300 dark:border-emerald-800",
-      description: "Trapsila guneman, unggah-ungguh basa ngoko marang kanca lan krama alus marang tiyang sepuh.",
-      howToGet: "Lencana Bab 1 kasil digayuh amarga wis rampung sinau unggah-ungguh basa Jawa.",
-      motivation:
-        "Pinter temen! Basa Jawa iku warisan luhur budi pekerti bangsa. Ayo tansah nguri-uri basa Jawa kanthi trapsila lan sopan marang tiyang sepuh!",
-      targetChapterId: "bjawa-unggahungguh",
-    },
-    {
-      id: "bab2_bjawa",
-      chapterCode: "Bab 2",
-      subject: "bjawa",
-      name: "Bab 2 · Tokoh Punokawan",
-      icon: "🎭",
-      unlocked: isBjawaBab2Unlocked,
-      tag: "Diraih ⭐",
-      tagColor: "text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 font-black border border-emerald-300 dark:border-emerald-800",
-      description: "Ngenal watak luhur pamomong: Semar, Gareng, Petruk, lan Bagong ing pasrawungan.",
-      howToGet: "Lencana Bab 2 kasil digayuh sawise rampung kuis lan mangerteni watak Punokawan.",
-      motivation:
-        "Becik banget! Tuladhanen watak sabare Semar lan blaka sutane Bagong. Dadi bocah Jawa kudu tansah andhap asor!",
-      targetChapterId: "bjawa-punokawan",
-    },
-    {
-      id: "bab3_bjawa",
-      chapterCode: "Bab 3",
-      subject: "bjawa",
-      name: "Bab 3 · Pandhawa Lima",
-      icon: "🏹",
-      unlocked: isBjawaBab3Unlocked,
-      tag: "Diraih ⭐",
-      tagColor: "text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 font-black border border-emerald-300 dark:border-emerald-800",
-      description: "Kisah kepahlawanan, silsilah Pandhawa Lima, lan watak ksatria ing perang Baratayuda.",
-      howToGet: "Lencana Bab 3 kasil digayuh sawise sinau silsilah lan kautaman Pandhawa Lima.",
-      motivation:
-        "Tiru watak jujur Puntadewa lan kendel Werkudara mbelani bebener lan kautaman!",
-      targetChapterId: "bjawa-pandhawa",
-    },
-    {
-      id: "bab4_bjawa",
-      chapterCode: "Bab 4",
-      subject: "bjawa",
-      name: "Bab 4 · Aksara Jawa",
-      icon: "📜",
-      unlocked: isBjawaBab4Unlocked,
-      tag: "Diraih ⭐",
-      tagColor: "text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 font-black border border-emerald-300 dark:border-emerald-800",
-      description: "Maca lan nulis 20 aksara Jawa legena (Ha-Na-Ca-Ra-Ka) sarta sandhangan swara.",
-      howToGet: "Lencana Bab 4 kasil digayuh sawise gladhen maca lan nulis aksara Jawa.",
-      motivation:
-        "Luhur tenan prestasimu! Sinau aksara Jawa minangka bukti rasa tresna marang warisan luhur tanah nusantara!",
-      targetChapterId: "bjawa-aksara",
-    },
-  ];
-
-  if (!isDefaultChapter && activeValidatedModule?.subject === "bjawa") {
-    bjawaBadges.push({
-      id: activeValidatedModule.id,
-      chapterCode: activeValidatedModule.chapterCode,
-      subject: "bjawa",
-      name: `${activeValidatedModule.chapterCode} · ${activeValidatedModule.title.length > 18 ? activeValidatedModule.title.slice(0, 18) + "..." : activeValidatedModule.title}`,
-      icon: "✨",
-      unlocked: true,
-      tag: "Diraih ⭐",
-      tagColor: "text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 font-black border border-emerald-300 dark:border-emerald-800",
-      description: activeValidatedModule.title,
-      howToGet: "Materi anyar saka guru wis kasil dibukak.",
-      motivation: "Piwulang anyar saka bapak/ibu guru bakal nambahi kawruhmu sawise bab sadurunge rampung!",
-      targetChapterId: activeValidatedModule.id,
-    });
-  }
-
-  // State daftar materi yang dihapus oleh siswa (tersimpan di localStorage)
-  const [deletedChapterIds, setDeletedChapterIds] = useState<string[]>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem("deleted_chapter_ids");
-        if (stored) return JSON.parse(stored);
-      } catch {}
-    }
-    return [];
-  });
-
-  // State rekomendasi modul pengayaan dari guru untuk siswa
-  const [activePengayaanRec, setActivePengayaanRec] = useState<{
-    studentId?: string;
-    studentName?: string;
-    chapterTitle?: string;
-    subject?: string;
-  } | null>(() => {
-    if (typeof window === "undefined") return null;
-    try {
-      const stored = localStorage.getItem("active_student_pengayaan_recommendation");
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
-  });
-
-  // Sinkronisasi otomatis jika materi dihapus/dipulihkan atau disarankan pengayaan oleh guru
-  useEffect(() => {
-    const handleStorage = () => {
-      try {
-        const stored = localStorage.getItem("deleted_chapter_ids");
-        setDeletedChapterIds(stored ? JSON.parse(stored) : []);
-        const recStored = localStorage.getItem("active_student_pengayaan_recommendation");
-        setActivePengayaanRec(recStored ? JSON.parse(recStored) : null);
-      } catch {}
-    };
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
-  }, []);
-
-  const filteredPknBadges = pknBadges.filter(
-    (b) =>
-      !deletedChapterIds.includes(b.id) &&
-      !deletedChapterIds.includes(b.targetChapterId || "") &&
-      !deletedChapterIds.includes(b.id.replace(/^mod-/, "")) &&
-      !deletedChapterIds.includes((b.targetChapterId || "").replace(/^mod-/, ""))
-  );
-
-  const filteredBjawaBadges = bjawaBadges.filter(
-    (b) =>
-      !deletedChapterIds.includes(b.id) &&
-      !deletedChapterIds.includes(b.targetChapterId || "") &&
-      !deletedChapterIds.includes(b.id.replace(/^mod-/, "")) &&
-      !deletedChapterIds.includes((b.targetChapterId || "").replace(/^mod-/, ""))
-  );
-
-  const currentSubjectBadges = badgeSubject === "pkn" ? filteredPknBadges : filteredBjawaBadges;
-  const earnedBadges = currentSubjectBadges.filter((b) => b.unlocked);
+  const currentSubjectBadges = dailyActivityBadges;
+  const earnedBadges = earnedDailyBadges;
   const completeDailyMission = useUIStore((s) => s.completeDailyMission);
 
   function handleOpenBadge(badge: BadgeDetail) {
@@ -665,6 +530,46 @@ export default function PelajarDashboardPage() {
     }, 80);
   }
 
+    // State daftar materi yang dihapus oleh siswa
+  const [deletedChapterIds, setDeletedChapterIds] = useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("deleted_chapter_ids");
+        if (stored) return JSON.parse(stored);
+      } catch {}
+    }
+    return [];
+  });
+
+  // State rekomendasi modul pengayaan dari guru untuk siswa
+  const [activePengayaanRec, setActivePengayaanRec] = useState<{
+    studentId?: string;
+    studentName?: string;
+    chapterTitle?: string;
+    subject?: string;
+  } | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const stored = localStorage.getItem("active_student_pengayaan_recommendation");
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    const handleStorage = () => {
+      try {
+        const stored = localStorage.getItem("deleted_chapter_ids");
+        setDeletedChapterIds(stored ? JSON.parse(stored) : []);
+        const recStored = localStorage.getItem("active_student_pengayaan_recommendation");
+        setActivePengayaanRec(recStored ? JSON.parse(recStored) : null);
+      } catch {}
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
   // Fungsi hapus materi per bab / materi yang sudah tidak dipakai
   function handleDeleteChapter(badge: BadgeDetail) {
     playClickSound();
@@ -707,12 +612,7 @@ export default function PelajarDashboardPage() {
       const remainingInSubject = currentSubjectBadges.filter(
         (b) => !toDelete.includes(b.id) && !toDelete.includes(b.targetChapterId || "")
       );
-      const otherSubjectBadges = (
-        badgeSubject === "pkn" ? filteredBjawaBadges : filteredPknBadges
-      ).filter(
-        (b) => !toDelete.includes(b.id) && !toDelete.includes(b.targetChapterId || "")
-      );
-      const fallbackBadge = remainingInSubject[0] || otherSubjectBadges[0];
+      const fallbackBadge = remainingInSubject[0];
       if (fallbackBadge?.targetChapterId) {
         handleStudyChapter(fallbackBadge.targetChapterId);
       }
@@ -1017,9 +917,9 @@ export default function PelajarDashboardPage() {
                       : "bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200"
                   }`}
                 >
-                  {completedMissionsCount === 5
-                    ? "🎉 5/5 Tuntas Penuh!"
-                    : `🎯 ${completedMissionsCount}/5 Tuntas`}
+                  {completedMissionsCount === 6
+                    ? "🎉 6/6 Tuntas Penuh!"
+                    : `🎯 ${completedMissionsCount}/6 Tuntas`}
                 </span>
               </div>
             </div>
@@ -1184,6 +1084,42 @@ export default function PelajarDashboardPage() {
                     : "+30 Poin"}
                 </span>
               </Link>
+
+              {/* Misi 6: Mainkan 1 Sesi Game Petualangan Edukasi */}
+              <button
+                type="button"
+                onClick={() => {
+                  playClickSound();
+                  setIsGameModalOpen(true);
+                }}
+                className={`w-full flex items-center justify-between p-2 rounded-xl border transition-all hover:scale-[1.01] text-left cursor-pointer ${
+                  dailyMissions.playedGame
+                    ? "bg-white/95 dark:bg-slate-800/95 border-emerald-300 dark:border-emerald-700"
+                    : "bg-white/70 dark:bg-slate-800/70 border-amber-200 dark:border-amber-900/40 hover:bg-amber-50 dark:hover:bg-slate-800"
+                }`}
+              >
+                <div className="flex items-center gap-2 font-bold text-slate-700 dark:text-slate-200">
+                  <span
+                    className={
+                      dailyMissions.playedGame
+                        ? "text-emerald-500 font-black text-sm"
+                        : "text-slate-300 dark:text-slate-600 font-black"
+                    }
+                  >
+                    {dailyMissions.playedGame ? "✅" : "⏳"}
+                  </span>
+                  <span>Mainkan Game Petualangan Desa 🗺️</span>
+                </div>
+                <span
+                  className={`text-[11px] font-black ${
+                    dailyMissions.playedGame
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-amber-600 dark:text-amber-400"
+                  }`}
+                >
+                  {dailyMissions.playedGame ? "Tuntas (+15 ⭐)" : "+15 Poin"}
+                </span>
+              </button>
             </div>
 
             {/* Progress Bar */}
@@ -1201,146 +1137,77 @@ export default function PelajarDashboardPage() {
               <div className="flex items-center gap-1.5 min-w-0">
                 <span className="text-sm">⭐</span>
                 <h4 className="font-black text-xs text-sky-950 dark:text-sky-200 truncate">
-                  Lencana Bab Diraih
+                  Lencana Aktivitas Harian
                 </h4>
               </div>
 
-              {/* Switcher Tab Mini PKn & B. Jawa & Tombol Pulihkan */}
               <div className="flex items-center gap-1.5 shrink-0">
-                {deletedChapterIds.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={handleRestoreAllChapters}
-                    title="Pulihkan semua materi yang pernah dihapus"
-                    className="text-[9px] font-black px-2 py-0.5 rounded-lg bg-white/90 dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-slate-700 hover:bg-sky-50 dark:hover:bg-slate-700 transition-all shadow-2xs active:scale-95 flex items-center gap-0.5 cursor-pointer"
-                  >
-                    <span>🔄</span>
-                    <span>Pulihkan</span>
-                  </button>
-                )}
-                <div className="flex items-center gap-1 bg-white dark:bg-slate-800 p-0.5 rounded-xl border border-sky-100 dark:border-slate-700">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      playClickSound();
-                      setBadgeSubject("pkn");
-                    }}
-                    className={`px-2 py-0.5 rounded-lg text-[10px] font-black transition-all ${
-                      badgeSubject === "pkn"
-                        ? "bg-sky-500 text-white shadow-2xs"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
-                    }`}
-                  >
-                    PKn
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      playClickSound();
-                      setBadgeSubject("bjawa");
-                    }}
-                    className={`px-2 py-0.5 rounded-lg text-[10px] font-black transition-all ${
-                      badgeSubject === "bjawa"
-                        ? "bg-emerald-500 text-white shadow-2xs"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
-                    }`}
-                  >
-                    B.Jawa
-                  </button>
-                </div>
+                <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-amber-400 text-amber-950 shadow-2xs">
+                  🏆 {earnedDailyBadges.length}/5 Diraih
+                </span>
               </div>
             </div>
 
-            {/* Kotak Geser Horizontal (Swipeable / Scrollable ke Kiri-Kanan) */}
+            {/* Kotak Geser Horizontal 5 Lencana Aktivitas Harian */}
             <div className="flex gap-2.5 overflow-x-auto pb-1.5 pt-0.5 scrollbar-thin scrollbar-thumb-sky-300 dark:scrollbar-thumb-slate-600 snap-x">
-              {earnedBadges.map((badge) => {
-                const isCurrentChapter =
-                  Boolean(badge.targetChapterId) &&
-                  (chapter === badge.targetChapterId ||
-                    chapter.replace("mod-", "") === badge.targetChapterId?.replace("mod-", ""));
-
+              {dailyActivityBadges.map((badge) => {
+                const isUnlocked = badge.unlocked;
                 return (
                   <div
                     key={badge.id}
-                    className={`shrink-0 w-32 p-2.5 rounded-xl border transition-all flex flex-col justify-between text-center snap-start ${
-                      isCurrentChapter
-                        ? "bg-white dark:bg-slate-800 border-amber-500 ring-2 ring-amber-300/60 shadow-sm"
-                        : "bg-white/90 dark:bg-slate-800/90 border-sky-200 dark:border-slate-700 shadow-2xs hover:border-sky-300"
+                    className={`shrink-0 w-32 p-2.5 rounded-2xl border-2 transition-all flex flex-col justify-between text-center snap-start ${
+                      isUnlocked
+                        ? "bg-gradient-to-b from-amber-50 to-white dark:from-amber-950/30 dark:to-slate-800 border-amber-400 shadow-md shadow-amber-500/10"
+                        : "bg-slate-50/80 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 opacity-70"
                     }`}
                   >
                     <div
                       onClick={() => handleOpenBadge(badge)}
-                      className="cursor-pointer space-y-1"
-                      title={`Klik untuk info motivasi ${badge.name}`}
+                      className="cursor-pointer space-y-1.5"
+                      title={`Klik untuk melihat info ${badge.name}`}
                     >
-                      <div className="w-9 h-9 mx-auto rounded-lg bg-gradient-to-br from-amber-400 to-yellow-400 text-yellow-950 font-black text-lg flex items-center justify-center shadow-2xs">
+                      <div
+                        className={`w-10 h-10 mx-auto rounded-xl flex items-center justify-center text-xl shadow-xs transition-transform ${
+                          isUnlocked
+                            ? "bg-gradient-to-br from-amber-400 to-yellow-400 text-yellow-950 animate-bounce"
+                            : "bg-slate-200 dark:bg-slate-700 text-slate-400"
+                        }`}
+                      >
                         {badge.icon}
                       </div>
-                      <p className="text-[11px] font-black text-slate-800 dark:text-slate-200 leading-tight line-clamp-2 min-h-[1.75rem]">
+                      <p className="text-[11px] font-black text-slate-800 dark:text-slate-200 leading-tight line-clamp-1">
                         {badge.name}
                       </p>
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full inline-block bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300">
-                        Diraih ⭐
+                      <span
+                        className={`text-[9px] font-black px-1.5 py-0.5 rounded-full inline-block ${
+                          isUnlocked
+                            ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300"
+                            : "bg-slate-200 dark:bg-slate-700 text-slate-500 border border-slate-300 dark:border-slate-600"
+                        }`}
+                      >
+                        {isUnlocked ? "Diraih ⭐" : "Belum Diraih 🔒"}
                       </span>
                     </div>
 
-                    <div className="pt-2 flex flex-col gap-1">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleStudyChapter(badge.targetChapterId);
-                        }}
-                        title={`Pelajari bab ${badge.name}`}
-                        className="w-full py-1 px-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-black text-[10px] transition-all flex items-center justify-center gap-1 cursor-pointer shadow-2xs"
-                      >
-                        <span>📖 Pelajari</span>
-                      </button>
+                    <div className="pt-2">
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleOpenBadge(badge);
                         }}
-                        title={`Dengarkan motivasi ${badge.name}`}
-                        className="w-full py-0.5 px-1 rounded-lg bg-amber-100 hover:bg-amber-200 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 font-extrabold text-[9px] border border-amber-300 dark:border-amber-800 transition-all flex items-center justify-center gap-1 cursor-pointer shadow-2xs"
+                        className={`w-full py-1 px-1.5 rounded-lg font-black text-[10px] transition-all flex items-center justify-center gap-1 cursor-pointer shadow-2xs ${
+                          isUnlocked
+                            ? "bg-amber-500 hover:bg-amber-600 text-white"
+                            : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300"
+                        }`}
                       >
-                        <span>🔊 Motivasi</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteChapter(badge);
-                        }}
-                        title={`Hapus materi ${badge.name} yang sudah tidak terpakai`}
-                        className="w-full py-0.5 px-1 rounded-lg bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200 font-extrabold text-[9px] border border-rose-300 dark:border-rose-800 transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 shadow-2xs"
-                      >
-                        <span>🗑️ Hapus</span>
+                        <span>{isUnlocked ? "🔊 Motivasi" : "❓ Cara Raih"}</span>
                       </button>
                     </div>
                   </div>
                 );
               })}
-
-              {earnedBadges.length === 0 && (
-                <div className="w-full py-4 px-3 text-center bg-white/70 dark:bg-slate-800/60 rounded-xl border border-dashed border-sky-200 dark:border-slate-700 space-y-2">
-                  <p className="text-[11px] font-bold text-sky-800 dark:text-sky-300">
-                    {deletedChapterIds.length > 0
-                      ? "Materi telah dihapus atau belum diselesaikan."
-                      : "Selesaikan bab & kuis untuk meraih lencana! 🌟"}
-                  </p>
-                  {deletedChapterIds.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={handleRestoreAllChapters}
-                      className="text-[10px] font-black px-3 py-1 rounded-lg bg-sky-500 hover:bg-sky-600 text-white shadow-2xs transition-all active:scale-95 cursor-pointer"
-                    >
-                      🔄 Pulihkan Materi Terhapus
-                    </button>
-                  )}
-                </div>
-              )}
             </div>
             <p className="text-[10px] text-slate-400 dark:text-slate-500 text-center font-bold">
               👈 Geser untuk melihat lencana lainnya 👉

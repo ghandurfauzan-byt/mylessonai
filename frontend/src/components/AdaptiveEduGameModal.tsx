@@ -856,6 +856,7 @@ export default function AdaptiveEduGameModal({
         { id: "dayu", name: "Dayu Kemala", avatar: "👧", pos: "Pos 4 (Suku Dayak)" },
       ];
       const randomPeer = peers[Math.floor(Math.random() * peers.length)];
+      if (!randomPeer) return;
       const isQuizEvent = Math.random() > 0.45;
 
       if (isQuizEvent) {
@@ -1683,7 +1684,7 @@ export default function AdaptiveEduGameModal({
         { shirt: "#7e22ce", tie: "#581c87" },
         { shirt: "#0f766e", tie: "#134e4a" },
       ];
-      const tCol = guruTeacherColors[sIdx % guruTeacherColors.length];
+      const tCol = guruTeacherColors[sIdx % guruTeacherColors.length] ?? { shirt: "#0284c7", tie: "#1e3a8a" };
 
       const guruPosData = createHumanoid({
         shirtColor: tCol.shirt,

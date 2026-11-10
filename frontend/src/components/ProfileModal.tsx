@@ -1,22 +1,9 @@
-// src/components/ProfileModal.tsx — Lihat & Edit Profil Pengguna (FR-22)
-//
-// Memungkinkan Pelajar maupun Pengajar melihat serta memperbarui data diri,
-// alamat email institusi/pribadi, NIM/NIP, dan kata sandi sesuai FR-22 SKPL.
-
+// src/components/ProfileModal.tsx — Profil Siswa & Guru Ramah Anak SD
 import { fetchProfile, updateProfile } from "@/lib/api/sessionApi";
 import { useUIStore } from "@/lib/store/useUIStore";
 import type { UserProfile } from "@shared/schema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-
-function getInitials(name?: string, fallback = "GF"): string {
-  if (!name || !name.trim()) return fallback;
-  const words = name.trim().split(/\s+/).filter(Boolean);
-  if (words.length === 1) {
-    return words[0].substring(0, 2).toUpperCase();
-  }
-  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
-}
 
 export default function ProfileModal() {
   const isOpen = useUIStore((s) => s.isProfileModalOpen);
@@ -31,18 +18,24 @@ export default function ProfileModal() {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [kelas, setKelas] = useState("Kelas 4");
+  const [noAbsen, setNoAbsen] = useState("07");
   const [nimNip, setNimNip] = useState("");
-  const [institution, setInstitution] = useState("");
+  const [institution, setInstitution] = useState("SD Negeri 1 Madiun");
   const [password, setPassword] = useState("");
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  const isPelajar = (profile?.role || "pelajar") === "pelajar";
+
   useEffect(() => {
     if (profile) {
-      setName(profile.name);
-      setEmail(profile.email);
+      setName(profile.name || "");
+      setEmail(profile.email || "");
+      setKelas(profile.kelas || "Kelas 4");
+      setNoAbsen(profile.noAbsen || "07");
       setNimNip(profile.nimNip || "");
-      setInstitution(profile.institution || "D3 Teknik Informatika Madiun, Sekolah Vokasi UNS");
+      setInstitution(profile.institution || "SD Negeri 1 Madiun");
       setPassword("");
       setSuccessMsg(null);
       setErrorMsg(null);
@@ -53,7 +46,8 @@ export default function ProfileModal() {
     mutationFn: updateProfile,
     onSuccess: (updated) => {
       queryClient.setQueryData(["profile"], updated);
-      setSuccessMsg("Profil berhasil diperbarui!");
+      queryClient.invalidateQueries({ queryKey: ["students"] });
+      setSuccessMsg("Data profil berhasil diperbarui!");
       setPassword("");
       setTimeout(() => setSuccessMsg(null), 3500);
     },
@@ -70,7 +64,7 @@ export default function ProfileModal() {
     setSuccessMsg(null);
 
     if (!name.trim()) {
-      setErrorMsg("Nama lengkap tidak boleh kosong.");
+      setErrorMsg("Nama tidak boleh kosong.");
       return;
     }
     if (!email.trim() || !email.includes("@")) {
@@ -79,10 +73,12 @@ export default function ProfileModal() {
     }
 
     mutation.mutate({
-      name,
-      email,
-      nimNip,
-      institution,
+      name: name.trim(),
+      email: email.trim(),
+      kelas: isPelajar ? kelas : undefined,
+      noAbsen: isPelajar ? noAbsen.trim() : undefined,
+      nimNip: isPelajar ? `SD-${kelas.replace(/\s+/g, "")}-${noAbsen}` : nimNip,
+      institution: institution.trim(),
       password: password || undefined,
     });
   }
@@ -92,23 +88,29 @@ export default function ProfileModal() {
       role="dialog"
       aria-modal="true"
       aria-labelledby="profile-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/70 backdrop-blur-xs animate-in fade-in duration-200"
     >
-      <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 relative animate-in zoom-in-95 duration-200">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-5 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 relative animate-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto custom-scrollbar">
+        {/* Header Modal */}
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 flex items-center justify-center font-black text-sm tracking-wider">
-              {getInitials(profile?.name || name, profile?.role === "pengajar" ? "DL" : "GF")}
+            <div
+              className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-2xl shadow-sm ${
+                isPelajar
+                  ? "bg-gradient-to-tr from-amber-400 to-orange-500 text-white shadow-amber-500/20"
+                  : "bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-blue-500/20"
+              }`}
+            >
+              {isPelajar ? "🧒" : "👨‍🏫"}
             </div>
             <div>
-              <h2
-                id="profile-modal-title"
-                className="font-black text-slate-900 dark:text-white text-base"
-              >
-                Profil Pengguna (FR-22)
+              <h2 id="profile-modal-title" className="font-black text-slate-900 dark:text-white text-lg">
+                {isPelajar ? "Kartu Identitas Siswa" : "Profil Bapak/Ibu Guru"}
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Informasi akun dan pengaturan identitas sistem
+                {isPelajar
+                  ? "Atur kelas, nomor absen, dan identitas belajarmu"
+                  : "Pengaturan identitas pendidik dan pengampu kelas"}
               </p>
             </div>
           </div>
@@ -116,109 +118,185 @@ export default function ProfileModal() {
             type="button"
             onClick={closeModal}
             aria-label="Tutup modal profil"
-            className="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition"
+            className="w-9 h-9 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition font-bold text-lg"
           >
             ✕
           </button>
         </div>
 
         {isLoading ? (
-          <div className="py-10 text-center text-xs text-slate-500">Memuat profil...</div>
+          <div className="py-12 text-center text-sm text-slate-500">
+            <div className="animate-spin inline-block w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full mb-2"></div>
+            <p>Memuat profil...</p>
+          </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Visual Mini Card */}
+            <div
+              className={`p-4 rounded-2xl border ${
+                isPelajar
+                  ? "bg-gradient-to-br from-amber-50 to-orange-50/60 dark:from-amber-950/20 dark:to-orange-950/10 border-amber-200/80 dark:border-amber-800/40"
+                  : "bg-gradient-to-br from-blue-50 to-indigo-50/60 dark:from-blue-950/20 dark:to-indigo-950/10 border-blue-200/80 dark:border-blue-800/40"
+              }`}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">{isPelajar ? "🎒" : "🏫"}</span>
+                  <span className="font-extrabold text-sm text-slate-800 dark:text-slate-100">
+                    {name || "Siswa SD"}
+                  </span>
+                </div>
+                <span
+                  className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                    isPelajar
+                      ? "bg-amber-500 text-white"
+                      : "bg-blue-600 text-white"
+                  }`}
+                >
+                  {isPelajar ? `${kelas} • No. Absen ${noAbsen}` : "Wali Kelas & Pendidik"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 pt-1 border-t border-slate-200/60 dark:border-slate-800/60">
+                <span>{institution || "SD Negeri 1 Madiun"}</span>
+                {isPelajar && (
+                  <span className="font-bold text-amber-700 dark:text-amber-400">
+                    ⭐ Poin: {profile?.points ?? 0} | 🎮 Game: {profile?.gamePoints ?? 0}
+                  </span>
+                )}
+              </div>
+            </div>
+
             {successMsg && (
-              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-medium">
-                ✓ {successMsg}
+              <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-semibold flex items-center gap-2">
+                <span>✓</span>
+                <span>{successMsg}</span>
               </div>
             )}
             {errorMsg && (
-              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 font-medium">
-                ✕ {errorMsg}
+              <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200 text-xs font-semibold flex items-center gap-2">
+                <span>✕</span>
+                <span>{errorMsg}</span>
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Peran Akun</label>
-                <input
-                  type="text"
-                  disabled
-                  value={profile?.role === "pengajar" ? "Pengajar / Dosen" : "Pelajar / Mahasiswa"}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 font-semibold cursor-not-allowed"
-                />
+            {/* Nama Lengkap */}
+            <div>
+              <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">
+                {isPelajar ? "Nama Lengkap Siswa" : "Nama Lengkap & Gelar Guru"}
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Contoh: Ghandur Fauzan"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* Jika Pelajar: Kelas & Nomor Absen */}
+            {isPelajar ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">
+                    Kelas Siswa
+                  </label>
+                  <select
+                    value={kelas}
+                    onChange={(e) => setKelas(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                  >
+                    <option value="Kelas 4">Kelas 4 SD (Fase B)</option>
+                    <option value="Kelas 5">Kelas 5 SD (Fase C)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">
+                    Nomor Absen
+                  </label>
+                  <input
+                    type="text"
+                    value={noAbsen}
+                    onChange={(e) => setNoAbsen(e.target.value)}
+                    placeholder="Contoh: 07"
+                    maxLength={4}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
               </div>
+            ) : (
               <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  {profile?.role === "pengajar" ? "NIP Dosen" : "NIM Mahasiswa"}
+                <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">
+                  NIP / NUPTK Guru
                 </label>
                 <input
                   type="text"
                   value={nimNip}
                   onChange={(e) => setNimNip(e.target.value)}
-                  placeholder="Nomor Induk Mahasiswa/Dosen"
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Nomor Induk Pegawai / NUPTK"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            )}
+
+            {/* Email & Sekolah */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">
+                  Alamat Email
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="nama@sekolah.sch.id"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">
+                  Asal Sekolah
+                </label>
+                <input
+                  type="text"
+                  value={institution}
+                  onChange={(e) => setInstitution(e.target.value)}
+                  placeholder="SD Negeri 1 Madiun"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
 
+            {/* Password */}
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Nama Lengkap</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Nama Lengkap Anda"
-                className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">Alamat Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="nama@email.com"
-                className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">Institusi / Kampus</label>
-              <input
-                type="text"
-                value={institution}
-                onChange={(e) => setInstitution(e.target.value)}
-                placeholder="Institusi Kampus"
-                className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">
-                Kata Sandi Baru (Kosongkan bila tidak diubah)
+              <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">
+                Kata Sandi Baru (Kosongkan bila tidak ingin diganti)
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Minimal 6 karakter"
-                className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
-            <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
+            {/* Tombol Aksi */}
+            <div className="flex justify-end gap-2.5 pt-4 border-t border-slate-100 dark:border-slate-800">
               <button
                 type="button"
                 onClick={closeModal}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition"
+                className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="submit"
                 disabled={mutation.isPending}
-                className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-md shadow-blue-500/20 transition disabled:opacity-60"
+                className={`px-5 py-2.5 rounded-xl text-white text-xs font-bold shadow-md transition disabled:opacity-60 cursor-pointer ${
+                  isPelajar
+                    ? "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 shadow-amber-500/20"
+                    : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-blue-500/20"
+                }`}
               >
                 {mutation.isPending ? "Menyimpan..." : "Simpan Perubahan"}
               </button>

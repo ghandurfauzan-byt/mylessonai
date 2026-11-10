@@ -69,6 +69,9 @@ import {
   getActiveCurriculumState,
   getAiContent,
   deleteRegisteredStudent,
+  updateStudentByTeacher,
+  resetSingleStudentPoints,
+  createStudentByTeacher,
   getChapterProgress,
   getClassRooms,
   getClassSummary,
@@ -330,7 +333,8 @@ router.put("/profile", async (req: Request, res: Response) => {
       .json({ error: parsed.error.errors[0]?.message ?? "Data profil tidak valid." });
   }
   try {
-    const updated = await updateUserProfile(role, parsed.data);
+    const userIdCookie = req.cookies?.[USER_ID_COOKIE];
+    const updated = await updateUserProfile(role, parsed.data, userIdCookie);
     res.json(updated);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Gagal memperbarui profil.";
@@ -418,6 +422,42 @@ router.get("/students-needing-help", async (_req: Request, res: Response) => {
 router.get("/students", async (_req: Request, res: Response) => {
   const students = await getRegisteredStudents();
   res.json(students);
+});
+
+
+// Edit Data Siswa (Nama, Kelas, No. Absen) oleh Guru
+router.put("/students/:id", async (req: Request, res: Response) => {
+  const id = String(req.params.id);
+  const { name, kelas, noAbsen, email } = req.body || {};
+  const updated = await updateStudentByTeacher(id, { name, kelas, noAbsen, email });
+  if (!updated) {
+    return res.status(404).json({ success: false, message: "Siswa tidak ditemukan." });
+  }
+  return res.json({ success: true, message: "Data profil siswa berhasil diperbarui.", data: updated });
+});
+
+// Reset Poin Khusus Siswa Tertentu oleh Guru
+router.post("/students/:id/reset-points", async (req: Request, res: Response) => {
+  const id = String(req.params.id);
+  const result = await resetSingleStudentPoints(id);
+  if (!result) {
+    return res.status(404).json({ success: false, message: "Siswa tidak ditemukan." });
+  }
+  return res.json({ success: true, message: "Poin dan skor game siswa berhasil di-reset.", data: result });
+});
+
+// Tambah Siswa Baru oleh Guru
+router.post("/students/create", async (req: Request, res: Response) => {
+  const { name, email, password, kelas, noAbsen } = req.body || {};
+  if (!name || !email) {
+    return res.status(400).json({ success: false, message: "Nama dan email siswa wajib diisi." });
+  }
+  try {
+    const student = await createStudentByTeacher({ name, email, password, kelas, noAbsen });
+    return res.json({ success: true, message: "Akun siswa baru berhasil didaftarkan.", data: student });
+  } catch (err: any) {
+    return res.status(400).json({ success: false, message: err?.message || "Gagal mendaftarkan siswa." });
+  }
 });
 
 router.delete("/students/:id", async (req: Request, res: Response) => {

@@ -1,6 +1,7 @@
 import ChapterProgressList from "@/components/ChapterProgressList";
 import ClassSummaryCards from "@/components/ClassSummaryCards";
 import CurriculumValidationManager from "@/components/CurriculumValidationManager";
+import StudentAccountsManager from "@/components/StudentAccountsManager";
 import ExportReportButton from "@/components/ExportReportButton";
 import InviteTeacherModal from "@/components/InviteTeacherModal";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
@@ -23,7 +24,7 @@ export default function PengajarDashboardPage() {
   const handleResetPoints = async () => {
     playClickSound();
     const confirmed = window.confirm(
-      "Apakah Anda yakin ingin mereset SELURUH poin siswa dan ranking juara kelas ke 0?\n\nSetelah di-reset:\n1. Peringkat siswa akan dikosongkan dan disembunyikan.\n2. Siswa akan menerima pemberitahuan di dashboard bahwa poin telah di-reset oleh guru untuk periode baru."
+      "Apakah Anda yakin ingin mereset SELURUH poin siswa, skor petualangan game 3D, dan ranking juara kelas ke 0?\n\nSetelah di-reset:\n1. Peringkat juara dan papan skor gapura game 3D dikosongkan.\n2. Seluruh akumulasi poin kuis dan poin petualangan game siswa kembali ke 0.\n3. Siswa akan menerima pemberitahuan di dashboard bahwa poin telah di-reset oleh guru untuk periode baru."
     );
     if (!confirmed) return;
 
@@ -32,8 +33,13 @@ export default function PengajarDashboardPage() {
       const res = await fetch("/api/students/reset-points", { method: "POST" });
       const data = await res.json();
       if (res.ok && data.success) {
+        // Hapus juga skor lokal game petualangan jika ada di localStorage browser pengajar
+        try {
+          localStorage.removeItem("adventure_high_score");
+          localStorage.removeItem("adventure_session_score");
+        } catch {}
         alert(
-          "Berhasil! 🔄 Seluruh poin siswa dan ranking telah di-reset ke 0. Notifikasi otomatis telah dikirimkan ke dashboard siswa."
+          "Berhasil! 🔄 Seluruh poin materi, ranking kelas, dan poin petualangan game siswa telah di-reset ke 0."
         );
         window.location.reload();
       } else {
@@ -112,7 +118,12 @@ export default function PengajarDashboardPage() {
         <CurriculumValidationManager />
       </div>
 
-      {/* 3. BENTO METRIC CARDS (CLASS SUMMARY DENGAN INTERAKSI KLIK) */}
+      {/* 3. MANAJEMEN KONTROL AKUN SISWA & PRESENSI KELAS SD */}
+      <div id="section-student-accounts">
+        <StudentAccountsManager />
+      </div>
+
+      {/* 4. BENTO METRIC CARDS (CLASS SUMMARY DENGAN INTERAKSI KLIK) */}
       <ClassSummaryCards />
 
       {/* 4. MAIN ANALYTICS (CHAPTER PROGRESS RATA-RATA KELAS & DIAGNOSTIK) */}

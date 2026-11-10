@@ -473,6 +473,7 @@ export interface ActiveCurriculumState {
   title: string;
   chapterCode: string;
   subject: string;
+  grade?: string;
   ragSummary?: string[];
   quizQuestions?: Record<number, Question[]>;
 }
@@ -834,6 +835,7 @@ let activeCurriculumState: ActiveCurriculumState | null = {
   title: "Makna Lambang Sila Ke-3: Persatuan Indonesia di Sekolah & Rumah",
   chapterCode: "Bab 1",
   subject: "pkn",
+  grade: "Kelas 4 SD (Fase B)",
   ragSummary: INITIAL_MODULES_DB[0]?.ragSummary,
 };
 
@@ -992,7 +994,42 @@ export function setActiveCurriculumState(mod: ActiveCurriculumState) {
   }
 }
 
-export function getActiveCurriculumState() {
+export function getActiveCurriculumState(targetKelas?: string): ActiveCurriculumState | null {
+  if (targetKelas && curriculumModulesDb && curriculumModulesDb.length > 0) {
+    const norm = targetKelas.toLowerCase().trim();
+    // Cari modul aktif yang cocok dengan kelas siswa
+    const matchActive = curriculumModulesDb.find((m) => {
+      const g = (m.grade || "").toLowerCase();
+      return (g.includes(norm) || g.includes("semua")) && m.isActiveToday;
+    });
+    if (matchActive) {
+      return {
+        id: matchActive.id,
+        title: matchActive.title,
+        chapterCode: matchActive.chapterCode,
+        subject: matchActive.subject,
+        grade: matchActive.grade,
+        ragSummary: matchActive.ragSummary,
+        quizQuestions: matchActive.quizQuestions,
+      };
+    }
+    // Jika belum ada yang aktif untuk kelas itu, cari modul pertama kelas itu
+    const matchAny = curriculumModulesDb.find((m) => {
+      const g = (m.grade || "").toLowerCase();
+      return g.includes(norm) || g.includes("semua");
+    });
+    if (matchAny) {
+      return {
+        id: matchAny.id,
+        title: matchAny.title,
+        chapterCode: matchAny.chapterCode,
+        subject: matchAny.subject,
+        grade: matchAny.grade,
+        ragSummary: matchAny.ragSummary,
+        quizQuestions: matchAny.quizQuestions,
+      };
+    }
+  }
   return activeCurriculumState;
 }
 
@@ -1206,7 +1243,10 @@ export interface UserAccount {
   role: "pelajar" | "pengajar";
   nimNip: string;
   institution: string;
+  kelas?: string;
+  noAbsen?: string;
   points?: number;
+  gamePoints?: number;
   weakness?: StudentWeakness;
 }
 
@@ -1218,8 +1258,11 @@ const INITIAL_USERS_DB: UserAccount[] = [
     passwordHash: bcrypt.hashSync("secret123", 10),
     role: "pelajar",
     nimNip: "V3925024",
-    institution: "D3 Teknik Informatika Madiun, Sekolah Vokasi UNS",
+    institution: "SD Negeri 1 Madiun",
+    kelas: "Kelas 4",
+    noAbsen: "07",
     points: 420,
+    gamePoints: 120,
     weakness: {
       chapterId: "pkn-sila3",
       chapterName: "Pelajaran PKn (Makna Sila Ke-3)",
@@ -1238,8 +1281,11 @@ const INITIAL_USERS_DB: UserAccount[] = [
     passwordHash: bcrypt.hashSync("secret123", 10),
     role: "pelajar",
     nimNip: "V3925015",
-    institution: "D3 Teknik Informatika Madiun, Sekolah Vokasi UNS",
+    institution: "SD Negeri 1 Madiun",
+    kelas: "Kelas 4",
+    noAbsen: "15",
     points: 380,
+    gamePoints: 95,
     weakness: {
       chapterId: "pkn-bhinneka",
       chapterName: "Pelajaran PKn (Bhinneka Tunggal Ika)",
@@ -1259,7 +1305,10 @@ const INITIAL_USERS_DB: UserAccount[] = [
     role: "pelajar",
     nimNip: "V3925001",
     institution: "SD Negeri 1 Madiun",
+    kelas: "Kelas 4",
+    noAbsen: "03",
     points: 360,
+    gamePoints: 80,
     weakness: {
       chapterId: "pkn-gotongroyong",
       chapterName: "Pelajaran PKn (Gotong Royong)",
@@ -1279,7 +1328,10 @@ const INITIAL_USERS_DB: UserAccount[] = [
     role: "pelajar",
     nimNip: "V3925002",
     institution: "SD Negeri 1 Madiun",
+    kelas: "Kelas 5",
+    noAbsen: "21",
     points: 310,
+    gamePoints: 70,
     weakness: {
       chapterId: "bjawa-aksara",
       chapterName: "Pelajaran Bahasa Jawa (Aksara Jawa)",
@@ -1299,7 +1351,10 @@ const INITIAL_USERS_DB: UserAccount[] = [
     role: "pelajar",
     nimNip: "V3925003",
     institution: "SD Negeri 1 Madiun",
+    kelas: "Kelas 5",
+    noAbsen: "02",
     points: 270,
+    gamePoints: 50,
     weakness: {
       chapterId: "bjawa-unggahungguh",
       chapterName: "Pelajaran Bahasa Jawa (Unggah-Ungguh Basa)",
@@ -1348,6 +1403,17 @@ function loadUsersDb(): UserAccount[] {
       if (Array.isArray(parsed) && parsed.length > 0) {
         let changed = false;
         const enriched = parsed.map((u: UserAccount) => {
+          if (u.role === "pelajar") {
+            if (!u.kelas) {
+              changed = true;
+              const initMatch = INITIAL_USERS_DB.find(
+                (init) => init.id === u.id || init.email.toLowerCase() === u.email.toLowerCase()
+              );
+              u.kelas = initMatch?.kelas || "Kelas 4";
+              u.noAbsen = initMatch?.noAbsen || "01";
+              u.gamePoints = initMatch?.gamePoints ?? 0;
+            }
+          }
           if (!u.weakness && u.role === "pelajar") {
             changed = true;
             const initMatch = INITIAL_USERS_DB.find(
@@ -1411,6 +1477,7 @@ export async function resetStudentsPoints(): Promise<{ success: boolean; count: 
   usersDb.forEach((u) => {
     if (u.role === "pelajar") {
       u.points = 0;
+      u.gamePoints = 0;
       count++;
     }
   });
@@ -1449,7 +1516,10 @@ export async function getRegisteredStudents() {
       email: u.email,
       nimNip: u.nimNip,
       institution: u.institution,
+      kelas: u.kelas || "Kelas 4",
+      noAbsen: u.noAbsen || "01",
       points: u.points ?? 0,
+      gamePoints: u.gamePoints ?? 0,
       weakness: u.weakness,
     }))
     .sort((a, b) => (b.points ?? 0) - (a.points ?? 0));
@@ -1586,7 +1656,10 @@ export async function getUserProfile(
     role: user.role,
     nimNip: user.nimNip,
     institution: user.institution,
+    kelas: user.kelas || (user.role === "pelajar" ? "Kelas 4" : undefined),
+    noAbsen: user.noAbsen || (user.role === "pelajar" ? "07" : undefined),
     points: user.points ?? (user.role === "pelajar" ? 200 : undefined),
+    gamePoints: user.gamePoints ?? (user.role === "pelajar" ? 0 : undefined),
     weakness: user.weakness,
   };
 }
@@ -1602,28 +1675,44 @@ export async function updateUserProfile(
     email: string;
     nimNip?: string;
     institution?: string;
+    kelas?: string;
+    noAbsen?: string;
     password?: string;
-  }
+  },
+  userId?: string
 ) {
   await delay(400);
-  let user = usersDb.find((u) => u.role === role);
+  let user: UserAccount | undefined;
+  if (userId) {
+    user = usersDb.find((u) => u.id === userId);
+  }
+  if (!user) {
+    user = usersDb.find((u) => u.email.toLowerCase() === payload.email.toLowerCase() && u.role === role);
+  }
+  if (!user) {
+    user = usersDb.find((u) => u.role === role);
+  }
   if (!user) {
     user = {
       id: `usr_${Date.now()}`,
       name: payload.name,
       email: payload.email,
-      passwordHash: payload.password || "secret123",
+      passwordHash: payload.password ? bcrypt.hashSync(payload.password, 10) : "secret123",
       role,
       nimNip: payload.nimNip || (role === "pelajar" ? "V3925024" : "1991091420200801"),
-      institution: payload.institution || "D3 Teknik Informatika Madiun, Sekolah Vokasi UNS",
+      institution: payload.institution || "SD Negeri 1 Madiun",
+      kelas: payload.kelas || (role === "pelajar" ? "Kelas 4" : undefined),
+      noAbsen: payload.noAbsen || (role === "pelajar" ? "07" : undefined),
     };
     usersDb.push(user);
   } else {
     user.name = payload.name;
     user.email = payload.email;
-    if (payload.nimNip) user.nimNip = payload.nimNip;
-    if (payload.institution) user.institution = payload.institution;
-    if (payload.password) user.passwordHash = payload.password;
+    if (payload.nimNip !== undefined) user.nimNip = payload.nimNip;
+    if (payload.institution !== undefined) user.institution = payload.institution;
+    if (payload.kelas !== undefined) user.kelas = payload.kelas;
+    if (payload.noAbsen !== undefined) user.noAbsen = payload.noAbsen;
+    if (payload.password) user.passwordHash = bcrypt.hashSync(payload.password, 10);
   }
   persistUsersDb();
   return {
@@ -1633,6 +1722,8 @@ export async function updateUserProfile(
     role: user.role,
     nimNip: user.nimNip,
     institution: user.institution,
+    kelas: user.kelas,
+    noAbsen: user.noAbsen,
   };
 }
 
@@ -2154,4 +2245,71 @@ export async function buildClassReportHtml(): Promise<{ fileName: string; conten
     fileName: `Laporan_Evaluasi_Siswa_SDN1Madiun_${Date.now()}.html`,
     content: html,
   };
+}
+
+export async function updateStudentByTeacher(
+  id: string,
+  data: { name?: string; kelas?: string; noAbsen?: string; email?: string }
+): Promise<UserAccount | null> {
+  await delay(150);
+  const user = usersDb.find((u) => (u.id === id || u.email.toLowerCase() === id.toLowerCase()) && u.role === "pelajar");
+  if (!user) return null;
+  if (data.name) user.name = data.name.trim();
+  if (data.email) user.email = data.email.trim().toLowerCase();
+  if (data.kelas) user.kelas = data.kelas.trim();
+  if (data.noAbsen) user.noAbsen = data.noAbsen.trim();
+  persistUsersDb();
+  return user;
+}
+
+export async function resetSingleStudentPoints(
+  id: string
+): Promise<{ success: boolean; points: number; gamePoints: number } | null> {
+  await delay(150);
+  const user = usersDb.find((u) => (u.id === id || u.email.toLowerCase() === id.toLowerCase()) && u.role === "pelajar");
+  if (!user) return null;
+  user.points = 0;
+  user.gamePoints = 0;
+  persistUsersDb();
+  return { success: true, points: 0, gamePoints: 0 };
+}
+
+export async function createStudentByTeacher(data: {
+  name: string;
+  email: string;
+  password?: string;
+  kelas: string;
+  noAbsen: string;
+}): Promise<UserAccount> {
+  await delay(200);
+  const normEmail = data.email.toLowerCase().trim();
+  const existing = usersDb.find((u) => u.email.toLowerCase() === normEmail);
+  if (existing) {
+    throw new Error("Email siswa sudah terdaftar.");
+  }
+  const newUser: UserAccount = {
+    id: `usr_${Date.now()}`,
+    name: data.name.trim(),
+    email: normEmail,
+    passwordHash: bcrypt.hashSync(data.password || "siswa123", 10),
+    role: "pelajar",
+    nimNip: `SD-${(data.kelas || "Kelas 4").replace(/\s+/g, "")}-${data.noAbsen || "01"}`,
+    institution: "SD Negeri 1 Madiun",
+    kelas: data.kelas || "Kelas 4",
+    noAbsen: data.noAbsen || "01",
+    points: 0,
+    gamePoints: 0,
+    weakness: {
+      chapterId: "pkn-sila3",
+      chapterName: "Pelajaran PKn (Makna Sila Ke-3)",
+      subject: "pkn",
+      score: 8,
+      outOf: 10,
+      status: "tuntas",
+      message: "Akun baru berhasil dibuat oleh Guru. Siap belajar dan berpetualang!",
+    },
+  };
+  usersDb.push(newUser);
+  persistUsersDb();
+  return newUser;
 }

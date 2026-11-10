@@ -5,6 +5,7 @@ export interface RequestCurriculumPayload {
   subject: "pkn" | "bjawa";
   chapterCode: string;
   topicTitle: string;
+  grade?: string;
   learningGoal?: string;
   apiSource: "kemdikbud" | "disdik";
 }
@@ -111,5 +112,22 @@ export async function deleteCurriculumModuleApi(
   }
 
   return res.json();
+}
+
+export async function fetchActiveCurriculumModule(
+  kelas?: string
+): Promise<CurriculumModule | null> {
+  try {
+    const url = kelas
+      ? `/api/v1/curriculum/active?kelas=${encodeURIComponent(kelas)}`
+      : "/api/v1/curriculum/active";
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data || null;
+  } catch (err) {
+    console.error("fetchActiveCurriculumModule error:", err);
+    return null;
+  }
 }
 

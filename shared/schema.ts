@@ -161,7 +161,7 @@ export const StudentWeaknessSchema = z.object({
 });
 export type StudentWeakness = z.infer<typeof StudentWeaknessSchema>;
 
-// Entitas: Profil Pengguna (GET/PUT /api/profile - FR-22) -------------------
+// Entitas: Profil Pengguna (GET/PUT /api/profile) -------------------
 export const UserProfileSchema = z.object({
   id: z.string(),
   name: z.string().min(2),
@@ -169,7 +169,10 @@ export const UserProfileSchema = z.object({
   role: RoleSchema,
   nimNip: z.string().optional(),
   institution: z.string().optional(),
+  kelas: z.string().optional(),
+  noAbsen: z.string().optional(),
   points: z.number().optional(),
+  gamePoints: z.number().optional(),
   weakness: StudentWeaknessSchema.optional(),
 });
 export type UserProfile = z.infer<typeof UserProfileSchema>;
@@ -179,6 +182,8 @@ export const UpdateProfileInputSchema = z.object({
   email: z.string().trim().email("Format email tidak valid."),
   nimNip: z.string().trim().optional(),
   institution: z.string().trim().optional(),
+  kelas: z.string().trim().optional(),
+  noAbsen: z.string().trim().optional(),
   password: z.string().min(6, "Kata sandi baru minimal 6 karakter.").optional().or(z.literal("")),
 });
 export type UpdateProfileInput = z.infer<typeof UpdateProfileInputSchema>;

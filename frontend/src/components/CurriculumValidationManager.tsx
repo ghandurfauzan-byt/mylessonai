@@ -436,6 +436,7 @@ export default function CurriculumValidationManager() {
 
   // Form input
   const [selectedSubject, setSelectedSubject] = useState<"pkn" | "bjawa">("pkn");
+  const [selectedGrade, setSelectedGrade] = useState<string>("Kelas 4 SD (Fase B)");
   const [chapterCode, setChapterCode] = useState("Bab 3");
   const [topicTitle, setTopicTitle] = useState("");
   const [learningGoal, setLearningGoal] = useState("");
@@ -444,9 +445,14 @@ export default function CurriculumValidationManager() {
   // Penampung data hasil respon API yang siap divalidasi
   const [generatedModule, setGeneratedModule] = useState<CurriculumModule | null>(null);
 
+  const [filterGrade, setFilterGrade] = useState<"all" | "kelas4" | "kelas5">("all");
+
   const filteredModules = modules.filter((m) => {
-    if (filterSubject === "all") return true;
-    return m.subject === filterSubject;
+    if (filterSubject !== "all" && m.subject !== filterSubject) return false;
+    const g = (m.grade || "").toLowerCase();
+    if (filterGrade === "kelas4" && !(g.includes("4") || g.includes("semua"))) return false;
+    if (filterGrade === "kelas5" && !(g.includes("5") || g.includes("semua"))) return false;
+    return true;
   });
 
   const activeModule = modules.find((m) => m.isActiveToday);
@@ -504,6 +510,7 @@ export default function CurriculumValidationManager() {
         subject: selectedSubject,
         chapterCode: chapterCode.trim() || "Bab Baru",
         topicTitle: topicTitle.trim(),
+        grade: selectedGrade,
         learningGoal: learningGoal.trim(),
         apiSource: apiSourceOption,
       });
@@ -511,7 +518,7 @@ export default function CurriculumValidationManager() {
       clearTimeout(stepTimer1);
       clearTimeout(stepTimer2);
       setFetchProgressStep(3);
-      setGeneratedModule(apiModule);
+      setGeneratedModule({ ...apiModule, grade: selectedGrade });
       setModalStage("validated_preview");
       playCorrectSound();
     } catch {
@@ -526,7 +533,7 @@ export default function CurriculumValidationManager() {
           subject: selectedSubject,
           subjectLabel:
             selectedSubject === "pkn" ? "Pendidikan Pancasila & PKn" : "Basa Jawa (Muatan Lokal)",
-          grade: "Kelas 4 SD (Fase B)",
+          grade: selectedGrade,
           title: topicTitle.trim(),
           chapterCode: chapterCode.trim() || "Bab Baru",
           source:
@@ -563,6 +570,7 @@ export default function CurriculumValidationManager() {
 
     const validatedMod: CurriculumModule = {
       ...generatedModule,
+      grade: generatedModule.grade || selectedGrade,
       isValidated: true,
       isActiveToday: true,
       validatedAt: "Baru saja divalidasi",
@@ -826,11 +834,50 @@ export default function CurriculumValidationManager() {
           </button>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-bold text-amber-900 dark:text-amber-200">
-          <span>Tingkat Sasaran:</span>
-          <span className="px-3 py-1 bg-white dark:bg-slate-900 border-2 border-amber-300 dark:border-slate-800 rounded-xl font-black text-amber-950 dark:text-amber-300 shadow-xs">
-            🎒 Kelas 4 SD (Fase B)
-          </span>
+        <div className="flex flex-wrap items-center gap-1.5 bg-white dark:bg-slate-900 p-1.5 rounded-2xl border-2 border-amber-200 dark:border-slate-800 shadow-xs">
+          <span className="text-[11px] font-bold text-slate-500 px-1">Filter Kelas:</span>
+          <button
+            type="button"
+            onClick={() => {
+              playClickSound();
+              setFilterGrade("all");
+            }}
+            className={`px-2.5 py-1 rounded-xl text-xs font-black transition cursor-pointer ${
+              filterGrade === "all"
+                ? "bg-amber-400 text-amber-950 shadow-xs"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            }`}
+          >
+            Semua Kelas
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              playClickSound();
+              setFilterGrade("kelas4");
+            }}
+            className={`px-2.5 py-1 rounded-xl text-xs font-black transition cursor-pointer ${
+              filterGrade === "kelas4"
+                ? "bg-amber-400 text-amber-950 shadow-xs"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            }`}
+          >
+            Kelas 4 SD
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              playClickSound();
+              setFilterGrade("kelas5");
+            }}
+            className={`px-2.5 py-1 rounded-xl text-xs font-black transition cursor-pointer ${
+              filterGrade === "kelas5"
+                ? "bg-amber-400 text-amber-950 shadow-xs"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            }`}
+          >
+            Kelas 5 SD
+          </button>
         </div>
       </div>
 
@@ -1024,7 +1071,7 @@ export default function CurriculumValidationManager() {
                 </div>
 
                 <div className="space-y-3 text-xs">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
                         Mata Pelajaran:
@@ -1040,6 +1087,21 @@ export default function CurriculumValidationManager() {
                       >
                         <option value="pkn">Pendidikan Pancasila &amp; PKn</option>
                         <option value="bjawa">Basa Jawa (Muatan Lokal)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                        Target Kelas Siswa:
+                      </label>
+                      <select
+                        value={selectedGrade}
+                        onChange={(e) => setSelectedGrade(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-bold cursor-pointer"
+                      >
+                        <option value="Kelas 4 SD (Fase B)">Kelas 4 SD (Fase B)</option>
+                        <option value="Kelas 5 SD (Fase C)">Kelas 5 SD (Fase C)</option>
+                        <option value="Semua Kelas">Semua Kelas (Kelas 4 &amp; 5)</option>
                       </select>
                     </div>
 

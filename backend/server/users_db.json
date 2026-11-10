@@ -6,8 +6,8 @@
     "passwordHash": "$2b$10$w5jVbZcn8hpV9tr3Z.psXuHbXjuZJllWoMjhPSkN19Uwpa4dWvt6W",
     "role": "pelajar",
     "nimNip": "V3925024",
-    "institution": "D3 Teknik Informatika Madiun, Sekolah Vokasi UNS",
-    "points": 2260,
+    "institution": "SD Negeri 1 Madiun",
+    "points": 3250,
     "weakness": {
       "chapterId": "pkn-sila3",
       "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
@@ -16,7 +16,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Luar biasa! Seluruh evaluasi belajarmu telah Tuntas Melampaui KKTP (Rata-rata 95%). Guru merekomendasikanmu melanjutkan materi pengayaan Makna Sila Ke-3 untuk mempertahankan prestasimu!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "07",
+    "gamePoints": 120
   },
   {
     "id": "usr_2",
@@ -25,7 +28,7 @@
     "passwordHash": "$2b$10$2WD1/9fvGiPLD7jEupnGgOpAw7jZoA9mem15eUv6co8Gn/7Qk2G.m",
     "role": "pelajar",
     "nimNip": "V3925015",
-    "institution": "D3 Teknik Informatika Madiun, Sekolah Vokasi UNS",
+    "institution": "SD Negeri 1 Madiun",
     "points": 0,
     "weakness": {
       "chapterId": "pkn-bhinneka",
@@ -35,7 +38,10 @@
       "outOf": 10,
       "status": "remedial",
       "message": "Nilai evaluasi di Pelajaran PKn (Bhinneka Tunggal Ika) masih di bawah Kriteria Ketuntasan (KKTP). Silakan pelajari kembali keragaman suku dan budaya Nusantara yang telah disiapkan Guru."
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "15",
+    "gamePoints": 95
   },
   {
     "id": "usr_4",
@@ -54,7 +60,10 @@
       "outOf": 10,
       "status": "remedial",
       "message": "Nilai evaluasi di Pelajaran PKn (Gotong Royong) masih di bawah Kriteria Ketuntasan (KKTP). Silakan pelajari kembali ringkasan materi dan intisari pengamalan yang telah disiapkan Guru."
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "03",
+    "gamePoints": 80
   },
   {
     "id": "usr_5",
@@ -73,7 +82,10 @@
       "outOf": 10,
       "status": "remedial",
       "message": "Nilai evaluasi di Pelajaran Bahasa Jawa (Aksara Jawa & Sandhangan) masih di bawah Kriteria Ketuntasan (KKTP). Silakan pelajari kembali aturan sandhangan swara dan bentuk 20 aksara legena."
-    }
+    },
+    "kelas": "Kelas 5",
+    "noAbsen": "21",
+    "gamePoints": 70
   },
   {
     "id": "usr_6",
@@ -92,7 +104,10 @@
       "outOf": 10,
       "status": "remedial",
       "message": "Nilai evaluasi di Pelajaran Bahasa Jawa (Unggah-Ungguh Basa) masih di bawah Kriteria Ketuntasan (KKTP). Silakan pelajari kembali perbedaan ragam Basa Ngoko dan Basa Krama Alus bersama Robot Pintar."
-    }
+    },
+    "kelas": "Kelas 5",
+    "noAbsen": "02",
+    "gamePoints": 50
   },
   {
     "id": "usr_3",
@@ -138,7 +153,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791813666732",
@@ -157,7 +175,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791814083504",
@@ -176,7 +197,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791815325973",
@@ -195,7 +219,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791815665113",
@@ -214,7 +241,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791841621878",
@@ -233,7 +263,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791842179291",
@@ -252,7 +285,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791842676133",
@@ -271,7 +307,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791843070429",
@@ -290,7 +329,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791843210452",
@@ -309,7 +351,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791843394785",
@@ -328,7 +373,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791844904140",
@@ -356,7 +404,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791845007154",
@@ -384,7 +435,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791855108223",
@@ -412,7 +466,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791855590610",
@@ -440,7 +497,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791856097196",
@@ -468,7 +528,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791856413234",
@@ -496,7 +559,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791856949542",
@@ -524,7 +590,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791858063444",
@@ -561,7 +630,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791861900697",
@@ -598,7 +670,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791873176088",
@@ -617,7 +692,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791873182348",
@@ -645,7 +723,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791875408436",
@@ -673,7 +754,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791875996878",
@@ -701,7 +785,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791876259595",
@@ -729,7 +816,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1791876929601",
@@ -757,7 +847,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1792030185613",
@@ -785,7 +878,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1792120146568",
@@ -813,7 +909,10 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1792458967642",
@@ -841,41 +940,16 @@
       "outOf": 10,
       "status": "tuntas",
       "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
+    },
+    "kelas": "Kelas 4",
+    "noAbsen": "12",
+    "gamePoints": 0
   },
   {
     "id": "usr_1792459375202",
     "name": "Guru Uji 1792459375202",
     "email": "guru_uji_1792459375202@gmail.com",
     "passwordHash": "$2b$10$r3wu1Uralv6uucsG.fRxo.tg7yfVwQNFiRckkUjT669TP/5WYlnyS",
-    "role": "pengajar",
-    "nimNip": "199xxxxxxxxx",
-    "institution": "SD Negeri 1 Madiun"
-  },
-  {
-    "id": "usr_1794269801453",
-    "name": "Siswa Baru 1794269801453",
-    "email": "siswa_1794269801453@gmail.com",
-    "passwordHash": "$2b$10$GWtHFDJJD5.QnzBHchKrP.F04YP.k2bmNqO3lzXKV67cfktdTtmWm",
-    "role": "pelajar",
-    "nimNip": "V3925xxx",
-    "institution": "SD Negeri 1 Madiun",
-    "points": 200,
-    "weakness": {
-      "chapterId": "pkn-sila3",
-      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
-      "subject": "pkn",
-      "score": 8,
-      "outOf": 10,
-      "status": "tuntas",
-      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    }
-  },
-  {
-    "id": "usr_1794269814241",
-    "name": "Guru Uji 1794269814241",
-    "email": "guru_uji_1794269814241@gmail.com",
-    "passwordHash": "$2b$10$PoH7.xzuxe7uVflI0yGA.uqKxOs9xsbOnZ8FE/LbwpJhtXyym3ZIO",
     "role": "pengajar",
     "nimNip": "199xxxxxxxxx",
     "institution": "SD Negeri 1 Madiun"

@@ -82,6 +82,7 @@ export interface DailyMissionsState {
   quizLevel1: boolean;
   quizLevel2: boolean;
   quizLevel3: boolean;
+  playedGame: boolean;
 }
 
 export interface ValidatedModuleSummary {
@@ -195,6 +196,7 @@ export const useUIStore = create<UIState>()((set) => ({
         quizLevel1: false,
         quizLevel2: false,
         quizLevel3: false,
+        playedGame: false,
       };
       if (typeof window !== "undefined") {
         try {
@@ -202,7 +204,7 @@ export const useUIStore = create<UIState>()((set) => ({
           if (stored) {
             return {
               currentChapterId: chapterId,
-              dailyMissions: JSON.parse(stored),
+              dailyMissions: { playedGame: false, ...JSON.parse(stored) },
             };
           }
         } catch {}
@@ -223,6 +225,7 @@ export const useUIStore = create<UIState>()((set) => ({
         quizLevel1: false,
         quizLevel2: false,
         quizLevel3: false,
+        playedGame: false,
       };
       if (typeof window !== "undefined") {
         try {
@@ -258,7 +261,10 @@ function getInitialDailyMissions(): DailyMissionsState {
     try {
       const stored =
         localStorage.getItem("daily_missions_pkn-sila3") || localStorage.getItem("daily_missions");
-      if (stored) return JSON.parse(stored);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return { playedGame: false, ...parsed };
+      }
     } catch {}
   }
   return {
@@ -268,6 +274,7 @@ function getInitialDailyMissions(): DailyMissionsState {
     quizLevel1: false,
     quizLevel2: false,
     quizLevel3: false,
+    playedGame: false,
   };
 }
 
