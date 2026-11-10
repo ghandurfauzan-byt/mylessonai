@@ -3,7 +3,6 @@
 import AdaptiveEduGameModal from "@/components/AdaptiveEduGameModal";
 import AiContentPanel from "@/components/AiContentPanel";
 import ChapterModeSelector from "@/components/ChapterModeSelector";
-import LevelBadge from "@/components/LevelBadge";
 import ModalPortal from "@/components/ModalPortal";
 import PointsBadge from "@/components/PointsBadge";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
@@ -727,33 +726,34 @@ export default function PelajarDashboardPage() {
             </p>
           </div>
 
-          {/* Gamifikasi 2 Skor Utama: Skor Game & Skor Kuis */}
-          <div className="flex items-center gap-3 sm:gap-4 bg-white/20 dark:bg-slate-800/60 backdrop-blur-md border-4 border-white/50 dark:border-slate-700 rounded-2xl p-3 sm:p-4 shadow-lg text-white">
-            <div className="pr-3 sm:pr-4 border-r-2 border-white/40 dark:border-slate-700 shrink-0">
-              <span className="text-[11px] font-black text-sky-100 dark:text-sky-300 tracking-wider block">
-                🎮 Skor Game
+          {/* Gamifikasi 2 Skor Utama: Skor Game & Skor Kuis (Rapi, Seimbang & Selaras) */}
+          <div className="flex items-center gap-3.5 sm:gap-5 bg-white/25 dark:bg-slate-800/80 backdrop-blur-md border-3 border-white/60 dark:border-slate-700 rounded-2xl px-4 sm:px-5 py-3 shadow-lg text-white">
+            {/* 🎮 Skor Game */}
+            <div className="flex flex-col items-start gap-1 shrink-0">
+              <span className="text-[11px] font-black text-white/95 dark:text-sky-300 tracking-wider flex items-center gap-1.5 drop-shadow-xs">
+                <span>🎮</span>
+                <span>Skor Game</span>
               </span>
-              <div className="mt-1 text-white">
-                <PointsBadge />
-              </div>
+              <PointsBadge />
             </div>
 
-            <div className="pr-3 sm:pr-4 border-r-2 border-white/40 dark:border-slate-700 shrink-0">
-              <span className="text-[11px] font-black text-amber-200 dark:text-amber-300 tracking-wider block">
-                📝 Skor Kuis
-              </span>
-              <div className="mt-1 text-base sm:text-lg font-black text-amber-300 flex items-center gap-1">
-                <span>{currentStudent?.quizScore ?? (currentStudent?.weakness ? currentStudent.weakness.score * 10 : 90)}</span>
-                <span className="text-xs font-semibold text-sky-100">/ 100</span>
-              </div>
-            </div>
+            {/* Pemisah Vertikal Halus */}
+            <div className="h-9 w-0.5 bg-white/35 dark:bg-slate-700 rounded-full shrink-0" />
 
-            <div className="shrink-0 space-y-0.5">
-              <span className="text-[11px] font-black text-sky-100 dark:text-sky-300 tracking-wider block">
-                Level Kamu 🚀
+            {/* 📝 Skor Kuis */}
+            <div className="flex flex-col items-start gap-1 shrink-0">
+              <span className="text-[11px] font-black text-white/95 dark:text-emerald-300 tracking-wider flex items-center gap-1.5 drop-shadow-xs">
+                <span>📝</span>
+                <span>Skor Kuis</span>
               </span>
-              <div className="mt-1">
-                <LevelBadge level="MEDIUM" />
+              <div className="flex items-center gap-1.5 bg-emerald-100 dark:bg-emerald-950 text-emerald-950 dark:text-emerald-200 px-3.5 py-1 rounded-full border-2 border-emerald-400 dark:border-emerald-700 shadow-sm">
+                <span className="text-base">🎯</span>
+                <span className="text-lg font-black leading-none">
+                  {currentStudent?.quizScore ?? (currentStudent?.weakness ? currentStudent.weakness.score * 10 : 90)}
+                </span>
+                <span className="text-xs font-extrabold text-emerald-800 dark:text-emerald-300 leading-none">
+                  / 100
+                </span>
               </div>
             </div>
           </div>
