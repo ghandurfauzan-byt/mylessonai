@@ -196,7 +196,7 @@ export default function AdaptiveEduGameModal({
     setIsGuruSpeaking(false);
   }, []);
 
-  // Briefing Materi & Suara Pak Guru Dinamis sesuai Materi Aktif
+  // Briefing Materi & Suara Pak Guru Dinamis (Ringkas, Padat & Ramah Anak)
   const guruBriefing = useMemo(() => {
     const rawTitle = resolvedTitle.toLowerCase();
     const idLower = (activeValidatedModule?.id || chapter || "").toLowerCase();
@@ -207,11 +207,11 @@ export default function AdaptiveEduGameModal({
         topicName: "Gotong Royong di Sekolah",
         tabTitleIntisari: "Nilai Kerja Sama",
         apaItuText:
-          "Gotong royong adalah tradisi luhur bangsa Indonesia untuk bekerja bersama-sama, saling membantu dan tolong menolong demi mencapai tujuan bersama dengan ikhlas dan gembira.",
+          "Gotong royong adalah bekerja sama dan saling menolong dengan ikhlas agar pekerjaan terasa ringan dan gembira!",
         intisariText:
-          "1. Piket Kelas: ruang belajar cepat bersih bila dikerjakan bersama.\n2. Tolong Teman: membantu kawan yang kesulitan tanpa pamrih.\n3. Semboyan: Berat sama dipikul, ringan sama dijinjing.\n4. Musyawarah Regu: membagi tugas secara adil dan rukun.\n5. Merawat Lingkungan: menjaga fasilitas sekolah agar tetap asri.",
+          "• Piket Kelas: Ruang belajar bersih bersama\n• Tolong Teman: Bantu kawan yang butuh bantuan\n• Semboyan: Berat sama dipikul, ringan dijinjing\n• Musyawarah: Bagi tugas dengan rukun dan adil\n• Jaga Sekolah: Rawat fasilitas agar tetap asri",
         caraMainText:
-          "Cara mainnya seru: jalankan karakter dengan WASD atau tombol panah, kumpulkan koin emas di sepanjang jalan, kunjungi 5 Pos Gotong Royong di kiri dan kanan jalan, lalu tekan tombol Tantangan Kuis di titik bercahaya!",
+          "Jalan dengan tombol WASD atau panah, ambil koin di jalan, dan injak titik bercahaya di depan tiap pos!",
       };
     }
 
@@ -221,11 +221,11 @@ export default function AdaptiveEduGameModal({
         topicName: "Norma & Aturan Sekolah",
         tabTitleIntisari: "5 Norma Sekolah",
         apaItuText:
-          "Norma sekolah adalah tata tertib dan aturan bersama yang disepakati untuk menciptakan suasana belajar yang aman, tertib, disiplin, dan saling menghormati di lingkungan sekolah.",
+          "Norma sekolah adalah tata tertib bersama agar suasana belajar aman, tertib, disiplin, dan saling menghormati!",
         intisariText:
-          "1. Disiplin Waktu: hadir di kelas sebelum bel masuk berbunyi.\n2. Seragam Lengkap: berpakaian rapi sesuai jadwal upacara.\n3. Budaya 5S: Senyum, Salam, Sapa, Sopan, dan Santun.\n4. Budaya Antre: sabar menunggu giliran di kantin.\n5. Menjaga Fasilitas: merawat buku perpustakaan dan kebersihan kelas.",
+          "• Disiplin: Datang tepat waktu ke sekolah\n• Seragam: Berpakaian rapi lengkap atribut\n• Budaya 5S: Senyum, Salam, Sapa, Sopan, Santun\n• Tertib Antre: Sabar menunggu giliran di kantin\n• Jaga Fasilitas: Rawat buku dan kebersihan kelas",
         caraMainText:
-          "Gunakan tombol WASD atau panah keyboard untuk menjelajah, pungut koin emas, dekati papan nama di depan pos norma, dan masuki lingkaran bercahaya untuk menyelesaikan tantangan kuis!",
+          "Gunakan tombol WASD atau panah keyboard, pungut koin emas, dan selesaikan tantangan di depan pos!",
       };
     }
 
@@ -235,23 +235,36 @@ export default function AdaptiveEduGameModal({
         topicName: "Bhinneka Tunggal Ika",
         tabTitleIntisari: "5 Keragaman Nusantara",
         apaItuText:
-          "Bhinneka Tunggal Ika adalah semboyan pemersatu bangsa yang berarti 'Berbeda-beda tetapi tetap satu jua'. Indonesia kaya akan aneka suku, budaya, dan bahasa yang saling melengkapi.",
+          "Bhinneka Tunggal Ika artinya berbeda-beda tetapi kita tetap satu keluarga besar bangsa Indonesia!",
         intisariText:
-          "1. Keragaman Suku: rukun berteman dari Sabang sampai Merauke.\n2. Bahasa Ibu & Indonesia: lestarikan bahasa daerah, junjung bahasa persatuan.\n3. Rumah & Busana Adat: bangga warisan budaya bangsa.\n4. Toleransi Budaya: menghormati perayaan adat teman.\n5. Sumpah Pemuda: satu nusa, satu bangsa, satu bahasa Indonesia.",
+          "• Ragam Suku: Rukun berteman dari Sabang sampai Merauke\n• Bahasa Daerah: Bangga bahasa daerah dan bahasa persatuan\n• Rumah & Baju Adat: Cintai kekayaan budaya Nusantara\n• Toleransi Budaya: Saling menghormati perayaan adat teman\n• Sumpah Pemuda: Satu nusa, satu bangsa, dan satu bahasa",
         caraMainText:
-          "Kendalikan karaktermu melintasi desa adat, pungut koin emas, jumpai teman-teman sekelas dan kunjungi 5 Pos Keragaman Nusantara untuk menjawab tantangan!",
+          "Kendalikan karaktermu melintasi desa, pungut koin emas, dan dekati tiap pos budaya untuk menjawab tantangan!",
       };
     }
 
-    // Modul Validasi Kemendikbud (Jika memiliki ringkasan/ragSummary)
+    // Modul Validasi Kemendikbud (Ringkasan Cepat Ramah Anak)
     if (activeValidatedModule && activeValidatedModule.ragSummary) {
+      const summaryRaw = Array.isArray(activeValidatedModule.ragSummary)
+        ? activeValidatedModule.ragSummary
+        : typeof activeValidatedModule.ragSummary === "string"
+          ? (activeValidatedModule.ragSummary as string).split(/[\n\r]+/)
+          : [];
+
+      const summaryClean = summaryRaw
+        .map((s: string) => s.trim().replace(/^\d+\.\s*/, "").replace(/^[•\-*]\s*/, ""))
+        .filter(Boolean)
+        .slice(0, 4)
+        .map((s: string) => "• " + (s.length > 55 ? s.slice(0, 52) + "..." : s))
+        .join("\n");
+
       return {
         topicName: activeValidatedModule.title,
         tabTitleIntisari: "Intisari Materi",
-        apaItuText: `Materi "${activeValidatedModule.title}" dirancang khusus oleh Guru dan Kemendikbud untuk memperdalam wawasan serta karakter luhur para siswa.`,
-        intisariText: activeValidatedModule.ragSummary.slice(0, 320) + "...",
+        apaItuText: `Materi "${activeValidatedModule.title}" mengajak kita belajar nilai-nilai luhur dengan seru dan ceria!`,
+        intisariText: summaryClean || "• Pahami materi inti\n• Terapkan sikap terpuji\n• Kerja sama dengan kawan",
         caraMainText:
-          "Jelajahi setiap pos tematik di sepanjang rute desa, kumpulkan koin emas di jalan, dan dekati titik bercahaya di depan tiap pos untuk menguji pemahamanmu!",
+          "Kumpulkan koin emas di jalan dan dekati titik bercahaya di depan tiap pos untuk menyelesaikan tantangan!",
       };
     }
 
@@ -260,11 +273,11 @@ export default function AdaptiveEduGameModal({
       topicName: "Pancasila & Nilai Luhur Bangsa",
       tabTitleIntisari: "Makna 5 Sila",
       apaItuText:
-        "Pancasila adalah lima dasar dan pedoman hidup luhur bangsa Indonesia yang menyatukan kita semua dari Sabang sampai Merauke dalam kedamaian dan keadilan.",
+        "Pancasila adalah lima pedoman hidup luhur bangsa Indonesia agar kita selalu hidup rukun, damai, dan adil!",
       intisariText:
-        "Sila 1 Ketuhanan: saling menghormati ibadah teman.\nSila 2 Kemanusiaan: tolong menolong tanpa pamrih.\nSila 3 Persatuan: rukun berbeda suku bangsa.\nSila 4 Kerakyatan: musyawarah mufakat.\nSila 5 Keadilan: bersikap adil dan gotong royong.",
+        "• Sila 1: Hormati kawan beribadah\n• Sila 2: Tolong teman yang kesusahan\n• Sila 3: Rukun berbeda suku bangsa\n• Sila 4: Musyawarah untuk mufakat\n• Sila 5: Bersikap adil dan suka berbagi",
       caraMainText:
-        "Cara mainnya mudah: jalan dengan tombol WASD atau panah, kumpulkan koin emas di jalan, kunjungi 5 rumah suku adat di kiri dan kanan jalan, lalu injak titik bercahaya untuk menjawab kuis dan sapa teman sekelasmu!",
+        "Jalan dengan WASD atau panah, ambil koin di jalan, dan injak lingkaran bercahaya di depan tiap rumah suku!",
     };
   }, [resolvedTitle, activeValidatedModule, chapter]);
 
@@ -335,11 +348,11 @@ export default function AdaptiveEduGameModal({
           zPos: -45,
           xPos: 14,
           warnaKhas: "#38bdf8",
-          pertanyaan: "Saat jadwal piket kebersihan kelas tiba, bagaimana sikap gotong royong yang patut dilakukan?",
+          pertanyaan: "Saat jadwal piket kelas tiba, sikap gotong royong yang benar adalah:",
           opsi: [
-            { id: "A", teks: "Pulang diam-diam agar terhindar dari tugas menyapu lantai.", benar: false, penjelasan: "Meninggalkan tanggung jawab piket merugikan teman sekelompok." },
-            { id: "B", teks: "Membagi tugas menyapu, merapikan bangku, dan membuang sampah bersama kawan.", benar: true, penjelasan: "Sangat bagus! Gotong royong membuat tugas piket selesai lebih cepat dan kelas menjadi bersih." },
-            { id: "C", teks: "Menyuruh satu kawan saja yang membersihkan seluruh ruangan kelas.", benar: false, penjelasan: "Piket adalah kerja sama regu, tidak boleh dibebankan pada satu orang." },
+            { id: "A", teks: "Pulang diam-diam agar tidak ikut menyapu.", benar: false, penjelasan: "Meninggalkan piket merugikan teman." },
+            { id: "B", teks: "Membagi tugas menyapu dan merapikan kelas bersama kawan.", benar: true, penjelasan: "Hebat! Gotong royong membuat kelas cepat bersih." },
+            { id: "C", teks: "Menyuruh satu kawan membersihkan kelas sendiri.", benar: false, penjelasan: "Piket adalah tanggung jawab bersama." },
           ],
         },
         {
@@ -353,11 +366,11 @@ export default function AdaptiveEduGameModal({
           zPos: -105,
           xPos: -14,
           warnaKhas: "#fb923c",
-          pertanyaan: "Teman sebangkumu lupa membawa alat mewarnai saat pelajaran seni. Apa tindakan gotong royongmu?",
+          pertanyaan: "Teman sebangku lupa membawa alat mewarnai. Sikap gotong royongmu:",
           opsi: [
-            { id: "A", teks: "Berbagi krayon dan meminjamkannya dengan ikhlas.", benar: true, penjelasan: "Sangat terpuji! Saling membantu meringankan beban kawan tanpa pamrih." },
-            { id: "B", teks: "Menyembunyikan krayon agar kawan ditegur oleh guru.", benar: false, penjelasan: "Sikap egois merusak rasa persahabatan di kelas." },
-            { id: "C", teks: "Menyewakan krayon dengan memungut uang saku kawan.", benar: false, penjelasan: "Menolong sesama teman harus tulus dan tanpa motif komersial." },
+            { id: "A", teks: "Berbagi dan meminjamkan krayon dengan ikhlas.", benar: true, penjelasan: "Terpuji! Saling membantu meringankan beban kawan." },
+            { id: "B", teks: "Menyembunyikan krayon agar teman ditegur guru.", benar: false, penjelasan: "Sikap egois merusak persahabatan." },
+            { id: "C", teks: "Menyewakan krayon dengan meminta uang jajan.", benar: false, penjelasan: "Membantu teman harus tulus tanpa pamrih." },
           ],
         },
         {
@@ -371,11 +384,11 @@ export default function AdaptiveEduGameModal({
           zPos: -165,
           xPos: 14,
           warnaKhas: "#4ade80",
-          pertanyaan: "Apa arti dari semboyan luhur 'Berat sama dipikul, ringan sama dijinjing'?",
+          pertanyaan: "Arti semboyan 'Berat sama dipikul, ringan sama dijinjing':",
           opsi: [
-            { id: "A", teks: "Pekerjaan berat hanya dikerjakan oleh orang tua saja.", benar: false, penjelasan: "Bukan itu maknanya; semboyan ini mengajarkan kebersamaan di segala keadaan." },
-            { id: "B", teks: "Hanya bersedia bekerja sama jika dijanjikan hadiah uang.", benar: false, penjelasan: "Gotong royong didasari keikhlasan hati, bukan pamrih imbalan." },
-            { id: "C", teks: "Suka dan duka dihadapi bersama, pekerjaan berat menjadi ringan jika dilakukan bersama-sama.", benar: true, penjelasan: "Tepat sekali! Semboyan ini adalah intisari dari kekuatan gotong royong bangsa kita." },
+            { id: "A", teks: "Pekerjaan hanya untuk orang tua saja.", benar: false, penjelasan: "Keliru; pepatah ini mengajarkan kebersamaan." },
+            { id: "B", teks: "Mau bekerja sama hanya jika diberi hadiah.", benar: false, penjelasan: "Kerja sama harus ikhlas tanpa pamrih." },
+            { id: "C", teks: "Pekerjaan terasa ringan jika dikerjakan bersama-sama.", benar: true, penjelasan: "Tepat! Bersama kita kuat dan kompak." },
           ],
         },
         {
