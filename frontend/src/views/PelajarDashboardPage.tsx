@@ -260,6 +260,7 @@ export default function PelajarDashboardPage() {
       noAbsen?: string;
       points?: number;
       gamePoints?: number;
+      quizScore?: number;
       weakness?: {
         chapterId: string;
         chapterName: string;
@@ -290,23 +291,22 @@ export default function PelajarDashboardPage() {
       .catch(() => {});
   };
 
-  const loadProfile = () => {
-    fetch("/api/profile")
+  const loadProfile = (targetChapter = chapter) => {
+    fetch(`/api/profile?chapter=${encodeURIComponent(targetChapter)}`)
       .then((r) => r.json())
       .then((res) => {
         if (res?.name) {
           setCurrentStudent(res);
           setCurrentStudentName(res.name);
-          if (typeof res.points === "number") {
-            setTotalPoints(res.points);
-          }
+          const studentScore = res.gamePoints ?? res.points ?? 0;
+          setTotalPoints(studentScore);
         }
       })
       .catch(() => {});
   };
 
-  const loadStudents = () => {
-    fetch("/api/students")
+  const loadStudents = (targetChapter = chapter) => {
+    fetch(`/api/students?chapter=${encodeURIComponent(targetChapter)}`)
       .then((r) => r.json())
       .then((students) => {
         if (Array.isArray(students) && students.length > 0) {
@@ -314,7 +314,7 @@ export default function PelajarDashboardPage() {
           const mapped = students.map((s) => ({
             id: s.id,
             name: s.name,
-            points: s.points ?? 0,
+            points: s.gamePoints ?? s.points ?? 0,
             isUser: false,
           }));
           setClassmates(mapped);
@@ -324,18 +324,19 @@ export default function PelajarDashboardPage() {
   };
 
   useEffect(() => {
-    loadProfile();
+    loadProfile(chapter);
+    loadStudents(chapter);
     checkResetStatus();
     const interval = setInterval(() => {
       checkResetStatus();
-      loadStudents();
+      loadStudents(chapter);
     }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [chapter]);
 
   useEffect(() => {
-    loadStudents();
-  }, [currentStudent?.id]);
+    loadStudents(chapter);
+  }, [currentStudent?.id, chapter]);
 
   const handleSwitchStudent = async (studentId: string) => {
     playClickSound();
@@ -346,11 +347,8 @@ export default function PelajarDashboardPage() {
         body: JSON.stringify({ userId: studentId }),
       });
       if (res.ok) {
-        const data = await res.json();
-        if (data.user) {
-          setCurrentStudent(data.user);
-          setCurrentStudentName(data.user.name);
-        }
+        loadProfile(chapter);
+        loadStudents(chapter);
       }
     } catch (err) {
       console.error("Gagal mengganti akun:", err);
@@ -709,7 +707,7 @@ export default function PelajarDashboardPage() {
                   >
                     {registeredStudents.map((s) => (
                       <option key={s.id} value={s.id} className="text-slate-900 bg-white">
-                        {s.name} ({s.weakness?.status === "remedial" ? "⚠️ Remedial" : "✨ Tuntas"})
+                        {s.name} (🎮 {s.gamePoints ?? s.points ?? 0} Poin | 📝 Kuis: {s.quizScore ?? (s.weakness ? s.weakness.score * 10 : 80)}{s.weakness?.status === "remedial" ? " - ⚠️ Remedial" : ""})
                       </option>
                     ))}
                   </select>
@@ -734,7 +732,7 @@ export default function PelajarDashboardPage() {
                 <span>🎮</span>
                 <span>Skor Game</span>
               </span>
-              <PointsBadge />
+              <PointsBadge value={currentStudent?.gamePoints ?? currentStudent?.points ?? totalPoints} />
             </div>
 
             {/* Pemisah Vertikal Halus */}

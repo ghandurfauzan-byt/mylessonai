@@ -7,3 +7,11 @@ dist-server
 .DS_Store
 .next
 *.tsbuildinfo
+*.tmp
+~$*
+cookies_test.txt
+extracted_skpl.txt
+test_here.js
+.github
+
+

@@ -347,6 +347,44 @@ function getChapterDiagnostic(chapterName: string, percent: number): ChapterDiag
     };
   }
 
+  if (lower.includes("kewan")) {
+    return {
+      chapterTitle: "Bab 5 · Arane Anak Kewan ing Lingkungan",
+      subject: "Muatan Lokal Bahasa Jawa",
+      statusClass: "Tuntas Baik (Rata-rata Kelas 85%)",
+      weakPoints: [
+        {
+          title: "Mbedakake Jeneng Anak Kewan Unggas & Mamalia",
+          desc: "Siswa kleru antarane meri (anak bebek) lan menthil (anak merpati), sarta bledug (anak gajah).",
+          percentageMissed: "28% Siswa Keliru",
+        },
+      ],
+      weakStudents: [],
+      masteredStudentsCount: 28,
+      recommendation:
+        "Gunakan kartu tebak gambar anak kewan interaktif dalam sesi bermain berpasangan.",
+    };
+  }
+
+  if (lower.includes("geguritan")) {
+    return {
+      chapterTitle: "Bab 6 · Pasinaon Geguritan Gagrag Anyar",
+      subject: "Muatan Lokal Bahasa Jawa",
+      statusClass: "Tuntas (Rata-rata Kelas 78%)",
+      weakPoints: [
+        {
+          title: "Purwakanthi Swara & Purwakanthi Sastra",
+          desc: "Siswa durung cetha niteni runtuting swara vokal ing saben pungkasane gatra geguritan.",
+          percentageMissed: "38% Siswa Keliru",
+        },
+      ],
+      weakStudents: [],
+      masteredStudentsCount: 26,
+      recommendation:
+        "Ajak siswa membaca geguritan kanthi lagu lan wirama endah kanthi bimbingan guru.",
+    };
+  }
+
   // Fallback untuk modul baru
   return {
     chapterTitle: chapterName,
@@ -359,20 +397,63 @@ function getChapterDiagnostic(chapterName: string, percent: number): ChapterDiag
         percentageMissed: `${Math.max(15, 100 - percent)}% Siswa Keliru`,
       },
     ],
-    weakStudents: [
-      {
-        id: "s1",
-        name: "Budi Santoso",
-        score: Math.max(35, percent - 25),
-        outOf: `${Math.round((Math.max(35, percent - 25) / 100) * 10)}/10 Soal`,
-        note: "Perlu bimbingan intensif dan penjelasan tambahan dari guru.",
-        status: "Perlu Bimbingan",
-      },
-    ],
+    weakStudents: [],
     masteredStudentsCount: 26,
     recommendation:
       "Lakukan penguatan materi dengan kuis adaptif interaktif level 1 di kelas.",
   };
+}
+
+function getChapterCanonicalId(name?: string): string {
+  if (!name) return "pkn-sila3";
+  const lower = name.toLowerCase();
+  if (lower.includes("gotong")) return "pkn-gotongroyong";
+  if (lower.includes("norma") || lower.includes("aturan") || lower.includes("musyawarah")) return "pkn-norma";
+  if (lower.includes("bhinneka") || lower.includes("ragam")) return "pkn-bhinneka";
+  if (lower.includes("unggah")) return "bjawa-unggahungguh";
+  if (lower.includes("punokawan") || lower.includes("wayang")) return "bjawa-punokawan";
+  if (lower.includes("pandhawa") || lower.includes("tembang")) return "bjawa-pandhawa";
+  if (lower.includes("aksara")) return "bjawa-aksara";
+  if (lower.includes("kewan")) return "bjawa-kewan";
+  if (lower.includes("geguritan")) return "bjawa-geguritan";
+  if (lower.includes("sila") || lower.includes("beringin") || lower.includes("lambang")) return "pkn-sila3";
+  return "pkn-sila3";
+}
+
+function getStudentChapterWeakness(chapterId: string, student: any): string {
+  const quizScore = student.quizScore ?? 0;
+  const points = student.points ?? 0;
+
+  if (quizScore >= 70) {
+    return "Telah tuntas mencapai KKTP (Kriteria Ketercapaian Tujuan Pembelajaran) pada materi ini dengan pemahaman sangat baik.";
+  }
+  if (quizScore === 0 && points === 0) {
+    return "Siswa belum mengerjakan kuis tantangan mandiri maupun petualangan game edukasi pada materi ini.";
+  }
+  switch (chapterId) {
+    case "pkn-sila3":
+      return "Tertukar antara makna sulur pohon beringin (keberagaman suku nusantara) dengan akar tunggang (dasar persatuan).";
+    case "pkn-gotongroyong":
+      return "Kurang tepat menganalisis contoh kerja sama tanpa pamrih pada kasus piket bersama dan musyawarah sekolah.";
+    case "pkn-norma":
+      return "Keliru membedakan konsekuensi sanksi tertulis norma hukum dibanding sanksi sosial norma kesopanan.";
+    case "pkn-bhinneka":
+      return "Kesulitan mengidentifikasi keragaman rumah adat, senjata tradisional, dan baju daerah antarpulau.";
+    case "bjawa-unggahungguh":
+      return "Kleru nggunakake tembung Krama Alus marang awake dhewe nalika matur marang Bapak/Ibu Guru (dhahar vs nedha).";
+    case "bjawa-punokawan":
+      return "Kurang lancar niteni watak blaka suta (jujur apa anane) paraga Bagong lan silsilah Punokawan.";
+    case "bjawa-pandhawa":
+      return "Tertukar kasatriyan Madukara (Janaka) lan Jodhipati (Werkudara) sarta gaman panah Pasopati.";
+    case "bjawa-aksara":
+      return "Kleru manggonake sandhangan swara taling ing sangarepe aksara legena nalika nulis tembung.";
+    case "bjawa-kewan":
+      return "Tertukar jeneng anak kewan meri (anak bebek) lan menthil (anak merpati).";
+    case "bjawa-geguritan":
+      return "Kurang cetha mbedakake purwakanthi swara lan purwakanthi basa utawa sastra.";
+    default:
+      return "Memerlukan bimbingan intensif dan penjelasan ringkasan materi ramah anak dari guru.";
+  }
 }
 
 export default function ChapterProgressList({
@@ -395,6 +476,28 @@ export default function ChapterProgressList({
     percent?: number;
     tone?: string;
   } | null>(null);
+
+  const [diagnosticChapterId, setDiagnosticChapterId] = useState<string>("pkn-sila3");
+  const [studentRemedialFilter, setStudentRemedialFilter] = useState<"all" | "remedial" | "tuntas">("all");
+  const [chapterStudents, setChapterStudents] = useState<any[]>([]);
+  const [isLoadingStudents, setIsLoadingStudents] = useState<boolean>(false);
+  const [sentRemedialStudents, setSentRemedialStudents] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (!selectedDiagnosticChapter || isStudent) return;
+    setIsLoadingStudents(true);
+    fetch(`/api/students?chapter=${encodeURIComponent(diagnosticChapterId)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setChapterStudents(data);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        setIsLoadingStudents(false);
+      });
+  }, [diagnosticChapterId, selectedDiagnosticChapter, isStudent]);
 
   // State daftar materi/bab yang dihapus (tersimpan di localStorage)
   const [deletedChapterIds, setDeletedChapterIds] = useState<string[]>(() => {
@@ -646,9 +749,33 @@ export default function ChapterProgressList({
     }
   }
 
+  async function handleSendRemedialTask(student: any, chapterTitle: string) {
+    playCorrectSound();
+    setSentRemedialStudents((prev) => ({ ...prev, [student.id]: true }));
+
+    setPengayaanSuccessToast(
+      `Tugas Bimbingan Remedial pada materi "${chapterTitle}" berhasil dikirim untuk ${student.name}! 🚀`
+    );
+
+    setTimeout(() => {
+      setPengayaanSuccessToast(null);
+    }, 4500);
+
+    try {
+      await createNotification({
+        title: `Tugas Remedial dari Guru 🚀`,
+        message: `Bpk/Ibu Guru telah mengirimkan modul bimbingan & latihan remedial khusus untukmu pada materi "${chapterTitle}". Yuk kerjakan agar nilaimu tuntas!`,
+        type: "warning",
+        link: `/dashboard/pelajar?chapter=${encodeURIComponent(diagnosticChapterId)}&mode=cerita`,
+        targetRole: "pelajar",
+      });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    } catch {}
+  }
+
   async function handleRecommendPengayaan(
-    student: WeakStudent,
-    diag: ChapterDiagnosticData
+    student: any,
+    diag?: any
   ) {
     playCoinSound();
     playCorrectSound();
@@ -659,13 +786,15 @@ export default function ChapterProgressList({
     if (typeof window !== "undefined") {
       try {
         localStorage.setItem("recommended_pengayaan_students", JSON.stringify(updated));
+        const resolvedTitle = typeof diag === "string" ? diag : (diag?.chapterTitle || "Materi Kurikulum");
+        const resolvedSubject = diag?.subject || "Pelajaran";
         localStorage.setItem(
           "active_student_pengayaan_recommendation",
           JSON.stringify({
             studentId: student.id,
             studentName: student.name,
-            chapterTitle: diag.chapterTitle,
-            subject: diag.subject,
+            chapterTitle: resolvedTitle,
+            subject: resolvedSubject,
             recommendedAt: new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
           })
         );
@@ -673,8 +802,9 @@ export default function ChapterProgressList({
       } catch {}
     }
 
+    const resolvedTitle = typeof diag === "string" ? diag : (diag?.chapterTitle || "Materi Kurikulum");
     setPengayaanSuccessToast(
-      `Modul pengayaan materi "${diag.chapterTitle}" berhasil disarankan untuk ${student.name}! 🚀`
+      `Modul pengayaan materi "${resolvedTitle}" berhasil disarankan untuk ${student.name}! ⭐`
     );
 
     setTimeout(() => {
@@ -683,8 +813,8 @@ export default function ChapterProgressList({
 
     try {
       await createNotification({
-        title: `Rekomendasi Modul Pengayaan dari Guru 🚀`,
-        message: `Bapak/Ibu Guru telah menyiapkan materi pengayaan & latihan khusus untukmu pada materi "${diag.chapterTitle}". Yuk pelajari agar pemahamanmu semakin hebat!`,
+        title: `Rekomendasi Modul Pengayaan dari Guru ⭐`,
+        message: `Bapak/Ibu Guru telah menyiapkan materi pengayaan & tantangan juara khusus untukmu pada materi "${resolvedTitle}". Yuk pelajari agar pemahamanmu semakin hebat!`,
         type: "success",
         link: "/dashboard/pelajar",
         targetRole: "pelajar",
@@ -751,8 +881,8 @@ export default function ChapterProgressList({
     }, 80);
   }
 
-  const diagnosticData = selectedDiagnosticChapter?.name
-    ? getChapterDiagnostic(selectedDiagnosticChapter.name, selectedDiagnosticChapter.percent ?? 0)
+  const diagnosticData = selectedDiagnosticChapter
+    ? getChapterDiagnostic(diagnosticChapterId, selectedDiagnosticChapter.percent ?? 75)
     : null;
 
   return (
@@ -862,6 +992,8 @@ export default function ChapterProgressList({
                     handleChapterClick(chapter.name);
                   } else {
                     playClickSound();
+                    const cid = getChapterCanonicalId(chapter.name);
+                    setDiagnosticChapterId(cid);
                     setSelectedDiagnosticChapter(chapter);
                   }
                 }}
@@ -950,213 +1082,396 @@ export default function ChapterProgressList({
       </div>
       )}
 
-      {/* 4. MODAL DIAGNOSTIK ANALISIS SISWA LEMAH (KHUSUS GURU) */}
-      {selectedDiagnosticChapter && !isStudent && diagnosticData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border-4 border-sky-300 dark:border-sky-800 shadow-2xl p-6 sm:p-7 space-y-5 relative">
-            {/* Dekorasi Cahaya */}
-            <div className="absolute -top-12 -right-12 w-36 h-36 bg-sky-200/40 dark:bg-sky-500/10 rounded-full blur-2xl pointer-events-none" />
+      {/* 4. MODAL DIAGNOSTIK ANALISIS SISWA LEMAH & REMEDIAL PER-MATERI (KHUSUS GURU) */}
+      {selectedDiagnosticChapter && !isStudent && diagnosticData && (() => {
+        const remedialStudents = chapterStudents.filter((s) => (s.quizScore ?? 0) < 70 && (s.quizScore ?? 0) > 0);
+        const notAttemptedStudents = chapterStudents.filter((s) => (s.quizScore ?? 0) === 0 && (s.points ?? 0) === 0);
+        const needHelpStudents = chapterStudents.filter((s) => (s.quizScore ?? 0) < 70);
+        const tuntasStudents = chapterStudents.filter((s) => (s.quizScore ?? 0) >= 70);
 
-            {/* Header Modal Diagnostik */}
-            <div className="flex items-start justify-between gap-4 border-b pb-4 border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-500 to-blue-600 text-white font-black text-2xl flex items-center justify-center shadow-md">
-                  📊
-                </div>
-                <div>
-                  <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
-                    {diagnosticData.chapterTitle}
-                  </h3>
-                  <div className="flex flex-wrap items-center gap-2 mt-1">
-                    <span className="text-xs font-bold text-sky-700 dark:text-sky-300">
-                      {diagnosticData.subject}
-                    </span>
-                    <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                      {diagnosticData.statusClass}
-                    </span>
+        const displayedStudents = chapterStudents.filter((s) => {
+          if (studentRemedialFilter === "remedial") return (s.quizScore ?? 0) < 70;
+          if (studentRemedialFilter === "tuntas") return (s.quizScore ?? 0) >= 70;
+          return true;
+        });
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-slate-900 w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-3xl border-4 border-sky-300 dark:border-sky-800 shadow-2xl p-5 sm:p-7 space-y-5 relative">
+              {/* Dekorasi Cahaya */}
+              <div className="absolute -top-12 -right-12 w-36 h-36 bg-sky-200/40 dark:bg-sky-500/10 rounded-full blur-2xl pointer-events-none" />
+
+              {/* Header Modal Diagnostik */}
+              <div className="flex items-start justify-between gap-4 border-b pb-4 border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-500 to-blue-600 text-white font-black text-2xl flex items-center justify-center shadow-md">
+                    📊
                   </div>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  playClickSound();
-                  setSelectedDiagnosticChapter(null);
-                }}
-                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-black text-base flex items-center justify-center transition cursor-pointer"
-                title="Tutup Analisis"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Bagian 1: Di Mana Siswa Lemah (Sub-Indikator Materi) */}
-            <div className="space-y-2.5">
-              <div className="flex items-center gap-2">
-                <span className="text-base">⚠️</span>
-                <h4 className="text-xs sm:text-sm font-black text-rose-900 dark:text-rose-300 uppercase tracking-wider">
-                  Titik Kelemahan Materi Siswa di Bab Ini
-                </h4>
-              </div>
-              <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
-                Berdasarkan evaluasi kuis dan tugas mandiri, berikut adalah indikator pembelajaran yang paling banyak keliru dikerjakan oleh siswa:
-              </p>
-
-              <div className="space-y-2">
-                {diagnosticData.weakPoints.map((point) => (
-                  <div
-                    key={point.title}
-                    className="p-3 bg-rose-50/70 dark:bg-rose-950/30 rounded-2xl border border-rose-200 dark:border-rose-900/50 space-y-1"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-black text-rose-950 dark:text-rose-200">
-                        • {point.title}
-                      </span>
-                      <span className="text-[10px] font-black bg-rose-200 dark:bg-rose-900 text-rose-900 dark:text-rose-200 px-2 py-0.5 rounded-full shrink-0">
-                        {point.percentageMissed}
-                      </span>
-                    </div>
-                    <p className="text-xs text-rose-800/90 dark:text-rose-300 font-semibold leading-relaxed pl-3">
-                      {point.desc}
+                  <div>
+                    <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+                      Cek Evaluasi &amp; Remedial Siswa Per-Materi
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Analisis capaian nilai kuis &amp; status KKTP per-siswa untuk bab kurikulum terpilih
                     </p>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Bagian 2: Daftar Siswa yang Lemah & Butuh Bimbingan */}
-            <div className="space-y-2.5 pt-1">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-base">👥</span>
-                  <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                    Siswa yang Perlu Bimbingan / Remedial
-                  </h4>
                 </div>
-                <span className="text-[11px] font-black text-amber-900 dark:text-amber-200 bg-amber-100 dark:bg-amber-950 px-2.5 py-0.5 rounded-full border border-amber-300 dark:border-amber-800">
-                  {diagnosticData.weakStudents.length} Siswa Perlu Perhatian
-                </span>
-              </div>
 
-              {pengayaanSuccessToast && (
-                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/80 border-2 border-emerald-400 text-emerald-900 dark:text-emerald-200 rounded-2xl text-xs font-bold flex items-center gap-2 animate-in fade-in shadow-xs">
-                  <span className="text-base">🎉</span>
-                  <span>{pengayaanSuccessToast}</span>
-                </div>
-              )}
-
-              <div className="space-y-2">
-                {diagnosticData.weakStudents.map((student) => {
-                  const initials = student.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .slice(0, 2)
-                    .join("");
-                  const isRec = !!recommendedPengayaan[student.id];
-
-                  return (
-                    <div
-                      key={student.id}
-                      className="p-3.5 rounded-2xl border border-amber-300 dark:border-amber-800 bg-amber-50/60 dark:bg-amber-950/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs hover:shadow-sm transition-all"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-amber-950 font-black text-xs flex items-center justify-center shrink-0 shadow-xs border-2 border-white dark:border-amber-800">
-                          {initials}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">
-                              {student.name}
-                            </span>
-                            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border border-rose-300">
-                              {student.status}
-                            </span>
-                          </div>
-                          <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400 mt-0.5">
-                            Kelemahan: <span className="text-amber-900 dark:text-amber-200">{student.note}</span>
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 shrink-0">
-                        <div className="text-right">
-                          <span className="text-xs font-black text-rose-600 dark:text-rose-400">
-                            Skor: {student.outOf}
-                          </span>
-                          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 ml-1">
-                            ({student.score}%)
-                          </span>
-                        </div>
-
-                        {/* TOMBOL SARANKAN PEMBELAJARAN PENGAYAAN */}
-                        <button
-                          type="button"
-                          onClick={() => handleRecommendPengayaan(student, diagnosticData)}
-                          className={`text-[11px] font-black px-3.5 py-1.5 rounded-xl transition shadow-xs inline-flex items-center gap-1.5 cursor-pointer active:scale-95 ${
-                            isRec
-                              ? "bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-500 shadow-xs"
-                              : "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-sm hover:shadow"
-                          }`}
-                          title={`Sarankan pembelajaran modul pengayaan untuk ${student.name}`}
-                        >
-                          <span>{isRec ? "✅" : "🚀"}</span>
-                          <span>{isRec ? "Pengayaan Disarankan" : "Sarankan Pengayaan"}</span>
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
-                <span>✅</span>
-                <span>
-                  {diagnosticData.masteredStudentsCount} Siswa lainnya di kelas telah mencapai nilai di atas kriteria ketuntasan (KKTP).
-                </span>
-              </div>
-            </div>
-
-            {/* Bagian 3: Rekomendasi Tindak Lanjut Guru */}
-            <div className="p-4 bg-sky-50 dark:bg-sky-950/40 rounded-2xl border-2 border-sky-200 dark:border-sky-800 space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="text-base">💡</span>
-                <h4 className="text-xs sm:text-sm font-black text-sky-950 dark:text-sky-200">
-                  Rekomendasi Tindak Lanjut Bpk/Ibu Guru:
-                </h4>
-              </div>
-              <p className="text-xs text-sky-900 dark:text-sky-300 font-semibold leading-relaxed">
-                {diagnosticData.recommendation}
-              </p>
-
-              <div className="pt-1 flex flex-wrap items-center justify-between gap-2">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    handleDeleteChapter(selectedDiagnosticChapter, e);
-                    setSelectedDiagnosticChapter(null);
-                  }}
-                  className="inline-flex items-center gap-1.5 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white dark:bg-rose-950/70 dark:text-rose-300 border border-rose-300 dark:border-rose-800 font-extrabold text-xs py-2.5 px-4 rounded-xl transition cursor-pointer shadow-xs active:scale-95"
-                  title="Hapus materi ini jika sudah tidak terpakai"
-                >
-                  <span>🗑️</span>
-                  <span>Hapus Materi Ini</span>
-                </button>
                 <button
                   type="button"
                   onClick={() => {
                     playClickSound();
                     setSelectedDiagnosticChapter(null);
                   }}
-                  className="w-full sm:w-auto bg-white dark:bg-slate-800 hover:bg-slate-100 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 font-extrabold text-xs py-2.5 px-5 rounded-xl transition cursor-pointer shadow-xs"
+                  className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-black text-base flex items-center justify-center transition cursor-pointer"
+                  title="Tutup Analisis"
                 >
-                  Tutup Analisis
+                  ✕
                 </button>
+              </div>
+
+              {/* Pilihan Materi Pembelajaran */}
+              <div className="p-3.5 rounded-2xl bg-sky-50/80 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 space-y-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <label className="text-xs font-black text-sky-950 dark:text-sky-200 flex items-center gap-1.5">
+                    <span>📖</span>
+                    <span>Pilih Bab Materi yang Ingin Dicek:</span>
+                  </label>
+                  <select
+                    value={diagnosticChapterId}
+                    onChange={(e) => {
+                      playClickSound();
+                      setDiagnosticChapterId(e.target.value);
+                    }}
+                    className="p-2 rounded-xl border border-sky-300 dark:border-sky-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-bold text-xs outline-none focus:ring-2 focus:ring-sky-400 cursor-pointer shadow-2xs"
+                  >
+                    <optgroup label="🇮🇩 Pendidikan Pancasila (PKn)">
+                      <option value="pkn-sila3">PKn: Bab 1 - Makna Sila Ke-3</option>
+                      <option value="pkn-gotongroyong">PKn: Bab 2 - Gotong Royong</option>
+                      <option value="pkn-norma">PKn: Bab 3 - Norma &amp; Aturan Sekolah</option>
+                      <option value="pkn-bhinneka">PKn: Bab 4 - Bhinneka Tunggal Ika</option>
+                    </optgroup>
+                    <optgroup label="🦚 Muatan Lokal Bahasa Jawa">
+                      <option value="bjawa-unggahungguh">B. Jawa: Bab 1 - Unggah-ungguh Basa</option>
+                      <option value="bjawa-punokawan">B. Jawa: Bab 2 - Tokoh Wayang Punokawan</option>
+                      <option value="bjawa-pandhawa">B. Jawa: Bab 3 - Pandhawa Lima</option>
+                      <option value="bjawa-aksara">B. Jawa: Bab 4 - Aksara Jawa</option>
+                      <option value="bjawa-kewan">B. Jawa: Bab 5 - Arane Anak Kewan</option>
+                      <option value="bjawa-geguritan">B. Jawa: Bab 6 - Pasinaon Geguritan</option>
+                    </optgroup>
+                  </select>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold text-sky-800 dark:text-sky-300">
+                  <span className="px-2.5 py-1 rounded-full bg-white dark:bg-slate-800 border border-sky-200 dark:border-sky-700 text-xs font-black text-slate-800 dark:text-white">
+                    {diagnosticData.chapterTitle}
+                  </span>
+                  <span className="px-2.5 py-1 rounded-full bg-sky-200/80 dark:bg-sky-900/60 text-sky-950 dark:text-sky-200 text-[11px] font-black">
+                    {diagnosticData.statusClass}
+                  </span>
+                </div>
+              </div>
+
+              {/* Bagian 1: Di Mana Siswa Lemah (Sub-Indikator Materi) */}
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">⚠️</span>
+                  <h4 className="text-xs sm:text-sm font-black text-rose-900 dark:text-rose-300 uppercase tracking-wider">
+                    Titik Kelemahan Materi di Bab Ini
+                  </h4>
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                  Berdasarkan evaluasi kuis dan tugas mandiri, berikut indikator pembelajaran yang paling banyak keliru dikerjakan oleh siswa:
+                </p>
+
+                <div className="space-y-2">
+                  {diagnosticData.weakPoints.map((point) => (
+                    <div
+                      key={point.title}
+                      className="p-3 bg-rose-50/70 dark:bg-rose-950/30 rounded-2xl border border-rose-200 dark:border-rose-900/50 space-y-1"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-black text-rose-950 dark:text-rose-200">
+                          • {point.title}
+                        </span>
+                        <span className="text-[10px] font-black bg-rose-200 dark:bg-rose-900 text-rose-900 dark:text-rose-200 px-2 py-0.5 rounded-full shrink-0">
+                          {point.percentageMissed}
+                        </span>
+                      </div>
+                      <p className="text-xs text-rose-800/90 dark:text-rose-300 font-semibold leading-relaxed pl-3">
+                        {point.desc}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Bagian 2: Daftar Siswa & Evaluasi Per-Siswa Pada Materi Ini */}
+              <div className="space-y-3 pt-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">👥</span>
+                    <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                      Evaluasi Nilai &amp; Status Remedial Per-Siswa
+                    </h4>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-black text-rose-800 dark:text-rose-300 bg-rose-100 dark:bg-rose-950/80 px-2.5 py-0.5 rounded-full border border-rose-300 dark:border-rose-800">
+                      {needHelpStudents.length} Perlu Remedial
+                    </span>
+                    <span className="text-[11px] font-black text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800">
+                      {tuntasStudents.length} Tuntas KKTP
+                    </span>
+                  </div>
+                </div>
+
+                {/* Filter Tab Siswa */}
+                <div className="flex items-center gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-bold">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playClickSound();
+                      setStudentRemedialFilter("all");
+                    }}
+                    className={`flex-1 py-1.5 px-3 rounded-lg transition text-center cursor-pointer ${
+                      studentRemedialFilter === "all"
+                        ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-black"
+                        : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                    }`}
+                  >
+                    Semua Siswa ({chapterStudents.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playClickSound();
+                      setStudentRemedialFilter("remedial");
+                    }}
+                    className={`flex-1 py-1.5 px-3 rounded-lg transition text-center cursor-pointer ${
+                      studentRemedialFilter === "remedial"
+                        ? "bg-rose-500 text-white shadow-xs font-black"
+                        : "text-rose-600 dark:text-rose-400 hover:text-rose-800"
+                    }`}
+                  >
+                    ⚠️ Butuh Remedial ({needHelpStudents.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playClickSound();
+                      setStudentRemedialFilter("tuntas");
+                    }}
+                    className={`flex-1 py-1.5 px-3 rounded-lg transition text-center cursor-pointer ${
+                      studentRemedialFilter === "tuntas"
+                        ? "bg-emerald-600 text-white shadow-xs font-black"
+                        : "text-emerald-600 dark:text-emerald-400 hover:text-emerald-800"
+                    }`}
+                  >
+                    ✨ Tuntas KKTP ({tuntasStudents.length})
+                  </button>
+                </div>
+
+                {pengayaanSuccessToast && (
+                  <div className="p-3 bg-emerald-50 dark:bg-emerald-950/80 border-2 border-emerald-400 text-emerald-900 dark:text-emerald-200 rounded-2xl text-xs font-bold flex items-center gap-2 animate-in fade-in shadow-xs">
+                    <span className="text-base">🎉</span>
+                    <span>{pengayaanSuccessToast}</span>
+                  </div>
+                )}
+
+                {isLoadingStudents ? (
+                  <div className="p-8 text-center text-xs font-bold text-slate-400 animate-pulse">
+                    Memuat data evaluasi siswa untuk bab ini...
+                  </div>
+                ) : displayedStudents.length === 0 ? (
+                  <div className="p-6 text-center text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
+                    Tidak ada siswa dalam kategori ini untuk materi terpilih.
+                  </div>
+                ) : (
+                  <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
+                    {displayedStudents.map((student) => {
+                      const quizScore = student.quizScore ?? 0;
+                      const points = student.points ?? 0;
+                      const isTuntas = quizScore >= 70;
+                      const isNotAttempted = quizScore === 0 && points === 0;
+                      const isRemedialSent = !!sentRemedialStudents[student.id];
+                      const isPengayaanSent = !!recommendedPengayaan[student.id];
+                      const weaknessNote = getStudentChapterWeakness(diagnosticChapterId, student);
+                      const initials = (student.name || "Siswa")
+                        .split(" ")
+                        .map((n: string) => n[0])
+                        .slice(0, 2)
+                        .join("");
+
+                      return (
+                        <div
+                          key={student.id}
+                          className={`p-3.5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs hover:shadow-sm transition-all ${
+                            isTuntas
+                              ? "border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/50 dark:bg-emerald-950/20"
+                              : isNotAttempted
+                              ? "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40"
+                              : "border-rose-300 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/25"
+                          }`}
+                        >
+                          <div className="flex items-start gap-3 min-w-0">
+                            <div
+                              className={`w-10 h-10 rounded-full font-black text-xs flex items-center justify-center shrink-0 shadow-xs border-2 ${
+                                isTuntas
+                                  ? "bg-gradient-to-br from-emerald-400 to-teal-500 text-emerald-950 border-white dark:border-emerald-800"
+                                  : isNotAttempted
+                                  ? "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 border-white dark:border-slate-600"
+                                  : "bg-gradient-to-br from-rose-400 to-amber-500 text-rose-950 border-white dark:border-rose-800"
+                              }`}
+                            >
+                              {initials}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">
+                                  {student.name}
+                                </span>
+                                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                                  {student.kelas || "Kelas 4"} · Absen {student.noAbsen || "01"}
+                                </span>
+                                <span
+                                  className={`text-[10px] font-black px-2 py-0.5 rounded-md border ${
+                                    isTuntas
+                                      ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border-emerald-300"
+                                      : isNotAttempted
+                                      ? "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-300"
+                                      : "bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border-rose-300"
+                                  }`}
+                                >
+                                  {isTuntas
+                                    ? "✨ Tuntas KKTP"
+                                    : isNotAttempted
+                                    ? "⏳ Belum Evaluasi"
+                                    : "⚠️ Butuh Remedial"}
+                                </span>
+                              </div>
+                              <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400 mt-1 leading-snug">
+                                Catatan Evaluasi:{" "}
+                                <span
+                                  className={
+                                    isTuntas
+                                      ? "text-emerald-900 dark:text-emerald-200"
+                                      : isNotAttempted
+                                      ? "text-slate-500 dark:text-slate-400"
+                                      : "text-rose-900 dark:text-rose-200"
+                                  }
+                                >
+                                  {weaknessNote}
+                                </span>
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200/60 dark:border-slate-800">
+                            <div className="text-left sm:text-right">
+                              <span
+                                className={`text-xs font-black ${
+                                  isTuntas
+                                    ? "text-emerald-600 dark:text-emerald-400"
+                                    : isNotAttempted
+                                    ? "text-slate-500"
+                                    : "text-rose-600 dark:text-rose-400"
+                                }`}
+                              >
+                                Nilai Kuis: {quizScore}/100
+                              </span>
+                              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block">
+                                Poin Materi: {points} Poin
+                              </span>
+                            </div>
+
+                            {/* Tombol Aksi Guru Sesuai Status Siswa */}
+                            {!isTuntas ? (
+                              <button
+                                type="button"
+                                onClick={() => handleSendRemedialTask(student, diagnosticData.chapterTitle)}
+                                disabled={isRemedialSent}
+                                className={`text-[11px] font-black px-3.5 py-1.5 rounded-xl transition shadow-xs inline-flex items-center gap-1.5 cursor-pointer active:scale-95 ${
+                                  isRemedialSent
+                                    ? "bg-slate-200 dark:bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-300 dark:border-slate-700"
+                                    : "bg-gradient-to-r from-rose-500 to-amber-600 hover:from-rose-600 hover:to-amber-700 text-white shadow-xs"
+                                }`}
+                                title={`Kirim modul bimbingan remedial untuk ${student.name}`}
+                              >
+                                <span>{isRemedialSent ? "✅" : "🚀"}</span>
+                                <span>{isRemedialSent ? "Tugas Terkirim" : "Kirim Remedial"}</span>
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleRecommendPengayaan(student, diagnosticData)}
+                                disabled={isPengayaanSent}
+                                className={`text-[11px] font-black px-3.5 py-1.5 rounded-xl transition shadow-xs inline-flex items-center gap-1.5 cursor-pointer active:scale-95 ${
+                                  isPengayaanSent
+                                    ? "bg-emerald-600 text-white cursor-not-allowed border border-emerald-500 shadow-xs"
+                                    : "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-sm hover:shadow"
+                                }`}
+                                title={`Sarankan modul pengayaan prestasi untuk ${student.name}`}
+                              >
+                                <span>{isPengayaanSent ? "⭐" : "🎯"}</span>
+                                <span>{isPengayaanSent ? "Pengayaan Aktif" : "Saran Pengayaan"}</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <div className="p-2.5 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-[11px] font-bold text-sky-900 dark:text-sky-200 flex items-center justify-between gap-2">
+                  <span>💡 Evaluasi KKTP Bab Ini:</span>
+                  <span>
+                    <strong>{tuntasStudents.length} Siswa Tuntas</strong> ·{" "}
+                    <strong>{needHelpStudents.length} Siswa Perlu Bimbingan Remedial</strong>
+                  </span>
+                </div>
+              </div>
+
+              {/* Bagian 3: Rekomendasi Tindak Lanjut Guru */}
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border-2 border-slate-200 dark:border-slate-700 space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">💡</span>
+                  <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">
+                    Rekomendasi Tindak Lanjut Bpk/Ibu Guru:
+                  </h4>
+                </div>
+                <p className="text-xs text-slate-700 dark:text-slate-300 font-semibold leading-relaxed">
+                  {diagnosticData.recommendation}
+                </p>
+
+                <div className="pt-1 flex flex-wrap items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      handleDeleteChapter(selectedDiagnosticChapter, e);
+                      setSelectedDiagnosticChapter(null);
+                    }}
+                    className="inline-flex items-center gap-1.5 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white dark:bg-rose-950/70 dark:text-rose-300 border border-rose-300 dark:border-rose-800 font-extrabold text-xs py-2.5 px-4 rounded-xl transition cursor-pointer shadow-xs active:scale-95"
+                    title="Hapus materi ini jika sudah tidak terpakai"
+                  >
+                    <span>🗑️</span>
+                    <span>Hapus Materi Ini</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playClickSound();
+                      setSelectedDiagnosticChapter(null);
+                    }}
+                    className="w-full sm:w-auto bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs py-2.5 px-5 rounded-xl transition cursor-pointer shadow-xs"
+                  >
+                    Tutup Analisis
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

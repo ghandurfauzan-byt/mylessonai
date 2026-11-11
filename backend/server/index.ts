@@ -80,6 +80,7 @@ import {
   getNotifications,
   getQuestionsByLevel,
   getRegisteredStudents,
+  getStudentsRankByChapter,
   getRegisteredTeachers,
   getStudentsNeedingHelp,
   getUserProfile,
@@ -88,6 +89,7 @@ import {
   registerUserAccount,
   resetStudentsPoints,
   addStudentPoints,
+  updateStudentQuizScore,
   getLastPointsResetTime,
   saveCurriculumModule,
   saveMaterial,
@@ -318,8 +320,9 @@ router.get("/profile", async (req: Request, res: Response) => {
   const roleFromReq = getRequestRole(req);
   const userIdCookie = req.cookies?.[USER_ID_COOKIE];
   const queryUser = (req.query.userId || req.query.email) as string | undefined;
+  const chapter = req.query.chapter as string | undefined;
   const role = roleFromReq || "pelajar";
-  const profile = await getUserProfile(queryUser || userIdCookie, role);
+  const profile = await getUserProfile(queryUser || userIdCookie, role, chapter);
   res.json(profile);
 });
 
@@ -419,11 +422,20 @@ router.get("/students-needing-help", async (_req: Request, res: Response) => {
   res.json(students);
 });
 
-router.get("/students", async (_req: Request, res: Response) => {
-  const students = await getRegisteredStudents();
+router.get("/students", async (req: Request, res: Response) => {
+  const chapter = req.query.chapter as string | undefined;
+  const kelas = req.query.kelas as string | undefined;
+  const students = await getRegisteredStudents(chapter, kelas);
   res.json(students);
 });
 
+// Format Peringkat & Distribusi Poin Per-Materi & Per-Kelas
+router.get("/students/ranking", async (req: Request, res: Response) => {
+  const chapter = req.query.chapter as string | undefined;
+  const kelas = req.query.kelas as string | undefined;
+  const result = await getStudentsRankByChapter(chapter, kelas);
+  res.json(result);
+});
 
 // Edit Data Siswa (Nama, Kelas, No. Absen) oleh Guru
 router.put("/students/:id", async (req: Request, res: Response) => {
@@ -470,19 +482,19 @@ router.delete("/students/:id", async (req: Request, res: Response) => {
   res.json({ success: true, message: "Akun siswa berhasil dihapus." });
 });
 
-// Reset Seluruh Poin Siswa & Ranking Juara Kelas oleh Guru
-router.post("/students/reset-points", async (_req: Request, res: Response) => {
-  const result = await resetStudentsPoints();
+// Reset Poin Siswa (Dapat difilter per-Kelas dan/atau per-Materi, atau Semua)
+router.post("/students/reset-points", async (req: Request, res: Response) => {
+  const { kelas, chapterId } = req.body || {};
+  const result = await resetStudentsPoints({ kelas, chapterId });
   await addNotification({
-    title: "Poin Prestasi Di-Reset oleh Guru 🔄",
-    message: "Bapak/Ibu Guru telah mereset seluruh poin siswa dan ranking juara kelas untuk periode baru.",
+    title: "Poin Siswa Di-Reset oleh Guru 🔄",
+    message: result.message || "Bapak/Ibu Guru telah mereset poin siswa.",
     type: "warning",
     targetRole: "all",
     link: "/dashboard/pelajar",
     icon: "alert",
   });
   res.json({
-    message: "Seluruh poin siswa dan ranking berhasil di-reset oleh guru.",
     ...result,
   });
 });
@@ -494,12 +506,21 @@ router.get("/students/reset-status", (_req: Request, res: Response) => {
   });
 });
 
-// Penambahan Poin Siswa (Sinkronisasi Gamifikasi Kuis & Membaca)
+// Penambahan Poin Siswa (Sinkronisasi Gamifikasi Kuis & Membaca - Mendukung Per-Materi)
 router.post("/students/points", async (req: Request, res: Response) => {
   const userIdCookie = req.cookies?.[USER_ID_COOKIE];
-  const { amount = 10, userId } = req.body || {};
+  const { amount = 10, userId, chapter, type = "game" } = req.body || {};
   const targetId = userId || userIdCookie;
-  const result = await addStudentPoints(targetId, Number(amount) || 10);
+  const result = await addStudentPoints(targetId, Number(amount) || 10, type, chapter);
+  res.json(result);
+});
+
+// Pembaruan Skor Kuis Siswa (Sinkronisasi Evaluasi Kuis Adaptif - Mendukung Per-Materi)
+router.post("/students/quiz-score", async (req: Request, res: Response) => {
+  const userIdCookie = req.cookies?.[USER_ID_COOKIE];
+  const { score = 100, userId, chapter } = req.body || {};
+  const targetId = userId || userIdCookie;
+  const result = await updateStudentQuizScore(targetId, Number(score), chapter);
   res.json(result);
 });
 
@@ -2713,3 +2734,4 @@ if (process.env.NODE_ENV !== "test" && !process.env.VERCEL) {
 }
 
 export default app;
+ 

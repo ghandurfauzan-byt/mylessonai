@@ -60,6 +60,29 @@ export default function StudentAccountsManager() {
     },
   });
 
+  // Filter Peringkat & Distribusi Poin Per-Materi & Per-Kelas
+  const [rankingKelas, setRankingKelas] = useState<string>("Kelas 4");
+  const [rankingChapter, setRankingChapter] = useState<string>("pkn-sila3");
+
+  const { data: rankingData, isLoading: isRankingLoading } = useQuery<{
+    chapterId: string;
+    kelas: string;
+    totalStudents: number;
+    highestScore: { name: string; gamePoints: number; quizScore: number } | null;
+    lowestScore: { name: string; gamePoints: number; quizScore: number } | null;
+    averageScore: number;
+    ranking: Array<StudentAccount & { rank: number }>;
+  }>({
+    queryKey: ["students-ranking", rankingChapter, rankingKelas],
+    queryFn: async () => {
+      const res = await fetch(
+        `/api/students/ranking?chapter=${encodeURIComponent(rankingChapter)}&kelas=${encodeURIComponent(rankingKelas)}`
+      );
+      if (!res.ok) throw new Error("Gagal mengambil data peringkat siswa.");
+      return res.json();
+    },
+  });
+
   const showNotice = (msg: string) => {
     setActionNotice(msg);
     setTimeout(() => setActionNotice(null), 3500);
@@ -286,17 +309,14 @@ export default function StudentAccountsManager() {
             <thead className="bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 font-black border-b border-slate-200 dark:border-slate-700">
               <tr>
                 <th className="py-3 px-3.5">Absen</th>
-                <th className="py-3 px-3.5">Nama Siswa</th>
-                <th className="py-3 px-3.5">Kelas</th>
-                <th className="py-3 px-3.5">🎮 Skor Game</th>
-                <th className="py-3 px-3.5">📝 Skor Kuis</th>
-                <th className="py-3 px-3.5">Status Belajar</th>
+                <th className="py-3 px-3.5">Nama Siswa &amp; Akun</th>
+                <th className="py-3 px-3.5">Rombel / Kelas</th>
+                <th className="py-3 px-3.5">Status Akun</th>
                 <th className="py-3 px-3.5 text-right">Aksi Kontrol</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
               {filteredStudents.map((s) => {
-                const isTuntas = (s.weakness?.status || "tuntas") === "tuntas";
                 return (
                   <tr
                     key={s.id}
@@ -323,25 +343,9 @@ export default function StudentAccountsManager() {
                       </span>
                     </td>
                     <td className="py-3 px-3.5">
-                      <span className="font-black text-amber-700 dark:text-amber-400">
-                        🎮 {s.gamePoints ?? s.points ?? 0} Poin
-                      </span>
-                    </td>
-                    <td className="py-3 px-3.5">
-                      <span className="font-black text-emerald-700 dark:text-emerald-400">
-                        📝 {s.quizScore ?? (s.weakness ? s.weakness.score * 10 : 0)} / 100
-                      </span>
-                    </td>
-                    <td className="py-3 px-3.5">
-                      <span
-                        className={`inline-flex items-center gap-1 font-bold px-2 py-0.5 rounded-full text-[10px] ${
-                          isTuntas
-                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
-                            : "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300"
-                        }`}
-                      >
-                        <span>{isTuntas ? "✓" : "!"}</span>
-                        <span>{isTuntas ? "Tuntas KKTP" : "Perlu Bimbingan"}</span>
+                      <span className="inline-flex items-center gap-1 font-bold px-2.5 py-0.5 rounded-full text-[10px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                        <span>✓</span>
+                        <span>Aktif Terdaftar</span>
                       </span>
                     </td>
                     <td className="py-3 px-3.5 text-right">
@@ -379,6 +383,194 @@ export default function StudentAccountsManager() {
           </table>
         </div>
       )}
+
+      {/* 2. FORMAT POIN & PERINGKAT SISWA PER-MATERI & PER-KELAS (TERTINGGI, TERENDAH, DAN URUTAN RANKING LENGKAP) */}
+      <div className="border-t-3 border-amber-200/80 dark:border-slate-800 pt-6 space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🏆</span>
+              <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                Format Poin &amp; Peringkat Siswa Per-Materi
+              </h3>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Pantau peringkat urut dari nomor satu hingga akhir per-kelas dan per-materi dengan skor tertinggi serta terendah.
+            </p>
+          </div>
+
+          {/* Selectors Kelas & Materi */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
+              <span className="text-[11px] font-bold text-slate-500">Kelas:</span>
+              <select
+                value={rankingKelas}
+                onChange={(e) => setRankingKelas(e.target.value)}
+                className="bg-transparent text-xs font-black text-slate-800 dark:text-white outline-none cursor-pointer"
+              >
+                <option value="Kelas 1">Kelas 1</option>
+                <option value="Kelas 2">Kelas 2</option>
+                <option value="Kelas 3">Kelas 3</option>
+                <option value="Kelas 4">Kelas 4 (Utama)</option>
+                <option value="Kelas 5">Kelas 5</option>
+                <option value="Kelas 6">Kelas 6</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
+              <span className="text-[11px] font-bold text-slate-500">Materi:</span>
+              <select
+                value={rankingChapter}
+                onChange={(e) => setRankingChapter(e.target.value)}
+                className="bg-transparent text-xs font-black text-slate-800 dark:text-white outline-none cursor-pointer max-w-[200px] truncate"
+              >
+                <optgroup label="🇮🇩 Pendidikan Pancasila">
+                  <option value="pkn-sila3">PKn: Bab 1 - Makna Sila Ke-3</option>
+                  <option value="pkn-gotongroyong">PKn: Bab 2 - Gotong Royong</option>
+                  <option value="pkn-norma">PKn: Bab 3 - Norma &amp; Aturan</option>
+                  <option value="pkn-bhinneka">PKn: Bab 4 - Bhinneka Tunggal Ika</option>
+                </optgroup>
+                <optgroup label="🦚 Bahasa Jawa">
+                  <option value="bjawa-unggahungguh">B. Jawa: Bab 1 - Unggah-ungguh</option>
+                  <option value="bjawa-punokawan">B. Jawa: Bab 2 - Tokoh Wayang</option>
+                  <option value="bjawa-pandhawa">B. Jawa: Bab 3 - Pandhawa Lima</option>
+                  <option value="bjawa-aksara">B. Jawa: Bab 4 - Aksara Jawa</option>
+                  <option value="bjawa-kewan">B. Jawa: Bab 5 - Arane Anak Kewan</option>
+                </optgroup>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* 3 Kartu Statistik: Tertinggi, Terendah, Rata-rata */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/20 border-2 border-amber-300 dark:border-amber-700/60 shadow-xs space-y-1">
+            <span className="text-[10px] font-black uppercase text-amber-800 dark:text-amber-300 tracking-wider flex items-center gap-1.5">
+              <span>🏆</span>
+              <span>Skor Tertinggi ({rankingKelas}):</span>
+            </span>
+            <div className="font-black text-sm text-slate-900 dark:text-white truncate">
+              {rankingData?.highestScore?.name || "Belum ada siswa"}
+            </div>
+            <div className="text-xs font-extrabold text-amber-700 dark:text-amber-400">
+              🎮 {rankingData?.highestScore?.gamePoints || 0} Poin · 📝 Kuis {rankingData?.highestScore?.quizScore || 0}/100
+            </div>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-gradient-to-br from-rose-50 to-orange-50 dark:from-rose-950/30 dark:to-orange-950/20 border-2 border-rose-300 dark:border-rose-700/60 shadow-xs space-y-1">
+            <span className="text-[10px] font-black uppercase text-rose-800 dark:text-rose-300 tracking-wider flex items-center gap-1.5">
+              <span>📉</span>
+              <span>Skor Terendah ({rankingKelas}):</span>
+            </span>
+            <div className="font-black text-sm text-slate-900 dark:text-white truncate">
+              {rankingData?.lowestScore?.name || "Belum ada siswa"}
+            </div>
+            <div className="text-xs font-extrabold text-rose-700 dark:text-rose-400">
+              🎮 {rankingData?.lowestScore?.gamePoints || 0} Poin · 📝 Kuis {rankingData?.lowestScore?.quizScore || 0}/100
+            </div>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-gradient-to-br from-sky-50 to-blue-50 dark:from-sky-950/30 dark:to-blue-950/20 border-2 border-sky-300 dark:border-sky-700/60 shadow-xs space-y-1">
+            <span className="text-[10px] font-black uppercase text-sky-800 dark:text-sky-300 tracking-wider flex items-center gap-1.5">
+              <span>📊</span>
+              <span>Rata-Rata Kelas:</span>
+            </span>
+            <div className="font-black text-sm text-slate-900 dark:text-white">
+              {rankingData?.totalStudents || 0} Siswa Terdaftar
+            </div>
+            <div className="text-xs font-extrabold text-sky-700 dark:text-sky-400">
+              Rata-rata: ~{rankingData?.averageScore || 0} Poin Prestasi
+            </div>
+          </div>
+        </div>
+
+        {/* Tabel Urutan Peringkat dari Nomor 1 sampai Akhir */}
+        <div className="overflow-x-auto rounded-2xl border-2 border-amber-200 dark:border-slate-800">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-amber-100/70 dark:bg-slate-800/80 text-amber-950 dark:text-amber-200 font-black border-b border-amber-200 dark:border-slate-700">
+              <tr>
+                <th className="py-2.5 px-3">Urutan Peringkat</th>
+                <th className="py-2.5 px-3">Absen</th>
+                <th className="py-2.5 px-3">Nama Siswa</th>
+                <th className="py-2.5 px-3">🎮 Skor Game</th>
+                <th className="py-2.5 px-3">📝 Skor Kuis</th>
+                <th className="py-2.5 px-3">Status KKTP</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+              {isRankingLoading ? (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center text-xs text-slate-400">
+                    Memuat data urutan peringkat kelas...
+                  </td>
+                </tr>
+              ) : !rankingData?.ranking || rankingData.ranking.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center text-xs text-slate-400">
+                    Belum ada siswa di kelas ini yang mengerjakan materi tersebut.
+                  </td>
+                </tr>
+              ) : (
+                rankingData.ranking.map((s) => {
+                  const medal = s.rank === 1 ? "🥇 Juara 1" : s.rank === 2 ? "🥈 Juara 2" : s.rank === 3 ? "🥉 Juara 3" : `#${s.rank}`;
+                  const isTuntas = s.status === "tuntas";
+
+                  return (
+                    <tr
+                      key={s.id}
+                      className={
+                        s.rank === 1
+                          ? "bg-amber-50/70 dark:bg-amber-950/20 font-bold"
+                          : "hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
+                      }
+                    >
+                      <td className="py-2.5 px-3">
+                        <span
+                          className={`inline-flex items-center gap-1 font-black px-2.5 py-0.5 rounded-full text-[11px] ${
+                            s.rank === 1
+                              ? "bg-amber-400 text-amber-950 shadow-xs"
+                              : s.rank === 2
+                                ? "bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200"
+                                : s.rank === 3
+                                  ? "bg-amber-200 text-amber-900"
+                                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                          }`}
+                        >
+                          {medal}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 font-mono font-bold text-slate-500">
+                        #{s.noAbsen || "01"}
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <span className="font-bold text-slate-900 dark:text-white">{s.name}</span>
+                      </td>
+                      <td className="py-2.5 px-3 font-black text-amber-700 dark:text-amber-400">
+                        🎮 {s.gamePoints} Poin
+                      </td>
+                      <td className="py-2.5 px-3 font-black text-emerald-700 dark:text-emerald-400">
+                        📝 {s.quizScore} / 100
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <span
+                          className={`inline-flex items-center gap-1 font-bold px-2 py-0.5 rounded-full text-[10px] ${
+                            isTuntas
+                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                              : "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300"
+                          }`}
+                        >
+                          <span>{isTuntas ? "✓" : "!"}</span>
+                          <span>{isTuntas ? "Tuntas KKTP" : "Perlu Bimbingan"}</span>
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       {/* MODAL TAMBAH SISWA BARU */}
       {isAddModalOpen && (

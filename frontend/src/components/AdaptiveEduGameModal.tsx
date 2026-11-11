@@ -470,7 +470,7 @@ export default function AdaptiveEduGameModal({
         const earned = 15 + matchingCombo * 5;
         setMatchingScore((s) => s + earned);
         setMatchingCombo((c) => c + 1);
-        addPoints(earned, `Keren! Pasangan cocok: ${first.text} ↔ ${second.text} (+${earned} ⭐)`);
+        addPoints(earned, `Keren! Pasangan cocok: ${first.text} ↔ ${second.text} (+${earned} ⭐)`, chapter);
 
         setTimeout(() => {
           setMatchingCards((prev) => {
@@ -2072,7 +2072,7 @@ export default function AdaptiveEduGameModal({
     if (nearestStudent && minD < 14) {
       greetedStudentIdRef.current = nearestStudent.id;
       setAdventureScore((s) => s + 5);
-      addPoints(5, `Menyapa teman sekelas: ${nearestStudent.name}`);
+      addPoints(5, `Menyapa teman sekelas: ${nearestStudent.name}`, chapter);
       setFriendGreetingBubble({
         name: nearestStudent.name,
         text: `👋 "Halo ${studentName}! Senang ketemu kamu di jalan desa! Ayo kumpulkan koin & jelajahi 5 Suku bareng!"`,
@@ -2111,13 +2111,13 @@ export default function AdaptiveEduGameModal({
         const nextVisited = [...visitedSukuIds, suku.id];
         setVisitedSukuIds(nextVisited);
         setAdventureScore((s) => s + 25);
-        addPoints(25, `Menjawab kuis ${suku.namaSuku}`);
+        addPoints(25, `Menjawab kuis ${suku.namaSuku}`, chapter);
 
         if (nextVisited.length >= 5) {
           setTimeout(() => {
             playBadgeFanfareSound();
             setAllSukuCompleted(true);
-            addPoints(50, "Menyelesaikan seluruh 5 Suku Nusantara");
+            addPoints(50, "Menyelesaikan seluruh 5 Suku Nusantara", chapter);
           }, 1200);
         }
       }
@@ -3183,7 +3183,7 @@ export default function AdaptiveEduGameModal({
             playCoinPickupSound();
             setAdventureScore((s) => s + 5);
             setCoinsCollectedCount((c) => c + 1);
-            addPoints(5, "Mengambil koin di jalan");
+            addPoints(5, "Mengambil koin di jalan", chapter);
           }
         }
       });
@@ -3695,18 +3695,18 @@ export default function AdaptiveEduGameModal({
 
               {/* DIALOG PAK GURU VIRTUAL DENGAN VOICE SUARA DINAMIS SESUAI TOPIK */}
               {showGuruDialog && (
-                <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
-                  <div className="bg-slate-900/95 border-3 border-sky-400 rounded-3xl max-w-lg w-full p-6 text-white space-y-4 shadow-2xl">
-                    <div className="flex items-center justify-between border-b border-slate-700 pb-3">
-                      <div className="flex items-center gap-3">
-                        <span className="w-14 h-14 rounded-2xl bg-sky-500/20 border border-sky-400 flex items-center justify-center text-3xl shadow-md">
+                <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 animate-in fade-in">
+                  <div className="bg-slate-900/95 border-2 border-sky-400/90 rounded-2xl max-w-md w-full p-4 sm:p-4.5 text-white space-y-3 shadow-2xl">
+                    <div className="flex items-center justify-between border-b border-slate-700/80 pb-2.5">
+                      <div className="flex items-center gap-2.5">
+                        <span className="w-11 h-11 rounded-xl bg-sky-500/20 border border-sky-400 flex items-center justify-center text-2xl shadow-md shrink-0">
                           👨‍🏫
                         </span>
                         <div>
-                          <h3 className="font-black text-base sm:text-lg text-sky-300">
+                          <h3 className="font-black text-sm sm:text-base text-sky-300">
                             Pak Guru Virtual
                           </h3>
-                          <p className="text-xs text-slate-300">
+                          <p className="text-[11px] text-slate-300">
                             Pemandu Materi {guruBriefing.submateri}
                           </p>
                         </div>
@@ -3926,7 +3926,7 @@ export default function AdaptiveEduGameModal({
                                     text: `Hebat! ${opsi.penjelasan}`,
                                   });
                                   setAdventureScore((s) => s + 25);
-                                  addPoints(25, `Menjawab kuis pos: ${activeSukuDialog.namaPos}`);
+                                  addPoints(25, `Menjawab kuis pos: ${activeSukuDialog.namaPos}`, chapter);
                                   setVisitedSukuIds((prev) =>
                                     prev.includes(activeSukuDialog.id) ? prev : [...prev, activeSukuDialog.id]
                                   );

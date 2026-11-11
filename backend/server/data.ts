@@ -1413,6 +1413,14 @@ export interface StudentWeakness {
   message: string;
 }
 
+export interface ChapterScoreRecord {
+  points: number;
+  gamePoints: number;
+  quizScore: number;
+  status: "tuntas" | "remedial";
+  weaknessNote?: string;
+}
+
 export interface UserAccount {
   id: string;
   name: string;
@@ -1428,6 +1436,7 @@ export interface UserAccount {
   quizScore?: number;
   gamePoints?: number;
   weakness?: StudentWeakness;
+  chapterScores?: Record<string, ChapterScoreRecord>;
 }
 
 const INITIAL_USERS_DB: UserAccount[] = [
@@ -1651,25 +1660,53 @@ export function getLastPointsResetTime(): number {
   return lastPointsResetTime;
 }
 
-export async function resetStudentsPoints(): Promise<{ success: boolean; count: number; resetAt: number }> {
+export async function resetStudentsPoints(filter?: {
+  kelas?: string;
+  chapterId?: string;
+}): Promise<{ success: boolean; count: number; resetAt: number; message: string }> {
   await delay(150);
   let count = 0;
+  const targetKelas = filter?.kelas && filter.kelas !== "all" ? filter.kelas : undefined;
+  const targetChapter = filter?.chapterId && filter.chapterId !== "all" ? filter.chapterId.replace(/^mod-/, "") : undefined;
+
   usersDb.forEach((u) => {
     if (u.role === "pelajar") {
-      u.points = 0;
-      u.gamePoints = 0;
-      count++;
+      if (targetKelas && u.kelas !== targetKelas) return;
+
+      if (targetChapter) {
+        if (u.chapterScores && u.chapterScores[targetChapter]) {
+          u.chapterScores[targetChapter].points = 0;
+          u.chapterScores[targetChapter].gamePoints = 0;
+          u.chapterScores[targetChapter].quizScore = 0;
+        }
+        count++;
+      } else {
+        u.points = 0;
+        u.gamePoints = 0;
+        u.quizScore = 0;
+        u.chapterScores = {};
+        count++;
+      }
     }
   });
   lastPointsResetTime = Date.now();
   persistUsersDb();
-  return { success: true, count, resetAt: lastPointsResetTime };
+  return {
+    success: true,
+    count,
+    resetAt: lastPointsResetTime,
+    message: targetChapter
+      ? `Poin materi "${targetChapter}" ${targetKelas ? `pada ${targetKelas}` : "pada seluruh kelas"} berhasil di-reset ke 0.`
+      : `Seluruh poin ${targetKelas ? `pada ${targetKelas}` : "seluruh siswa"} berhasil di-reset ke 0.`,
+  };
 }
 
 export async function addStudentPoints(
   identifier?: string,
-  amount: number = 10
-): Promise<{ success: boolean; points: number }> {
+  amount: number = 10,
+  type: "game" | "quiz" | "general" = "game",
+  chapterId?: string
+): Promise<{ success: boolean; points: number; gamePoints: number }> {
   let user: UserAccount | undefined;
   if (identifier) {
     const norm = identifier.toLowerCase().trim();
@@ -1680,31 +1717,143 @@ export async function addStudentPoints(
   }
   if (user) {
     user.points = (user.points ?? 0) + amount;
+    if (type === "game" || type === "general") {
+      user.gamePoints = (user.gamePoints ?? 0) + amount;
+    }
+
+    if (chapterId) {
+      const cleanCh = chapterId.replace(/^mod-/, "");
+      user.chapterScores = user.chapterScores || {};
+      const chScore = user.chapterScores[cleanCh] || {
+        points: 0,
+        gamePoints: 0,
+        quizScore: 0,
+        status: "tuntas",
+      };
+      chScore.points = (chScore.points ?? 0) + amount;
+      if (type === "game" || type === "general") {
+        chScore.gamePoints = (chScore.gamePoints ?? 0) + amount;
+      }
+      user.chapterScores[cleanCh] = chScore;
+      persistUsersDb();
+      return { success: true, points: chScore.points, gamePoints: chScore.gamePoints };
+    }
+
     persistUsersDb();
-    return { success: true, points: user.points };
+    return { success: true, points: user.points, gamePoints: user.gamePoints ?? user.points };
   }
-  return { success: false, points: 0 };
+  return { success: false, points: 0, gamePoints: 0 };
 }
 
-export async function getRegisteredStudents() {
-  await delay(200);
+export async function updateStudentQuizScore(
+  identifier: string | undefined,
+  score: number,
+  chapterId?: string
+): Promise<{ success: boolean; quizScore: number }> {
+  let user: UserAccount | undefined;
+  if (identifier) {
+    const norm = identifier.toLowerCase().trim();
+    user = usersDb.find((u) => u.id === identifier || u.email.toLowerCase() === norm);
+  }
+  if (!user) {
+    user = usersDb.find((u) => u.role === "pelajar");
+  }
+  if (user) {
+    user.quizScore = score;
+    if (user.weakness) {
+      user.weakness.score = Math.round(score / 10);
+      user.weakness.status = score >= 70 ? "tuntas" : "remedial";
+    }
+
+    if (chapterId) {
+      const cleanCh = chapterId.replace(/^mod-/, "");
+      user.chapterScores = user.chapterScores || {};
+      const chScore = user.chapterScores[cleanCh] || {
+        points: 0,
+        gamePoints: 0,
+        quizScore: 0,
+        status: "tuntas",
+      };
+      chScore.quizScore = score;
+      chScore.status = score >= 70 ? "tuntas" : "remedial";
+      user.chapterScores[cleanCh] = chScore;
+    }
+
+    persistUsersDb();
+    return { success: true, quizScore: score };
+  }
+  return { success: false, quizScore: 0 };
+}
+
+export async function getRegisteredStudents(chapterId?: string, kelas?: string) {
+  await delay(150);
+  const targetKelas = kelas && kelas !== "all" ? kelas : undefined;
+  const cleanCh = chapterId && chapterId !== "all" ? chapterId.replace(/^mod-/, "") : undefined;
+
   return usersDb
-    .filter((u) => u.role === "pelajar")
-    .map((u) => ({
-      id: u.id,
-      name: u.name,
-      email: u.email,
-      nimNip: u.nimNip,
-      institution: u.institution,
-      kelas: u.kelas || "Kelas 4",
-      noAbsen: u.noAbsen || "01",
-      points: u.points ?? u.materialScore ?? 0,
-      materialScore: u.materialScore ?? u.points ?? 0,
-      quizScore: u.quizScore ?? (u.weakness ? u.weakness.score * 10 : 0),
-      gamePoints: u.gamePoints ?? 0,
-      weakness: u.weakness,
-    }))
+    .filter((u) => u.role === "pelajar" && (!targetKelas || u.kelas === targetKelas))
+    .map((u) => {
+      let chPoints = u.points ?? u.materialScore ?? 0;
+      let chGamePoints = u.gamePoints ?? u.points ?? 0;
+      let chQuizScore = u.quizScore ?? (u.weakness ? u.weakness.score * 10 : 0);
+      let chStatus: "tuntas" | "remedial" = chQuizScore >= 70 ? "tuntas" : "remedial";
+
+      if (cleanCh) {
+        const record = u.chapterScores?.[cleanCh];
+        if (record) {
+          chPoints = record.points ?? 0;
+          chGamePoints = record.gamePoints ?? 0;
+          chQuizScore = record.quizScore ?? 0;
+          chStatus = record.status ?? (chQuizScore >= 70 ? "tuntas" : "remedial");
+        } else {
+          chPoints = 0;
+          chGamePoints = 0;
+          chQuizScore = 0;
+          chStatus = "tuntas";
+        }
+      }
+
+      return {
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        nimNip: u.nimNip,
+        institution: u.institution,
+        kelas: u.kelas || "Kelas 4",
+        noAbsen: u.noAbsen || "01",
+        points: chPoints,
+        materialScore: chPoints,
+        quizScore: chQuizScore,
+        gamePoints: chGamePoints,
+        status: chStatus,
+        weakness: u.weakness,
+      };
+    })
     .sort((a, b) => (b.points ?? 0) - (a.points ?? 0));
+}
+
+export async function getStudentsRankByChapter(chapterId?: string, kelas?: string) {
+  const students = await getRegisteredStudents(chapterId, kelas);
+  const scores = students.map((s) => s.gamePoints);
+  const highest = students.length > 0 ? students[0] : null;
+  const lowest = students.length > 0 ? students[students.length - 1] : null;
+  const total = scores.reduce((a, b) => a + b, 0);
+  const average = students.length > 0 ? Math.round(total / students.length) : 0;
+
+  const ranking = students.map((s, idx) => ({
+    rank: idx + 1,
+    ...s,
+  }));
+
+  return {
+    chapterId: chapterId || "all",
+    kelas: kelas || "all",
+    totalStudents: students.length,
+    highestScore: highest ? { name: highest.name, gamePoints: highest.gamePoints, quizScore: highest.quizScore } : null,
+    lowestScore: lowest ? { name: lowest.name, gamePoints: lowest.gamePoints, quizScore: lowest.quizScore } : null,
+    averageScore: average,
+    ranking,
+  };
 }
 
 export async function getRegisteredTeachers() {
@@ -1809,7 +1958,8 @@ export async function deleteRegisteredStudent(id: string): Promise<boolean> {
 
 export async function getUserProfile(
   identifier?: string,
-  fallbackRole: "pelajar" | "pengajar" = "pelajar"
+  fallbackRole: "pelajar" | "pengajar" = "pelajar",
+  chapterId?: string
 ) {
   await delay(100);
   let user: UserAccount | undefined;
@@ -1834,6 +1984,37 @@ export async function getUserProfile(
       points: 200,
     };
   }
+
+  let userPoints = user.points ?? (user.role === "pelajar" ? 200 : undefined);
+  let userGamePoints = user.gamePoints ?? user.points ?? (user.role === "pelajar" ? 0 : undefined);
+  let userQuizScore = user.quizScore ?? (user.weakness ? user.weakness.score * 10 : 90);
+  let userWeakness = user.weakness;
+
+  if (chapterId && user.role === "pelajar") {
+    const cleanCh = chapterId.replace(/^mod-/, "");
+    const chRecord = user.chapterScores?.[cleanCh];
+    if (chRecord) {
+      userPoints = chRecord.points ?? 0;
+      userGamePoints = chRecord.gamePoints ?? 0;
+      userQuizScore = chRecord.quizScore ?? 0;
+      if (chRecord.status === "remedial" && chRecord.weaknessNote) {
+        userWeakness = {
+          chapterId: cleanCh,
+          chapterName: `Materi ${cleanCh}`,
+          subject: cleanCh.startsWith("bjawa") ? "bjawa" : "pkn",
+          score: Math.round(chRecord.quizScore / 10),
+          outOf: 10,
+          status: "remedial",
+          message: chRecord.weaknessNote,
+        };
+      }
+    } else {
+      userPoints = 0;
+      userGamePoints = 0;
+      userQuizScore = 0;
+    }
+  }
+
   return {
     id: user.id,
     name: user.name,
@@ -1843,9 +2024,10 @@ export async function getUserProfile(
     institution: user.institution,
     kelas: user.kelas || (user.role === "pelajar" ? "Kelas 4" : undefined),
     noAbsen: user.noAbsen || (user.role === "pelajar" ? "07" : undefined),
-    points: user.points ?? (user.role === "pelajar" ? 200 : undefined),
-    gamePoints: user.gamePoints ?? (user.role === "pelajar" ? 0 : undefined),
-    weakness: user.weakness,
+    points: userPoints,
+    gamePoints: userGamePoints,
+    quizScore: userQuizScore,
+    weakness: userWeakness,
   };
 }
 

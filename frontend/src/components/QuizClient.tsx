@@ -91,14 +91,29 @@ export default function QuizClient({ initialQuestions }: { initialQuestions?: Qu
         if (nextIndex >= questions.length) {
           if (level === 1) {
             completeDailyMission("quizLevel1");
-            addPoints(10, "Hebat! Kuis Level 1 Tuntas! +10 Poin 🎮");
+            addPoints(10, "Hebat! Kuis Level 1 Tuntas! +10 Poin 🎮", chapterParam);
+            fetch("/api/students/quiz-score", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ score: 75, chapter: chapterParam }),
+            }).catch(() => {});
           } else if (level === 2) {
             completeDailyMission("quizLevel2");
-            addPoints(20, "Luar Biasa! Kuis Level 2 Tuntas! +20 Poin ⚡");
+            addPoints(20, "Luar Biasa! Kuis Level 2 Tuntas! +20 Poin ⚡", chapterParam);
+            fetch("/api/students/quiz-score", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ score: 90, chapter: chapterParam }),
+            }).catch(() => {});
           } else if (level === 3) {
             completeDailyMission("quizLevel3");
             completeDailyMission("completedQuiz");
-            addPoints(30, "Juara! Kuis Level 3 & Seluruh Kuis Tuntas! +30 Poin 🏆");
+            addPoints(30, "Juara! Kuis Level 3 & Seluruh Kuis Tuntas! +30 Poin 🏆", chapterParam);
+            fetch("/api/students/quiz-score", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ score: 100, chapter: chapterParam }),
+            }).catch(() => {});
           }
 
           if (level < 3) {

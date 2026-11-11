@@ -52,7 +52,7 @@ interface UIState {
 
   totalPoints: number;
   latestPointReward: PointRewardNotice | null;
-  addPoints: (amount: number, message?: string) => void;
+  addPoints: (amount: number, message?: string, chapter?: string) => void;
   setTotalPoints: (amount: number) => void;
   resetTotalPoints: () => void;
   clearPointReward: () => void;
@@ -253,12 +253,12 @@ export const useUIStore = create<UIState>()((set) => ({
 
   totalPoints: 420,
   latestPointReward: null,
-  addPoints: (amount, message) => {
+  addPoints: (amount, message, chapter) => {
     if (typeof window !== "undefined") {
       fetch("/api/students/points", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount }),
+        body: JSON.stringify({ amount, chapter }),
       }).catch(() => {});
     }
     set((state) => ({

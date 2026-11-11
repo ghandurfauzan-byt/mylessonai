@@ -4,6 +4,7 @@ import CurriculumValidationManager from "@/components/CurriculumValidationManage
 import StudentAccountsManager from "@/components/StudentAccountsManager";
 import ExportReportButton from "@/components/ExportReportButton";
 import InviteTeacherModal from "@/components/InviteTeacherModal";
+import ResetPointsModal from "@/components/ResetPointsModal";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { fetchProfile } from "@/lib/api/sessionApi";
 import { playClickSound } from "@/lib/soundEffects";
@@ -12,7 +13,7 @@ import { useState } from "react";
 
 export default function PengajarDashboardPage() {
   useDocumentTitle("Dashboard Guru — Validasi Materi & Evaluasi Siswa");
-  const [isResetting, setIsResetting] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   const { data: profile } = useQuery({
@@ -94,13 +95,15 @@ export default function PengajarDashboardPage() {
             </button>
             <button
               type="button"
-              onClick={handleResetPoints}
-              disabled={isResetting}
-              title="Reset seluruh poin siswa dan ranking juara kelas untuk periode baru"
-              className="bg-rose-500 hover:bg-rose-600 active:scale-95 text-white font-black text-xs py-3 px-4 rounded-2xl shadow-md transition-all flex items-center gap-2 border-2 border-white/20 cursor-pointer disabled:opacity-50"
+              onClick={() => {
+                playClickSound();
+                setIsResetModalOpen(true);
+              }}
+              title="Reset poin siswa dan ranking juara kelas dengan filter pilihan kelas & materi"
+              className="bg-rose-500 hover:bg-rose-600 active:scale-95 text-white font-black text-xs py-3 px-4 rounded-2xl shadow-md transition-all flex items-center gap-2 border-2 border-white/20 cursor-pointer"
             >
-              <span>{isResetting ? "⏳" : "🔄"}</span>
-              <span>{isResetting ? "Mereset..." : "Reset Poin & Ranking"}</span>
+              <span>🔄</span>
+              <span>Reset Poin &amp; Ranking</span>
             </button>
             <ExportReportButton />
           </div>
@@ -111,6 +114,16 @@ export default function PengajarDashboardPage() {
       <InviteTeacherModal
         isOpen={isInviteModalOpen}
         onClose={() => setIsInviteModalOpen(false)}
+      />
+
+      {/* Modal Reset Poin Fleksibel (Pilihan Kelas & Materi) */}
+      <ResetPointsModal
+        isOpen={isResetModalOpen}
+        onClose={() => setIsResetModalOpen(false)}
+        onSuccess={(msg) => {
+          alert(msg);
+          window.location.reload();
+        }}
       />
 
       {/* 2. PUSAT VALIDASI KURIKULUM & PENGATURAN BAB PELAJARAN (KEMDIKBUD & DISDIK) */}

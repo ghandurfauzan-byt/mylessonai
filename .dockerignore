@@ -1,0 +1,14 @@
+node_modules
+.next
+dist
+dist-server
+.git
+.github
+*.log
+*.tmp
+~$*
+.env
+.env.local
+.DS_Store
+*.tsbuildinfo
+extracted_old_skpl_images

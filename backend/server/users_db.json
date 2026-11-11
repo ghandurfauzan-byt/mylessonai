@@ -27,10 +27,10 @@
     "institution": "SD Negeri 1 Madiun",
     "kelas": "Kelas 4",
     "noAbsen": "01",
-    "points": 270,
-    "materialScore": 250,
-    "quizScore": 95,
-    "gamePoints": 85,
+    "points": 430,
+    "materialScore": 0,
+    "quizScore": 100,
+    "gamePoints": 430,
     "weakness": {
       "chapterId": "pkn-sila3",
       "chapterName": "Pendidikan Pancasila (Makna Sila Ke-3)",
@@ -38,7 +38,29 @@
       "score": 10,
       "outOf": 10,
       "status": "tuntas",
-      "message": "Luar biasa! Seluruh evaluasi belajarmu telah Tuntas Melampaui KKTP (Rata-rata 95%). Pertahankan prestasimu!"
+      "message": "Luar biasa! Seluruh evaluasi belajarmu telah Tuntas Melampaui KKTP (Nilai Kuis: 100%). Pertahankan prestasimu!"
+    },
+    "chapterScores": {
+      "pkn-sila3": {
+        "points": 420,
+        "gamePoints": 420,
+        "quizScore": 100,
+        "status": "tuntas"
+      },
+      "pkn-gotongroyong": {
+        "points": 0,
+        "gamePoints": 0,
+        "quizScore": 0,
+        "status": "tuntas",
+        "weaknessNote": "Kerja sama sukarela membersihkan lingkungan."
+      },
+      "bjawa-unggahungguh": {
+        "points": 0,
+        "gamePoints": 0,
+        "quizScore": 0,
+        "status": "tuntas",
+        "weaknessNote": "Beda ragam basa ngoko lugu lan krama alus marang guru."
+      }
     }
   },
   {
@@ -51,18 +73,40 @@
     "institution": "SD Negeri 1 Madiun",
     "kelas": "Kelas 1",
     "noAbsen": "01",
-    "points": 180,
+    "points": 310,
     "materialScore": 180,
     "quizScore": 85,
-    "gamePoints": 70,
+    "gamePoints": 310,
     "weakness": {
       "chapterId": "bjawa-kewan",
       "chapterName": "Basa Jawa (Jeneng Anak Kewan)",
       "subject": "bjawa",
-      "score": 9,
+      "score": 8.5,
       "outOf": 10,
       "status": "tuntas",
-      "message": "Bagus sekali! Penguasaan materi jeneng anak kewan wis tuntas kanti biji becik!"
+      "message": "Bagus sekali! Penguasaan materi jeneng anak kewan wis tuntas kanti biji becik (85%)!"
+    },
+    "chapterScores": {
+      "pkn-sila3": {
+        "points": 310,
+        "gamePoints": 310,
+        "quizScore": 85,
+        "status": "tuntas"
+      },
+      "pkn-gotongroyong": {
+        "points": 0,
+        "gamePoints": 0,
+        "quizScore": 0,
+        "status": "tuntas",
+        "weaknessNote": "Kerja sama sukarela membersihkan lingkungan."
+      },
+      "bjawa-unggahungguh": {
+        "points": 0,
+        "gamePoints": 0,
+        "quizScore": 0,
+        "status": "tuntas",
+        "weaknessNote": "Beda ragam basa ngoko lugu lan krama alus marang guru."
+      }
     }
   },
   {
@@ -75,10 +119,10 @@
     "institution": "SD Negeri 1 Madiun",
     "kelas": "Kelas 2",
     "noAbsen": "01",
-    "points": 140,
+    "points": 260,
     "materialScore": 140,
     "quizScore": 80,
-    "gamePoints": 60,
+    "gamePoints": 260,
     "weakness": {
       "chapterId": "pkn-aturan",
       "chapterName": "Pendidikan Pancasila (Aturan di Rumah & Sekolah)",
@@ -86,7 +130,29 @@
       "score": 8,
       "outOf": 10,
       "status": "tuntas",
-      "message": "Hebat! Pemahaman tentang tata tertib sekolah sudah tuntas KKTP."
+      "message": "Hebat! Pemahaman tentang tata tertib sekolah sudah tuntas KKTP (80%)."
+    },
+    "chapterScores": {
+      "pkn-sila3": {
+        "points": 260,
+        "gamePoints": 260,
+        "quizScore": 80,
+        "status": "tuntas"
+      },
+      "pkn-gotongroyong": {
+        "points": 0,
+        "gamePoints": 0,
+        "quizScore": 0,
+        "status": "tuntas",
+        "weaknessNote": "Kerja sama sukarela membersihkan lingkungan."
+      },
+      "bjawa-unggahungguh": {
+        "points": 0,
+        "gamePoints": 0,
+        "quizScore": 0,
+        "status": "tuntas",
+        "weaknessNote": "Beda ragam basa ngoko lugu lan krama alus marang guru."
+      }
     }
   },
   {
@@ -97,7 +163,7 @@
     "role": "pelajar",
     "nimNip": "V3925xxx",
     "institution": "SD Negeri 1 Madiun",
-    "points": 200,
+    "points": 0,
     "weakness": {
       "chapterId": "pkn-sila3",
       "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
@@ -109,7 +175,30 @@
     },
     "kelas": "Kelas 4",
     "noAbsen": "01",
-    "gamePoints": 0
+    "gamePoints": 0,
+    "chapterScores": {
+      "pkn-sila3": {
+        "points": 0,
+        "gamePoints": 0,
+        "quizScore": 80,
+        "status": "tuntas",
+        "weaknessNote": "Pengamalan nilai persatuan dan gotong royong di lingkungan sekolah."
+      },
+      "pkn-gotongroyong": {
+        "points": 0,
+        "gamePoints": 0,
+        "quizScore": 0,
+        "status": "tuntas",
+        "weaknessNote": "Kerja sama sukarela membersihkan lingkungan."
+      },
+      "bjawa-unggahungguh": {
+        "points": 0,
+        "gamePoints": 0,
+        "quizScore": 0,
+        "status": "tuntas",
+        "weaknessNote": "Beda ragam basa ngoko lugu lan krama alus marang guru."
+      }
+    }
   },
   {
     "id": "usr_1794323231217",
@@ -128,7 +217,7 @@
     "role": "pelajar",
     "nimNip": "V3925xxx",
     "institution": "SD Negeri 1 Madiun",
-    "points": 200,
+    "points": 0,
     "weakness": {
       "chapterId": "pkn-sila3",
       "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
@@ -140,7 +229,30 @@
     },
     "kelas": "Kelas 4",
     "noAbsen": "01",
-    "gamePoints": 0
+    "gamePoints": 0,
+    "chapterScores": {
+      "pkn-sila3": {
+        "points": 0,
+        "gamePoints": 0,
+        "quizScore": 80,
+        "status": "tuntas",
+        "weaknessNote": "Pengamalan nilai persatuan dan gotong royong di lingkungan sekolah."
+      },
+      "pkn-gotongroyong": {
+        "points": 0,
+        "gamePoints": 0,
+        "quizScore": 0,
+        "status": "tuntas",
+        "weaknessNote": "Kerja sama sukarela membersihkan lingkungan."
+      },
+      "bjawa-unggahungguh": {
+        "points": 0,
+        "gamePoints": 0,
+        "quizScore": 0,
+        "status": "tuntas",
+        "weaknessNote": "Beda ragam basa ngoko lugu lan krama alus marang guru."
+      }
+    }
   },
   {
     "id": "usr_1794324988504",
@@ -152,127 +264,93 @@
     "institution": "SD Negeri 1 Madiun"
   },
   {
-    "id": "usr_1794325866494",
-    "name": "Siswa Baru 1794325866493",
-    "email": "siswa_1794325866493@gmail.com",
-    "passwordHash": "$2b$10$HRzUvJv9dHon1R1o7IjnGuowLGc9kniiO3HvbPgFxCO.q352lWAta",
+    "id": "usr_ridho",
+    "name": "Ridho Asykuri",
+    "email": "ridho@gmail.com",
+    "passwordHash": "/vrRkGucfX.NhNjP9yLWO6FZsSowZO0F1lTTKm",
     "role": "pelajar",
-    "nimNip": "V3925xxx",
+    "nimNip": "V3925015",
     "institution": "SD Negeri 1 Madiun",
-    "points": 200,
+    "kelas": "Kelas 4",
+    "noAbsen": "15",
+    "points": 380,
+    "gamePoints": 380,
+    "quizScore": 90,
     "weakness": {
-      "chapterId": "pkn-sila3",
-      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
+      "chapterId": "pkn-bhinneka",
+      "chapterName": "Pendidikan Pancasila (Bhinneka Tunggal Ika)",
       "subject": "pkn",
-      "score": 8,
+      "score": 9,
       "outOf": 10,
       "status": "tuntas",
-      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+      "message": "Bagus sekali! Evaluasi belajar dan kuis adaptifmu tuntas dengan capaian 90%!"
     },
-    "kelas": "Kelas 4",
-    "noAbsen": "01",
-    "gamePoints": 0
+    "chapterScores": {
+      "pkn-sila3": {
+        "points": 380,
+        "gamePoints": 380,
+        "quizScore": 90,
+        "status": "tuntas"
+      },
+      "pkn-gotongroyong": {
+        "points": 0,
+        "gamePoints": 0,
+        "quizScore": 0,
+        "status": "tuntas",
+        "weaknessNote": "Kerja sama sukarela membersihkan lingkungan."
+      },
+      "bjawa-unggahungguh": {
+        "points": 0,
+        "gamePoints": 0,
+        "quizScore": 0,
+        "status": "tuntas",
+        "weaknessNote": "Beda ragam basa ngoko lugu lan krama alus marang guru."
+      }
+    }
   },
   {
-    "id": "usr_1794325878965",
-    "name": "Guru Uji 1794325878965",
-    "email": "guru_uji_1794325878965@gmail.com",
-    "passwordHash": "$2b$10$vp1YhpOYVweJvmuQHCpzXuMTtgDg3ENrtmEypchfeUh1FRtP97w3K",
-    "role": "pengajar",
-    "nimNip": "199xxxxxxxxx",
-    "institution": "SD Negeri 1 Madiun"
-  },
-  {
-    "id": "usr_1794326190242",
-    "name": "Siswa Baru 1794326190242",
-    "email": "siswa_1794326190242@gmail.com",
-    "passwordHash": "$2b$10$FXcH/IJl8fyjFn8CAbmrCONx.2K/7KAc3kQwubdqNkQs3Lst/vWd2",
+    "id": "usr_ahmad",
+    "name": "Ahmad Fauzi",
+    "email": "ahmad@gmail.com",
+    "passwordHash": ".VuVAekijsQ1tjJQAvPuVkjLdu6",
     "role": "pelajar",
-    "nimNip": "V3925xxx",
+    "nimNip": "SD-Kelas4-02",
     "institution": "SD Negeri 1 Madiun",
-    "points": 200,
-    "weakness": {
-      "chapterId": "pkn-sila3",
-      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
-      "subject": "pkn",
-      "score": 8,
-      "outOf": 10,
-      "status": "tuntas",
-      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    },
     "kelas": "Kelas 4",
-    "noAbsen": "01",
-    "gamePoints": 0
-  },
-  {
-    "id": "usr_1794326205741",
-    "name": "Guru Uji 1794326205741",
-    "email": "guru_uji_1794326205741@gmail.com",
-    "passwordHash": "$2b$10$iPYrphyJVMeI.5armHf6sOTg70fYDzSbaI.xPLit2MeX/nQd1i.wO",
-    "role": "pengajar",
-    "nimNip": "199xxxxxxxxx",
-    "institution": "SD Negeri 1 Madiun"
-  },
-  {
-    "id": "usr_1794326453596",
-    "name": "Siswa Baru 1794326453596",
-    "email": "siswa_1794326453596@gmail.com",
-    "passwordHash": "$2b$10$Y4Dv0DCqVSbWRev0blK3o.6mNkgeVP7YxEpr7aFWrgFAOsvgrm.Xi",
-    "role": "pelajar",
-    "nimNip": "V3925xxx",
-    "institution": "SD Negeri 1 Madiun",
-    "points": 200,
+    "noAbsen": "02",
+    "points": 190,
+    "gamePoints": 190,
+    "quizScore": 50,
     "weakness": {
-      "chapterId": "pkn-sila3",
-      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
-      "subject": "pkn",
-      "score": 8,
+      "chapterId": "bjawa-unggahungguh",
+      "chapterName": "Pelajaran Bahasa Jawa (Unggah-Ungguh Basa)",
+      "subject": "bjawa",
+      "score": 5,
       "outOf": 10,
-      "status": "tuntas",
-      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
+      "status": "remedial",
+      "message": "Nilai evaluasi di Pelajaran Bahasa Jawa (Unggah-Ungguh Basa) masih di bawah Kriteria Ketuntasan (KKTP: 50%). Silakan pelajari kembali bersama Robot Pintar."
     },
-    "kelas": "Kelas 4",
-    "noAbsen": "01",
-    "gamePoints": 0
-  },
-  {
-    "id": "usr_1794326476323",
-    "name": "Guru Uji 1794326476323",
-    "email": "guru_uji_1794326476323@gmail.com",
-    "passwordHash": "$2b$10$vI.nPNSg9VuORU4/Nygp2eLOgL0tsINVFaAa4oV1WdbwgMKC.SLT2",
-    "role": "pengajar",
-    "nimNip": "199xxxxxxxxx",
-    "institution": "SD Negeri 1 Madiun"
-  },
-  {
-    "id": "usr_1794327108623",
-    "name": "Siswa Baru 1794327108622",
-    "email": "siswa_1794327108622@gmail.com",
-    "passwordHash": "$2b$10$ICrOG6e1rDhiGy3R/ZXmkOA4aUKoOHoxDoCRNumFw.Uq9tAiv4Nvy",
-    "role": "pelajar",
-    "nimNip": "V3925xxx",
-    "institution": "SD Negeri 1 Madiun",
-    "points": 200,
-    "weakness": {
-      "chapterId": "pkn-sila3",
-      "chapterName": "Pelajaran PKn (Makna Sila Ke-3)",
-      "subject": "pkn",
-      "score": 8,
-      "outOf": 10,
-      "status": "tuntas",
-      "message": "Selamat belajar! Belum ada catatan remedial pada akunmu. Mulai eksplorasi belajarmu dari modul utama Makna Lambang Sila Ke-3 bersama Robot Pintar!"
-    },
-    "kelas": "Kelas 4",
-    "noAbsen": "01",
-    "gamePoints": 0
-  },
-  {
-    "id": "usr_1794327159802",
-    "name": "Guru Uji 1794327159802",
-    "email": "guru_uji_1794327159802@gmail.com",
-    "passwordHash": "$2b$10$cEy3d21trplVcgG.8iDBZ.PCIU2QDp0igWuN.UiWzjAymDnAqbVny",
-    "role": "pengajar",
-    "nimNip": "199xxxxxxxxx",
-    "institution": "SD Negeri 1 Madiun"
+    "chapterScores": {
+      "pkn-sila3": {
+        "points": 190,
+        "gamePoints": 190,
+        "quizScore": 50,
+        "status": "remedial"
+      },
+      "pkn-gotongroyong": {
+        "points": 0,
+        "gamePoints": 0,
+        "quizScore": 0,
+        "status": "tuntas",
+        "weaknessNote": "Kerja sama sukarela membersihkan lingkungan."
+      },
+      "bjawa-unggahungguh": {
+        "points": 90,
+        "gamePoints": 90,
+        "quizScore": 50,
+        "status": "remedial",
+        "weaknessNote": "Beda ragam basa ngoko lugu lan krama alus marang guru."
+      }
+    }
   }
 ]

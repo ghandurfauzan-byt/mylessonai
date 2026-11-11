@@ -1543,37 +1543,32 @@ export default function CurriculumValidationManager() {
                   const promptText =
                     targetGameType === "matching"
                       ? `Buat game web edukasi interaktif anak SD bertema: "${generatedModule.title}". Genre: Menjodohkan Kartu Pasangan (Memory/Matching Puzzle) dengan timer 60 detik, kombo bintang emas, dan suara riang saat cocok.`
-                      : targetGameType === "susunkata"
-                      ? `Buat game web edukasi teka-teki susun huruf & kata misteri ramah anak SD bertema: "${generatedModule.title}". Genre: Word Scramble & Anagram dengan kartu petunjuk makna, tombol bantuan huruf, dan animasi bintang prestasi.`
-                      : targetGameType === "wheel"
-                      ? `Buat game web roda putar cerdas edukasi interaktif anak SD bertema: "${generatedModule.title}". Genre: Spin the Fortune Wheel & Quiz Challenge dengan roda fisika 8 warna dan tantangan kuis materi berhadiah poin x2.`
-                      : targetGameType === "ulartangga"
-                      ? `Buat game web interaktif anak SD bertema: "${generatedModule.title}". Genre: Papan Ular Tangga Edukasi (Interactive Board Game Quiz 36 Kotak) dengan dadu putar 1-6, tangga prestasi (+poin), ular koreksi pemahaman, dan tantangan kuis materi.`
-                      : `Buat game web petualangan interaktif anak SD bertema: "${generatedModule.title}". Genre: 3D/2D Adventure Quest dengan 5 pos misi perbuatan baik, pengumpulan koin emas, dan dialog edukasi moral anak.`;
+                      : `Buat game web petualangan interaktif anak SD bertema: "${generatedModule.title}". Genre: 3D Petualangan Jelajah Desa Adat Nusantara dengan pos misi nilai luhur, pengumpulan koin emas, dan dialog edukasi moral anak.`;
 
                   return (
-                    <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-slate-800 dark:to-indigo-950/40 p-4 rounded-2xl border-2 border-indigo-200 dark:border-indigo-800 space-y-2.5">
-                      <div className="flex items-center justify-between flex-wrap gap-2">
-                        <span className="text-xs font-black text-indigo-950 dark:text-indigo-200 flex items-center gap-1.5">
-                          <span>🎮 Integrasi Generator Game Manus AI</span>
+                    <div className="bg-gradient-to-r from-indigo-50/90 via-purple-50/80 to-sky-50/90 dark:from-slate-800/90 dark:via-indigo-950/40 dark:to-slate-800/90 p-2.5 sm:p-3 rounded-xl border border-indigo-200/90 dark:border-indigo-800/80 shadow-xs space-y-1.5 transition-all">
+                      <div className="flex items-center justify-between flex-wrap gap-1.5">
+                        <span className="text-[11px] font-black text-indigo-950 dark:text-indigo-200 flex items-center gap-1.5">
+                          <span className="text-xs">🎮</span>
+                          <span>Integrasi Generator Game Manus AI</span>
                         </span>
-                        <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-indigo-200 dark:bg-indigo-900 text-indigo-900 dark:text-indigo-200 border border-indigo-300 dark:border-indigo-700">
+                        <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/80 text-indigo-800 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-700">
                           Format: {formatLabel}
                         </span>
                       </div>
 
-                      <div className="bg-white/90 dark:bg-slate-900/90 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900/60 space-y-1">
-                        <p className="text-[10px] font-extrabold text-indigo-700 dark:text-indigo-300 uppercase tracking-wide">
-                          Prompt Generator Manus AI Terbuat Otomatis:
-                        </p>
-                        <p className="text-xs text-slate-800 dark:text-slate-200 font-semibold italic leading-relaxed">
+                      <div className="bg-white/95 dark:bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-indigo-100 dark:border-indigo-900/50">
+                        <span className="text-[9px] font-black text-indigo-600 dark:text-indigo-300 uppercase tracking-wider block">
+                          Prompt Manus AI Otomatis:
+                        </span>
+                        <p className="text-[11px] text-slate-700 dark:text-slate-300 font-medium italic leading-snug line-clamp-2">
                           "{promptText}"
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+                      <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
                         <span>⚡</span>
-                        <span>Saat divalidasi, game resmi bertipe <strong>{formatLabel}</strong> otomatis aktif dan langsung bisa dimainkan siswa!</span>
+                        <span>Saat divalidasi, game <strong>{formatLabel}</strong> langsung aktif di portal belajar siswa!</span>
                       </div>
                     </div>
                   );
